@@ -1,5 +1,8 @@
 # About
 This is a customized version of fretbots + beginner AI.
+fretbots: https://github.com/fretmute/fretbots
+beginner AI: https://steamcommunity.com/sharedfiles/filedetails/?id=1627071163
+new heroes and builds from: https://github.com/ryndrb/dota2bot
 
 # How To
 1. Download the script and extract the files from `vscripts` to your Dota 2 vscripts directory.
