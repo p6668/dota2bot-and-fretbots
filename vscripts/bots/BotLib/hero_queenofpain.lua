@@ -17,15 +17,14 @@ local sAbilityList = J.Skill.GetAbilityList(bot)
 local sOutfitType = J.Item.GetOutfitType(bot)
 
 local tTalentTreeList = {
-						['t25'] = {10, 0},
-						['t20'] = {10, 0},
-						['t15'] = {0, 10},
-						['t10'] = {10, 0},
+						['t25'] = {0, 10},
+						['t20'] = {0, 10},
+						['t15'] = {10, 0},
+						['t10'] = {0, 10},
 }
 
 local tAllAbilityBuildList = {
-						--{1,2,3,3,3,6,3,1,1,1,6,2,2,2,6},
-						{1,2,1,3,1,6,1,3,3,3,6,2,2,2,6},
+						{3,1,1,2,1,6,3,3,3,2,2,6,3,1,6},--pos2
 }
 
 local nAbilityBuildList = J.Skill.GetRandomBuild(tAllAbilityBuildList)
@@ -34,26 +33,31 @@ local nTalentBuildList = J.Skill.GetTalentBuild(tTalentTreeList)
 
 local tOutFitList = {}
 
-tOutFitList['outfit_carry'] = {
+tOutFitList['outfit_carry'] = tOutFitList['outfit_mid']
 
-	"item_crystal_maiden_outfit",
-	"item_lotus_orb",
-	"item_orchid",
+tOutFitList['outfit_mid'] = {
+	"item_tango",
+	"item_double_branches",
+	"item_faerie_fire",
+
+	"item_bottle",
+	"item_boots",
+	"item_magic_wand",
+	"item_power_treads",
+	"item_witch_blade",
+	"item_kaya_and_sange",--
 	"item_ultimate_scepter",
+	"item_black_king_bar",--
+	"item_shivas_guard",--
 	"item_aghanims_shard",
 	"item_travel_boots",
-	"item_black_king_bar",
-	"item_bloodthorn",
-	"item_shivas_guard",
-	"item_moon_shard",
-	"item_travel_boots_2",
-	"item_mystic_staff",
+	"item_devastator",--
+	"item_cyclone",
 	"item_ultimate_scepter_2",
-	"item_octarine_core",
-	
+	"item_wind_waker",--
+	"item_travel_boots_2",--
+	"item_moon_shard",
 }
-
-tOutFitList['outfit_mid'] = tOutFitList['outfit_carry']
 
 tOutFitList['outfit_priest'] = {
 	
@@ -94,10 +98,8 @@ tOutFitList['outfit_tank'] = tOutFitList['outfit_carry']
 X['sBuyList'] = tOutFitList[sOutfitType]
 
 X['sSellList'] = {
-		
-	"item_sheepstick",
+	"item_bottle",
 	"item_magic_wand",
-	
 }
 
 
@@ -175,6 +177,34 @@ function X.SkillsComplement()
 	local aether = J.IsItemAvailable("item_aether_lens");
 	if aether ~= nil then aetherRange = 250 end	
 	
+	castWDesire, castWTarget, sMotive = X.ConsiderW();
+	if ( castWDesire > 0 ) 
+	then
+		J.SetReportMotive(bDebugMode,sMotive);
+	
+		J.SetQueuePtToINT(bot, true)
+	
+		bot:ActionQueue_UseAbilityOnLocation( abilityW, castWTarget )
+		return;
+	end
+	
+	castQDesire, castQTarget, sMotive = X.ConsiderQ();
+	if ( castQDesire > 0 ) 
+	then
+		J.SetReportMotive(bDebugMode,sMotive);		
+
+		J.SetQueuePtToINT(bot, true)
+
+		if bot:HasScepter()
+		and castQTarget ~= nil
+		then
+			bot:ActionQueue_UseAbilityOnLocation( abilityQ, castQTarget:GetLocation() )
+			return
+		end
+
+		bot:ActionQueue_UseAbilityOnEntity( abilityQ, castQTarget )
+		return;
+	end
 	
 	castRDesire, castRTarget, sMotive = X.ConsiderR();
 	if ( castRDesire > 0 ) 
@@ -187,31 +217,6 @@ function X.SkillsComplement()
 		return;
 	
 	end
-	
-	
-	castQDesire, castQTarget, sMotive = X.ConsiderQ();
-	if ( castQDesire > 0 ) 
-	then
-		J.SetReportMotive(bDebugMode,sMotive);		
-	
-		J.SetQueuePtToINT(bot, true)
-				
-		bot:ActionQueue_UseAbilityOnEntity( abilityQ, castQTarget )
-		return;
-	end
-	
-	
-	castWDesire, castWTarget, sMotive = X.ConsiderW();
-	if ( castWDesire > 0 ) 
-	then
-		J.SetReportMotive(bDebugMode,sMotive);
-	
-		J.SetQueuePtToINT(bot, true)
-	
-		bot:ActionQueue_UseAbilityOnLocation( abilityW, castWTarget )
-		return;
-	end
-	
 	
 	castEDesire, castETarget, sMotive = X.ConsiderE();
 	if ( castEDesire > 0 ) 
@@ -264,7 +269,7 @@ function X.ConsiderQ()
 	
 	
 
-	if J.IsGoingOnSomeone( bot ) or J.IsLaning( bot )
+	if J.IsGoingOnSomeone( bot ) or (J.IsLaning( bot ) and J.IsAllowedToSpam(bot, nManaCost))
 	then
 	
 		if J.IsValidHero( botTarget )
@@ -318,7 +323,7 @@ function X.ConsiderQ()
 	
 
 	if J.IsFarming( bot )
-		and DotaTime() > 4 * 60
+		-- and DotaTime() > 4 * 60
 		and J.IsAllowedToSpam( bot, nManaCost )
 	then
 		local creepList = bot:GetNearbyNeutralCreeps( nCastRange )
@@ -357,6 +362,7 @@ function X.ConsiderW()
 	local nCastPoint  = abilityW:GetCastPoint()
 	local nManaCost   = abilityW:GetManaCost()
 	local nDamage     = abilityW:GetAbilityDamage()
+	local ScreamOfPainDamage     = abilityE:GetAbilityDamage()
 	local nDamageType = DAMAGE_TYPE_MAGICAL
 	local nInRangeEnemyList = J.GetAroundEnemyHeroList( nCastRange )
 	local hCastTarget = nil
@@ -367,7 +373,7 @@ function X.ConsiderW()
 	then
 		hCastTarget = J.GetEscapeLoc()
 		sCastMotive = 'W-被卡住'
-		return BOT_ACTION_DESIRE_HIGH, hCastTarget, sCastMotive
+		return BOT_ACTION_DESIRE_ABSOLUTE, hCastTarget, sCastMotive
 	end
 	
 
@@ -379,7 +385,7 @@ function X.ConsiderW()
 		then
 			hCastTarget = J.GetEscapeLoc()
 			sCastMotive = 'W-逃跑'
-			return BOT_ACTION_DESIRE_HIGH, hCastTarget, sCastMotive
+			return BOT_ACTION_DESIRE_ABSOLUTE, hCastTarget, sCastMotive
 		end
 	end
 	
@@ -435,7 +441,16 @@ function X.ConsiderW()
 				then
 					hCastTarget = location
 					sCastMotive = 'W-对线赶路'
-					return BOT_ACTION_DESIRE_HIGH, hCastTarget, sCastMotive
+					
+					if bot:GetTarget() ~= nil
+					then
+						if J.CanKillTarget( bot:GetTarget(), ScreamOfPainDamage, DAMAGE_TYPE_MAGICAL ) and abilityE.IsFullyCastable()
+						then
+							return BOT_ACTION_DESIRE_VERYHIGH
+						end
+					end
+					
+					return BOT_ACTION_DESIRE_MODERATE, hCastTarget, sCastMotive
 				end
 			end
 		end
@@ -579,7 +594,7 @@ function X.ConsiderE()
 	
 	
 
-	if J.IsLaning( bot )
+	if J.IsLaning( bot ) and J.IsAllowedToSpam(bot, nManaCost)
 	then
 		local nCanKillMeleeCount = 0
 		local nCanKillRangedCount = 0
@@ -629,7 +644,7 @@ function X.ConsiderE()
 	end
 	
 
-	if ( J.IsPushing( bot ) or J.IsDefending( bot ) or J.IsFarming( bot ) )
+	if ( J.IsPushing( bot ) or J.IsDefending( bot ) )
 		and J.IsAllowedToSpam( bot, nManaCost * 0.32 )
 		and #hAllyList <= 3
 	then
@@ -646,8 +661,7 @@ function X.ConsiderE()
 	
 
 	if J.IsFarming( bot )
-		and DotaTime() > 6 * 60
-		and J.IsAllowedToSpam( bot, nManaCost * 0.25 )
+	and J.IsAllowedToSpam( bot, nManaCost * 0.25 )
 	then
 		local creepList = bot:GetNearbyNeutralCreeps( nRadius )
 
@@ -745,20 +759,20 @@ function X.ConsiderR()
 	
 	
 	--带线AOE
-	local laneCreepList = bot:GetNearbyLaneCreeps( 1400, true )
-	if bot:HasScepter() and #hEnemyList == 0
-		and #laneCreepList >= 12
-		and J.IsAllowedToSpam( bot, nManaCost )
-		and ( J.IsPushing( bot ) or J.IsDefending( bot ) or J.IsFarming( bot ) )
-	then
-		local locationAoEHurt = bot:FindAoELocation( true, false, bot:GetLocation(), nCastRange - 50 , nRadius + 50 , 0, 0 )
-		if locationAoEHurt.count >= 11
-		then
-			hCastTarget = locationAoEHurt.targetloc
-			sCastMotive = 'R-清兵'
-			return BOT_ACTION_DESIRE_HIGH, hCastTarget, sCastMotive
-		end
-	end
+	-- local laneCreepList = bot:GetNearbyLaneCreeps( 1400, true )
+	-- if bot:HasScepter() and #hEnemyList == 0
+	-- 	and #laneCreepList >= 12
+	-- 	and J.IsAllowedToSpam( bot, nManaCost )
+	-- 	and ( J.IsPushing( bot ) or J.IsDefending( bot ) or J.IsFarming( bot ) )
+	-- then
+	-- 	local locationAoEHurt = bot:FindAoELocation( true, false, bot:GetLocation(), nCastRange - 50 , nRadius + 50 , 0, 0 )
+	-- 	if locationAoEHurt.count >= 11
+	-- 	then
+	-- 		hCastTarget = locationAoEHurt.targetloc
+	-- 		sCastMotive = 'R-清兵'
+	-- 		return BOT_ACTION_DESIRE_HIGH, hCastTarget, sCastMotive
+	-- 	end
+	-- end
 	
 	
 	return BOT_ACTION_DESIRE_NONE

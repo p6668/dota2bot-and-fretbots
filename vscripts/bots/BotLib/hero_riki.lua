@@ -39,6 +39,7 @@ X['sBuyList'] = {
 				"item_aghanims_shard",
 				"item_manta",
 				"item_basher",
+				"item_disperser",
 				"item_black_king_bar",
 				"item_travel_boots",
 				"item_abyssal_blade",

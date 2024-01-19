@@ -17,15 +17,14 @@ local sAbilityList = J.Skill.GetAbilityList( bot )
 local sOutfitType = J.Item.GetOutfitType( bot )
 
 local tTalentTreeList = {
-						['t25'] = {0, 10},
+						['t25'] = {10, 0},
 						['t20'] = {0, 10},
-						['t15'] = {10, 0},
+						['t15'] = {0, 10},
 						['t10'] = {10, 0},
 }
 
 local tAllAbilityBuildList = {
-						{4,1,4,1,1,4,1,4,5,6,6,5,5,5,6},
-						{4,1,4,1,4,1,4,1,5,6,6,5,5,5,6},
+						{1,4,1,4,1,4,1,4,6,5,6,5,5,5,6},--pos1,2
 }
 
 local nAbilityBuildList = J.Skill.GetRandomBuild( tAllAbilityBuildList )
@@ -35,44 +34,48 @@ local nTalentBuildList = J.Skill.GetTalentBuild( tTalentTreeList )
 local tOutFitList = {}
 
 tOutFitList['outfit_carry'] = {
+	"item_tango",
+	"item_double_branches",
+	"item_faerie_fire",
+	"item_enchanted_mango",
+	"item_enchanted_mango",
 
-	"item_ranged_carry_outfit",
-	"item_point_booster",
-	"item_black_king_bar",
+	"item_power_treads",
+	"item_magic_wand",
+	"item_dragon_lance",
+	"item_black_king_bar",--
+	"item_hurricane_pike",--
+	"item_butterfly",--
 	"item_aghanims_shard",
-	"item_ultimate_scepter",
-	"item_orchid",
+	"item_greater_crit",--
+	"item_satanic",--
 	"item_travel_boots",
-	"item_bloodthorn",
-	"item_sheepstick", 
-	"item_butterfly",
 	"item_moon_shard",
-	"item_travel_boots_2",
-	"item_ultimate_orb",
+	"item_travel_boots_2",--
 	"item_ultimate_scepter_2",
-	"item_sphere",
-
 }
 
 tOutFitList['outfit_mid'] = {
-
-	"item_mid_outfit",
-	"item_point_booster",
-	"item_black_king_bar",
+	"item_tango",
+	"item_double_branches",
+	"item_faerie_fire",
+	"item_enchanted_mango",
+	"item_enchanted_mango",
+	
+	"item_bottle",
+	"item_power_treads",
+	"item_magic_wand",
+	"item_dragon_lance",
+	"item_black_king_bar",--
+	"item_hurricane_pike",--
+	"item_butterfly",--
 	"item_aghanims_shard",
-	"item_ultimate_scepter",
-	"item_orchid",
+	"item_greater_crit",--
+	"item_satanic",--
 	"item_travel_boots",
-	"item_bloodthorn",
-	"item_sheepstick",
-	"item_butterfly",
 	"item_moon_shard",
-	"item_travel_boots_2",
-	"item_ultimate_orb",
+	"item_travel_boots_2",--
 	"item_ultimate_scepter_2",
-	"item_sphere",
-
-
 }
 
 tOutFitList['outfit_priest'] = tOutFitList['outfit_carry']
@@ -84,11 +87,7 @@ tOutFitList['outfit_tank'] = tOutFitList['outfit_carry']
 X['sBuyList'] = tOutFitList[sOutfitType]
 
 X['sSellList'] = {
-
-	"item_ultimate_scepter",
-	"item_urn_of_shadows",
-
-	"item_sheepstick",
+	"item_bottle",
 	"item_magic_wand",
 }
 

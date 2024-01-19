@@ -17,42 +17,46 @@ local sAbilityList = J.Skill.GetAbilityList( bot )
 local sOutfitType = J.Item.GetOutfitType( bot )
 
 local tTalentTreeList = {
-						['t25'] = {10, 0},
-						['t20'] = {10, 0},
+						['t25'] = {0, 10},
+						['t20'] = {0, 10},
 						['t15'] = {10, 0},
-						['t10'] = {0, 10},
+						['t10'] = {10, 0},
 }
 
 local tAllAbilityBuildList = {
-						{1,3,1,2,1,6,1,3,3,3,6,2,2,2,6},
-						{1,3,1,2,1,6,1,2,2,2,6,3,3,3,6},
+						{1,3,1,2,3,6,3,3,1,1,6,2,2,2,6},--pos1
 }
 
 local nAbilityBuildList = J.Skill.GetRandomBuild( tAllAbilityBuildList )
 
 local nTalentBuildList = J.Skill.GetTalentBuild( tTalentTreeList )
+local RandomItem = RandomInt(1, 2) == 1 and "item_black_king_bar" or "item_sphere"
 
 local tOutFitList = {}
 
 tOutFitList['outfit_carry'] = {
+	"item_tango",
+	"item_double_branches",
+	"item_slippers",
+	"item_circlet",
 
-	"item_ranged_carry_outfit",
+	"item_wraith_band",
+	"item_power_treads",
+	"item_magic_wand",
 	"item_dragon_lance",
 	"item_yasha",
-	"item_point_booster",
---	"item_aghanims_shard",
-	"item_ultimate_scepter",
---	"item_black_king_bar",
 	"item_manta",
-	"item_travel_boots",
-	"item_butterfly",
-	"item_hurricane_pike", 
-	"item_monkey_king_bar",
-	"item_moon_shard",
-	"item_travel_boots_2",
-	"item_satanic",
+	"item_ultimate_scepter",
+	"item_hurricane_pike",--
+	RandomItem,--
+	"item_butterfly",--
+	"item_aghanims_shard",
+	"item_greater_crit",--
+	"item_satanic",--
 	"item_ultimate_scepter_2",
-
+	"item_travel_boots",
+	"item_moon_shard",
+	"item_travel_boots_2",--
 }
 
 tOutFitList['outfit_mid'] = tOutFitList['outfit_carry']
@@ -66,10 +70,9 @@ tOutFitList['outfit_tank'] = tOutFitList['outfit_carry']
 X['sBuyList'] = tOutFitList[sOutfitType]
 
 X['sSellList'] = {
-
-	"item_satanic",
+	"item_wraith_band",
 	"item_magic_wand",
-
+	"item_manta",
 }
 
 if J.Role.IsPvNMode() or J.Role.IsAllShadow() then X['sBuyList'], X['sSellList'] = { 'PvN_ranged_carry' }, {} end
@@ -123,11 +126,13 @@ modifier_drow_ranger_marksmanship_reduction
 local abilityQ = bot:GetAbilityByName( sAbilityList[1] )
 local abilityW = bot:GetAbilityByName( sAbilityList[2] )
 local abilityE = bot:GetAbilityByName( sAbilityList[3] )
+local Glacier 	= bot:GetAbilityByName( 'drow_ranger_glacier' )
 local abilityM = nil
 
 local castQDesire, castQTarget
 local castWDesire, castWLocation
 local castEDesire, castELocation
+local GlacierDesire
 local castMDesire
 local castWMDesire, castWMLocation
 
@@ -146,6 +151,15 @@ function X.SkillsComplement()
 	hEnemyList = bot:GetNearbyHeroes( 1600, true, BOT_MODE_NONE )
 	hAllyList = J.GetAlliesNearLoc( bot:GetLocation(), 1600 )
 	abilityM = J.IsItemAvailable( "item_mask_of_madness" )
+
+	GlacierDesire = X.ConsiderGlacier()
+	if GlacierDesire > 0
+	then
+		J.SetQueuePtToINT(bot, true)
+
+		bot:ActionQueue_UseAbility(Glacier)
+		return
+	end
 
 	castEDesire, castELocation = X.ConsiderE()
 	if castEDesire > 0
@@ -720,13 +734,55 @@ function X.ConsiderQ()
 			and J.IsInRange( bot, botTarget, 1000 )
 			and botTarget:GetHealth() > nAttackDamage
 		then
-			return BOT_ACTION_DESIRE_HIGH, botTarget, "Q-打野"
+			return BOT_ACTION_DESIRE_LOW, botTarget, "Q-打野"
 		end
 	end
 
 	return BOT_ACTION_DESIRE_NONE, nil
 end
 
+function X.ConsiderGlacier()
+	if not Glacier:IsTrained()
+	or not Glacier:IsFullyCastable()
+	then
+		return BOT_ACTION_DESIRE_NONE
+	end
+
+	local nAttackRange = bot:GetAttackRange()
+	local nEnemyHeroes = bot:GetNearbyHeroes(nAttackRange, true, BOT_MODE_NONE)
+	local nAllyHeroes = bot:GetNearbyHeroes(nAttackRange, true, BOT_MODE_ATTACK)
+	local botTarget = bot:GetTarget()
+
+	local alliesAroundLoc = J.GetAlliesNearLoc(bot:GetLocation(), 500)
+
+	if #alliesAroundLoc > 1
+	then
+		return BOT_ACTION_DESIRE_LOW
+	end
+
+	if J.IsRetreating(bot)
+	and ((#nEnemyHeroes ~= nil and #nEnemyHeroes >= 2) or J.GetHP(bot) < 0.3)
+	then
+		if nAllyHeroes ~= nil
+		and #nAllyHeroes >= 1
+		then
+			return BOT_ACTION_DESIRE_LOW
+		end
+
+		return BOT_ACTION_DESIRE_HIGH
+	end
+
+	if J.IsGoingOnSomeone(bot)
+	then
+		if (abilityE:IsFullyCastable() and J.CanCastOnNonMagicImmune(botTarget))
+		and J.IsInRange(bot, botTarget, abilityE:GetCastRange() + 200)
+		then
+			return BOT_ACTION_DESIRE_HIGH
+		end
+	end
+
+	return BOT_ACTION_DESIRE_NONE
+end
 
 return X
 -- dota2jmz@163.com QQ:2462331592..

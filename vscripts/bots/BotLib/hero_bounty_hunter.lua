@@ -17,67 +17,88 @@ local sAbilityList = J.Skill.GetAbilityList( bot )
 local sOutfitType = J.Item.GetOutfitType( bot )
 
 local tTalentTreeList = {
-						['t25'] = {10, 0},
-						['t20'] = {10, 0},
-						['t15'] = {10, 0},
-						['t10'] = {10, 0},
+						{--pos2
+							['t25'] = {10, 0},
+							['t20'] = {10, 0},
+							['t15'] = {0, 10},
+							['t10'] = {10, 0},
+						},
+						{--po3
+							['t25'] = {10, 0},
+							['t20'] = {10, 0},
+							['t15'] = {10, 0},
+							['t10'] = {10, 0},
+						}
 }
 
 local tAllAbilityBuildList = {
-						{1,2,3,1,1,6,1,2,2,2,6,3,3,3,6},
-						{1,2,1,3,1,6,1,2,2,2,6,3,3,3,6},
-						{2,1,1,3,1,6,1,2,2,2,6,3,3,3,6},
+						{2,3,2,1,2,6,2,1,1,1,6,3,3,3,6},--pos2
+						{2,3,2,1,2,6,2,3,3,3,6,1,1,1,6},--pos3
 }
 
-local nAbilityBuildList = J.Skill.GetRandomBuild( tAllAbilityBuildList )
+local nAbilityBuildList
+local nTalentBuildList
 
-local nTalentBuildList = J.Skill.GetTalentBuild( tTalentTreeList )
+if sOutfitType == "outfit_mid"
+then
+    nAbilityBuildList   = tAllAbilityBuildList[1]
+    nTalentBuildList    = J.Skill.GetTalentBuild(tTalentTreeList[1])
+elseif sOutfitType == "outfit_tank"
+then
+    nAbilityBuildList   = tAllAbilityBuildList[2]
+    nTalentBuildList    = J.Skill.GetTalentBuild(tTalentTreeList[2])
+end
+
+local sCrimsonPipe = RandomInt( 1, 2 ) == 1 and "item_crimson_guard" or "item_pipe"
 
 local tOutFitList = {}
 
-tOutFitList['outfit_carry'] = {
+tOutFitList['outfit_carry'] = tOutFitList['outfit_tank']
 
-	'item_melee_carry_outfit',
---	'item_medallion_of_courage',
-	'item_vanguard',
---	"item_aghanims_shard",
-	"item_solar_crest",
-	"item_black_king_bar",
+tOutFitList['outfit_mid'] = {
+	"item_double_branches",
+	"item_quelling_blade",
+	"item_tango",
+	"item_faerie_fire",
+
+	"item_bottle",
+	"item_phase_boots",
 	"item_ultimate_scepter",
-	"item_travel_boots",
-	"item_abyssal_blade",
-	"item_butterfly",
-	"item_moon_shard",
-	"item_travel_boots_2",
-	"item_reaver",
+	"item_magic_wand",
+	"item_angels_demise",--
+	"item_cyclone",
+	"item_octarine_core",--
+	"item_black_king_bar",--
 	"item_ultimate_scepter_2",
-	"item_heart",
-
-
+	"item_wind_waker",--
+	"item_travel_boots",--
+	"item_bloodthorn",--
+	"item_travel_boots_2",--
+	"item_moon_shard",
+	"item_aghanims_shard",
 }
-
-tOutFitList['outfit_mid'] = tOutFitList['outfit_carry']
 
 tOutFitList['outfit_priest'] = tOutFitList['outfit_carry']
 
 tOutFitList['outfit_mage'] = tOutFitList['outfit_carry']
 
 tOutFitList['outfit_tank'] = {
+	"item_tango",
+	"item_quelling_blade",
+	"item_double_branches",
 
-	"item_dragon_knight_outfit",
-	"item_crimson_guard",
-	"item_heavens_halberd",
+	"item_boots",
+	"item_magic_wand",
+	sCrimsonPipe,--
+	"item_guardian_greaves",--
 	"item_ultimate_scepter",
-	"item_travel_boots",
-	"item_black_king_bar",
-	"item_assault",
-	"item_moon_shard",
-	"item_travel_boots_2",
-	"item_reaver",
+	"item_sphere",--
+	"item_assault",--
+	"item_heart",--
 	"item_ultimate_scepter_2",
-	"item_heart",
-
-
+	"item_sheepstick",--
+	"item_moon_shard",
+	"item_aghanims_shard",
 }
 
 
@@ -85,19 +106,9 @@ X['sBuyList'] = tOutFitList[sOutfitType]
 
 
 X['sSellList'] = {
-
-	"item_power_treads",
 	"item_quelling_blade",
-
-	"item_heavens_halberd",
-	"item_quelling_blade",
-
-	"item_abyssal_blade",
 	"item_magic_wand",
-
-	"item_assault",
-	"item_ancient_janggo",
-
+	"item_bottle",
 }
 
 if J.Role.IsPvNMode() then X['sBuyList'], X['sSellList'] = { 'PvN_BH' }, {"item_power_treads", 'item_quelling_blade'} end
@@ -147,11 +158,13 @@ modifier_bounty_hunter_track
 local abilityQ = bot:GetAbilityByName( sAbilityList[1] )
 local abilityW = bot:GetAbilityByName( sAbilityList[2] )
 local abilityE = bot:GetAbilityByName( sAbilityList[3] )
+local FriendlyShadow = bot:GetAbilityByName( 'bounty_hunter_wind_walk_ally' )
 local abilityR = bot:GetAbilityByName( sAbilityList[6] )
 local talent3 = bot:GetAbilityByName( sTalentList[3] )
 
 local castQDesire, castQTarget
 local castEDesire
+local FriendlyShadowDesire, FriendlyShadowTarget
 local castRDesire, castRTarget
 
 local nKeepMana, nMP, nHP, nLV, hEnemyList, hAllyList, botTarget, sMotive
@@ -185,6 +198,14 @@ function X.SkillsComplement()
 		J.SetQueuePtToINT( bot, false )
 
 		bot:ActionQueue_UseAbility( abilityE )
+		return
+	end
+
+	FriendlyShadowDesire, FriendlyShadowTarget = X.ConsiderFriendlyShadow()
+	if (FriendlyShadowDesire > 0)
+	then
+		J.SetQueuePtToINT(bot, false)
+		bot:ActionQueue_UseAbilityOnEntity(FriendlyShadow, FriendlyShadowTarget)
 		return
 	end
 
@@ -555,7 +576,53 @@ function X.ConsiderR()
 
 end
 
+function X.ConsiderFriendlyShadow()
+	if not FriendlyShadow:IsTrained()
+	or not FriendlyShadow:IsFullyCastable()
+	then
+		return BOT_ACTION_DESIRE_NONE, nil
+	end
 
+	local nCastRange = FriendlyShadow:GetCastRange()
+	local nAllyHeroes = bot:GetNearbyHeroes(nCastRange, false, BOT_MODE_NONE)
+
+	for _, ally in pairs(nAllyHeroes) do
+		if J.IsGoingOnSomeone(ally)
+		and J.IsInRange(bot, ally, nCastRange)
+		and J.IsNotSelf(bot, ally)
+		and not J.IsRealInvisible(ally)
+		then
+			return BOT_ACTION_DESIRE_HIGH, ally
+		end
+
+		if J.IsRetreating(ally)
+		and ally:WasRecentlyDamagedByAnyHero(3.0)
+		and ally:DistanceFromFountain() > 800
+		and J.IsInRange(bot, ally, nCastRange)
+		and J.IsNotSelf(bot, ally)
+		and not J.IsRealInvisible(ally)
+		and #hEnemyList >= 1
+		then
+			return BOT_ACTION_DESIRE_HIGH, ally
+		end
+
+		if J.IsInEnemyArea(bot)
+		then
+			local nEnemies = bot:GetNearbyHeroes(1600, true, BOT_MODE_NONE)
+			local nEnemyTowers = bot:GetNearbyTowers(1600, true)
+
+			if nEnemies ~= nil and nEnemyTowers ~= nil
+			and #nEnemies == 0 and #nEnemyTowers == 0
+			and J.IsInRange(bot, ally, nCastRange)
+			and J.IsNotSelf(bot, ally)
+			and not J.IsRealInvisible(ally)
+			then
+				return BOT_ACTION_DESIRE_HIGH, ally
+			end
+		end
+	end
+
+	return BOT_ACTION_DESIRE_NONE, nil
+end
 
 return X
--- dota2jmz@163.com QQ:2462331592..

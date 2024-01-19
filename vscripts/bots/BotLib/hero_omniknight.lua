@@ -38,7 +38,7 @@ tOutFitList['outfit_carry'] = {
 
 	"item_bristleback_outfit",
 	"item_soul_ring",
-	"item_echo_sabre",
+	"item_harpoon",
 	"item_aghanims_shard",
 	"item_ultimate_scepter",
 	"item_lotus_orb",

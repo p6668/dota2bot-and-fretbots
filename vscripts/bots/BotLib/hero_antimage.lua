@@ -17,40 +17,41 @@ local sAbilityList = J.Skill.GetAbilityList( bot )
 local sOutfitType = J.Item.GetOutfitType( bot )
 
 local tTalentTreeList = {
-						['t25'] = {0, 10},
+						['t25'] = {10, 0},
 						['t20'] = {10, 0},
 						['t15'] = {10, 0},
-						['t10'] = {10, 0},
+						['t10'] = {0, 10},
 }
 
 local tAllAbilityBuildList = {
-						{3,1,2,2,2,6,2,3,3,3,6,1,1,1,6},
+						{1,2,1,3,1,6,2,2,2,1,6,3,3,3,6},--pos1
 }
 
 local nAbilityBuildList = J.Skill.GetRandomBuild( tAllAbilityBuildList )
 
 local nTalentBuildList = J.Skill.GetTalentBuild( tTalentTreeList )
 
-local sRandomItem_1 = RandomInt( 1, 9 ) > 6 and "item_satanic" or "item_butterfly"
-
 local tOutFitList = {}
 
 tOutFitList['outfit_carry'] = {
+	"item_tango",
+	"item_double_branches",
+	"item_quelling_blade",
+	"item_orb_of_venom",
 
-	"item_melee_carry_outfit",
-	"item_yasha",
-	"item_bfury",
-	"item_manta",
---	"item_aghanims_shard",
-	"item_abyssal_blade",
-	"item_travel_boots",
-	"item_skadi",
-	sRandomItem_1,
+	"item_magic_wand",
+	"item_orb_of_corrosion",
+	"item_power_treads",
+	"item_bfury",--
+	"item_manta",--
+	"item_basher",
+	"item_butterfly",--
+	"item_skadi",--
+	"item_abyssal_blade",--
+	"item_monkey_king_bar",--
 	"item_moon_shard",
-	"item_travel_boots_2",
 	"item_ultimate_scepter_2",
-
-
+	"item_aghanims_shard",
 }
 
 tOutFitList['outfit_mid'] = tOutFitList['outfit_carry']
@@ -64,10 +65,9 @@ tOutFitList['outfit_tank'] = tOutFitList['outfit_carry']
 X['sBuyList'] = tOutFitList[sOutfitType]
 
 X['sSellList'] = {
-
-	'item_skadi',
-	'item_magic_wand',
-
+	"item_magic_wand",
+	"item_orb_of_corrosion",
+	"item_power_treads",
 }
 
 if J.Role.IsPvNMode() or J.Role.IsAllShadow() then X['sBuyList'], X['sSellList'] = { 'PvN_antimage' }, {} end
@@ -122,12 +122,16 @@ modifier_antimage_counterspell
 local abilityW = bot:GetAbilityByName( sAbilityList[2] )
 local abilityE = bot:GetAbilityByName( sAbilityList[3] )
 local abilityR = bot:GetAbilityByName( sAbilityList[6] )
+local CounterSpellAlly 	= bot:GetAbilityByName( 'antimage_counterspell_ally' )
+local BlinkFragment		= bot:GetAbilityByName( 'antimage_mana_overload' )
 local talent3 = bot:GetAbilityByName( sTalentList[3] )
 
 
 local castWDesire, castWLocation
 local castEDesire
 local castRDesire, castRTarget
+local CounterSpellAllyDesire, CounterSpellAllyTarget
+local BlinkFragmentDesire, FragmentLocation
 local castWEDesire, castWELocation, castWEType
 local castWRDesire, castWRLocation, castWRTarget
 
@@ -135,6 +139,14 @@ local castWRDesire, castWRLocation, castWRTarget
 local nKeepMana, nMP, nHP, nLV, hEnemyHeroList
 
 function X.SkillsComplement()
+
+	if J.CanNotUseAbility( bot ) or bot:IsInvisible() then return end
+
+	nKeepMana = 180
+	nMP = bot:GetMana()/bot:GetMaxMana()
+	nHP = bot:GetHealth()/bot:GetMaxHealth()
+	nLV = bot:GetLevel()
+	hEnemyHeroList = bot:GetNearbyHeroes( 1600, true, BOT_MODE_NONE )
 
 	if X.ConsiderSpecialE() > 0
 	then
@@ -144,17 +156,36 @@ function X.SkillsComplement()
 		return
 	end
 
-	if J.CanNotUseAbility( bot ) or bot:IsInvisible() then return end
+	BlinkFragmentDesire, FragmentLocation = X.ConsiderBlinkFragment()
+	print(tostring(BlinkFragmentDesire)..": ", FragmentLocation)
+	if (BlinkFragmentDesire > 0)
+	then
+		J.SetQueuePtToINT(bot, false)
+		bot:ActionQueue_UseAbilityOnLocation(BlinkFragment, FragmentLocation)
+		return
+	end
 
+	castWDesire, castWLocation = X.ConsiderW()
+	if ( castWDesire > 0 )
+	then
 
-	nKeepMana = 180
-	nMP = bot:GetMana()/bot:GetMaxMana()
-	nHP = bot:GetHealth()/bot:GetMaxHealth()
-	nLV = bot:GetLevel()
-	hEnemyHeroList = bot:GetNearbyHeroes( 1600, true, BOT_MODE_NONE )
+		J.SetQueuePtToINT( bot, false )
 
+		bot:ActionQueue_UseAbilityOnLocation( abilityW, castWLocation )
+		return
 
+	end
+	
+	castRDesire, castRTarget = X.ConsiderR()
+	if ( castRDesire > 0 )
+	then
 
+		J.SetQueuePtToINT( bot, false )
+
+		bot:ActionQueue_UseAbilityOnEntity( abilityR, castRTarget )
+		return
+
+	end
 
 	castEDesire = X.ConsiderE()
 	if ( castEDesire > 0 )
@@ -166,16 +197,14 @@ function X.SkillsComplement()
 		return
 	end
 
-	castRDesire, castRTarget = X.ConsiderR()
-	if ( castRDesire > 0 )
+	CounterSpellAllyDesire, CounterSpellAllyTarget = X.ConsiderCounterSpellAlly()
+	if (CounterSpellAllyDesire > 0)
 	then
-
-		J.SetQueuePtToINT( bot, false )
-
-		bot:ActionQueue_UseAbilityOnEntity( abilityR, castRTarget )
+		J.SetQueuePtToINT(bot, false)
+		bot:ActionQueue_UseAbilityOnEntity(CounterSpellAlly, CounterSpellAllyTarget)
 		return
-
 	end
+
 
 	castWRDesire, castWRLocation, castWRTarget = X.ConsiderWR()
 	if ( castWRDesire > 0 )
@@ -202,17 +231,6 @@ function X.SkillsComplement()
 			bot:ActionQueue_UseAbilityOnLocation( abilityW, castWELocation )
 			return
 		end
-
-	end
-
-	castWDesire, castWLocation = X.ConsiderW()
-	if ( castWDesire > 0 )
-	then
-
-		J.SetQueuePtToINT( bot, false )
-
-		bot:ActionQueue_UseAbilityOnLocation( abilityW, castWLocation )
-		return
 
 	end
 
@@ -702,6 +720,69 @@ function X.ConsiderR()
 	return 0
 end
 
+function X.ConsiderCounterSpellAlly()
+	if not J.HasAghanimsShard(bot)
+	or not CounterSpellAlly:IsTrained()
+	or not CounterSpellAlly:IsFullyCastable()
+	then
+		return BOT_ACTION_DESIRE_NONE, nil
+	end
+
+	local cCastRange = CounterSpellAlly:GetCastRange()
+	local nAllyHeroes = bot:GetNearbyHeroes(cCastRange, false, BOT_MODE_NONE)
+
+	for _, ally in pairs(nAllyHeroes) do
+		if J.IsInRange(bot, ally, cCastRange)
+		and J.IsUnitTargetProjectileIncoming(ally, 400)
+		and not ally:IsMagicImmune()
+		then
+			return BOT_ACTION_DESIRE_HIGH, ally
+		end
+
+		if not ally:HasModifier("modifier_sniper_assassinate")
+		and not ally:IsMagicImmune()
+		then
+			if J.IsWillBeCastUnitTargetSpell(ally, cCastRange)
+			then
+				return BOT_ACTION_DESIRE_HIGH, ally
+			end
+		end
+	end
+
+	return BOT_ACTION_DESIRE_NONE, nil
+end
+
+function X.ConsiderBlinkFragment()
+	if not bot:HasScepter()
+	or not BlinkFragment:IsTrained()
+	or not BlinkFragment:IsFullyCastable()
+	then
+		return BOT_ACTION_DESIRE_NONE, 0
+	end
+
+	local nCastRange = abilityW:GetSpecialValueInt('value')
+	local nCastPoint = BlinkFragment:GetCastPoint()
+	local nEnemysHerosInRange = bot:GetNearbyHeroes(nCastRange, true, BOT_MODE_NONE)
+	local npcTarget = J.GetProperTarget(bot)
+
+	if J.IsRetreating(bot)
+	and (nEnemysHerosInRange ~= nil and #nEnemysHerosInRange > 0)
+	then
+		bot:SetTarget(nEnemysHerosInRange[1])
+		return BOT_ACTION_DESIRE_MODERATE, nEnemysHerosInRange[1]:GetLocation()
+	end
+
+	if J.IsGoingOnSomeone(bot)
+	then
+		if J.IsValidHero(npcTarget)
+		and not npcTarget:IsAttackImmune()
+		and J.IsInRange(npcTarget, bot, nCastRange)
+		then
+			return BOT_ACTION_DESIRE_HIGH, npcTarget:GetLocation()
+		end
+	end
+
+	return BOT_ACTION_DESIRE_NONE, 0
+end
 
 return X
--- dota2jmz@163.com QQ:2462331592..

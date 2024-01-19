@@ -1720,6 +1720,7 @@ X['safe'] = {
 }
 
 X['supp'] = {
+	'npc_dota_hero_abaddon',
 	'npc_dota_hero_ancient_apparition',
 	'npc_dota_hero_bane',
 --	'npc_dota_hero_bounty_hunter',
@@ -1755,12 +1756,8 @@ X['supp'] = {
 	'npc_dota_hero_warlock',
 	'npc_dota_hero_winter_wyvern',
 	'npc_dota_hero_wisp',
-	'npc_dota_hero_necrolyte',
 	'npc_dota_hero_witch_doctor',
-	'npc_dota_hero_zuus',
 	'npc_dota_hero_pugna',
-	'npc_dota_hero_queenofpain',
-	'npc_dota_hero_death_prophet',
 	'npc_dota_hero_windrunner',
 	'npc_dota_hero_venomancer',
 
@@ -2177,8 +2174,16 @@ function X.IsABAHero()
 		["npc_dota_hero_mirana"] = true, 		
 		["npc_dota_hero_queenofpain"] = true, 		
 		["npc_dota_hero_windrunner"] = true, 		
-		["npc_dota_hero_zuus"] = true, 		
-	
+		["npc_dota_hero_zuus"] = true,
+		["npc_dota_hero_shredder"] = true,
+		["npc_dota_hero_mars"] = true,
+		["npc_dota_hero_storm_spirit"] = true,
+		["npc_dota_hero_ember_spirit"] = true,
+		["npc_dota_hero_void_spirit"] = true,
+		["npc_dota_hero_earth_spirit"] = true,
+		["npc_dota_hero_abaddon"] = true,
+		["npc_dota_hero_ancient_apparition"] = true,
+		["npc_dota_hero_beastmaster"] = true,
 	}
 
 	return sABAHeroIndex[botName] == true

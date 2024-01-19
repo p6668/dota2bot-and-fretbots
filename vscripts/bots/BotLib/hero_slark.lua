@@ -17,14 +17,14 @@ local sAbilityList = J.Skill.GetAbilityList( bot )
 local sOutfitType = J.Item.GetOutfitType( bot )
 
 local tTalentTreeList = {
-						['t25'] = {0, 10},
+						['t25'] = {10, 0},
 						['t20'] = {0, 10},
 						['t15'] = {0, 10},
 						['t10'] = {0, 10},
 }
 
 local tAllAbilityBuildList = {
-						{3,2,1,1,1,6,1,2,2,2,6,3,3,3,6},
+						{3,2,1,1,1,6,1,2,2,2,6,3,3,3,6},--pos1
 }
 
 local nAbilityBuildList = J.Skill.GetRandomBuild( tAllAbilityBuildList )
@@ -34,24 +34,28 @@ local nTalentBuildList = J.Skill.GetTalentBuild( tTalentTreeList )
 local tOutFitList = {}
 
 tOutFitList['outfit_carry'] = {
+	"item_tango",
+	"item_double_branches",
+	"item_quelling_blade",
+	"item_slippers",
+	"item_circlet",
 
-	"item_melee_carry_outfit",
---	"item_wraith_band",
-	"item_yasha",
+	"item_wraith_band",
+	"item_power_treads",
+	"item_magic_wand",
 	"item_diffusal_blade",
-	"item_broadsword", 
-	"item_blitz_knuckles",
-	"item_invis_sword",
-	"item_sange_and_yasha",
+	"item_echo_sabre",
+	"item_ultimate_scepter",
 	"item_aghanims_shard",
-	"item_black_king_bar",
-	"item_travel_boots",
-	"item_abyssal_blade",
-	"item_silver_edge",
-	"item_butterfly",
-	"item_moon_shard",
-	"item_travel_boots_2",
-
+	"item_black_king_bar",--
+	"item_skadi",--
+	"item_basher",
+	"item_disperser",--
+	"item_abyssal_blade",--
+	"item_ultimate_scepter_2",
+	"item_bloodthorn",--
+	"item_nullifier",--
+	"item_moon_shard"
 }
 
 tOutFitList['outfit_mid'] = tOutFitList['outfit_carry']
@@ -65,16 +69,11 @@ tOutFitList['outfit_tank'] = tOutFitList['outfit_carry']
 X['sBuyList'] = tOutFitList[sOutfitType]
 
 X['sSellList'] = {
-
-	"item_invis_sword",
 	"item_quelling_blade",
-
-	"item_abyssal_blade",
+	"item_wraith_band",
+	"item_power_treads",
 	"item_magic_wand",
-	
-	"item_silver_edge",
-	"item_diffusal_blade",
-
+	"item_echo_sabre",
 }
 
 

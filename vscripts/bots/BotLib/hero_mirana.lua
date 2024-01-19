@@ -41,8 +41,6 @@ tOutFitList['outfit_carry'] = {
 	"item_maelstrom",
 	"item_black_king_bar",
 	"item_gungir",
---	"item_ultimate_scepter",
-	"item_aghanims_shard",
 	"item_travel_boots",
 	"item_bloodthorn",
 	"item_hurricane_pike",	

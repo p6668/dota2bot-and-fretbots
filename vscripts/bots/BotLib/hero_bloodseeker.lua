@@ -17,39 +17,62 @@ local sAbilityList = J.Skill.GetAbilityList( bot )
 local sOutfitType = J.Item.GetOutfitType( bot )
 
 local tTalentTreeList = {
-						['t25'] = {10, 0},
-						['t20'] = {10, 0},
-						['t15'] = {0, 10},
-						['t10'] = {0, 10},
+						{--pos1
+							['t25'] = {0, 10},
+							['t20'] = {0, 10},
+							['t15'] = {0, 10},
+							['t10'] = {0, 10},
+						},
+						{--pos3
+							['t25'] = {0, 10},
+							['t20'] = {0, 10},
+							['t15'] = {0, 10},
+							['t10'] = {0, 10},
+						}
 }
 
 local tAllAbilityBuildList = {
-						{1,3,2,3,1,6,1,1,3,3,6,2,2,2,6},
-						{1,3,2,3,3,6,3,1,1,1,6,2,2,2,6},
-						{1,3,2,2,2,6,2,3,3,3,6,1,1,1,6},
+						{3,2,3,1,3,6,1,1,1,3,6,2,2,2,6},--pos1
+						{2,3,3,1,3,6,3,1,1,1,6,2,2,2,6},--pos3
 }
 
-local nAbilityBuildList = J.Skill.GetRandomBuild( tAllAbilityBuildList )
+local nAbilityBuildList
+local nTalentBuildList
 
-local nTalentBuildList = J.Skill.GetTalentBuild( tTalentTreeList )
-
-local sRandomItem_1 = RandomInt( 1, 9 ) > 6 and "item_monkey_king_bar" or "item_butterfly"
+if sOutfitType == "outfit_carry"
+then
+    nAbilityBuildList   = tAllAbilityBuildList[1]
+    nTalentBuildList    = J.Skill.GetTalentBuild(tTalentTreeList[1])
+elseif sOutfitType == "outfit_tank"
+then
+    nAbilityBuildList   = tAllAbilityBuildList[2]
+    nTalentBuildList    = J.Skill.GetTalentBuild(tTalentTreeList[2])
+end
 
 local tOutFitList = {}
 
 tOutFitList['outfit_carry'] = {
+	"item_tango",
+	"item_double_branches",
+	"item_quelling_blade",
+	"item_slippers",
+	"item_circlet",
 
-	"item_melee_carry_outfit",
-	"item_yasha",
+	"item_wraith_band",
+	"item_phase_boots",
+	"item_maelstrom",
+	"item_magic_wand",
+	"item_black_king_bar",--
+	"item_mjollnir",--
+	"item_basher",
 	"item_aghanims_shard",
-	"item_diffusal_blade",
-	"item_sange_and_yasha",
-	"item_black_king_bar",
-	"item_travel_boots",
-	"item_abyssal_blade",
-	sRandomItem_1,
+	"item_butterfly",--
+	"item_abyssal_blade",--
+	"item_skadi",--
+	"item_monkey_king_bar",--
 	"item_moon_shard",
-	"item_travel_boots_2",
+	"item_ultimate_scepter",
+	"item_ultimate_scepter_2",
 
 }
 
@@ -59,18 +82,34 @@ tOutFitList['outfit_priest'] = tOutFitList['outfit_carry']
 
 tOutFitList['outfit_mage'] = tOutFitList['outfit_carry']
 
-tOutFitList['outfit_tank'] = tOutFitList['outfit_carry']
+tOutFitList['outfit_tank'] = {
+	"item_tango",
+	"item_double_branches",
+	"item_quelling_blade",
+
+	"item_phase_boots",
+	"item_magic_wand",
+	"item_maelstrom",
+	"item_manta",--
+	"item_black_king_bar",--
+	"item_mjollnir",--
+	"item_basher",
+	"item_heavens_halberd",--
+	"item_aghanims_shard",
+	"item_skadi",--
+	"item_abyssal_blade",--
+	"item_moon_shard",
+	"item_ultimate_scepter",
+	"item_ultimate_scepter_2",
+}
 
 X['sBuyList'] = tOutFitList[sOutfitType]
 
 X['sSellList'] = {
-
-	"item_power_treads",
 	"item_quelling_blade",
-
-	"item_abyssal_blade",
+	"item_wraith_band",
+	"item_phase_boots",
 	"item_magic_wand",
-
 }
 
 if J.Role.IsPvNMode() or J.Role.IsAllShadow() then X['sBuyList'], X['sSellList'] = { 'PvN_melee_carry' }, {"item_power_treads", 'item_quelling_blade'} end
@@ -122,12 +161,13 @@ modifier_bloodseeker_rupture
 
 local abilityQ = bot:GetAbilityByName( sAbilityList[1] )
 local abilityW = bot:GetAbilityByName( sAbilityList[2] )
-local abilityD = bot:GetAbilityByName( sAbilityList[4] )
 local abilityR = bot:GetAbilityByName( sAbilityList[6] )
+local BloodMist = bot:GetAbilityByName( 'bloodseeker_blood_mist' )
 
 local castQDesire, castQTarget = 0
 local castWDesire, castWLocation = 0
 local castRDesire, castRTarget = 0
+local BloodMistDesire
 
 local nKeepMana, nMP, nHP, nLV, hEnemyHeroList
 
@@ -147,15 +187,12 @@ function X.SkillsComplement()
 	hEnemyHeroList = bot:GetNearbyHeroes( 1600, true, BOT_MODE_NONE )
 
 
-	castDDesire = X.ConsiderD()
-	if ( castDDesire > 0 )
+	BloodMistDesire = X.ConsiderBloodMist()
+	if (BloodMistDesire > 0)
 	then
-
 		bot:Action_ClearActions( false )
-
-		bot:ActionQueue_UseAbility( abilityD )
+		bot:ActionQueue_UseAbility(BloodMist)
 		return
-
 	end
 
 
@@ -194,54 +231,44 @@ function X.SkillsComplement()
 
 end
 
-function X.ConsiderD()
+function X.ConsiderBloodMist()
 
-	if not bot:HasScepter()	
-		or not abilityD:IsFullyCastable() 
-	then return 0 end
-
-	local nCastRange = 400
-		
-	local nInRangeEnemyHeroList = bot:GetNearbyHeroes(nCastRange, true, BOT_MODE_NONE)
-	local botTarget = J.GetProperTarget(bot)
-	
-	--如果是开启状态, 关闭技能
-	if abilityD:GetToggleState()
+	if not bot:HasScepter()
+	or not BloodMist:IsFullyCastable()
 	then
-	
-		--1, 血量过低
-		if nHP < 0.14
+		return BOT_MODE_NONE
+	end
+
+	local nRadius = 450
+	local nInRangeEnemyHeroList = bot:GetNearbyHeroes(nRadius, true, BOT_MODE_NONE)
+	local botTarget = J.GetProperTarget(bot)
+
+	if BloodMist:GetToggleState() == true
+	then
+		if nHP < 0.2
 		then
 			return BOT_ACTION_DESIRE_HIGH
 		end
-		
-		--2, 范围内无敌人
+
 		if #nInRangeEnemyHeroList == 0
 		then
-			return BOT_ACTION_DESIRE_HIGH
+			return BOT_ACTION_DESIRE_ABSOLUTE
 		end
-
 	end
-	
-	
-	--如果是关闭状态, 切换为开启
-	if not abilityD:GetToggleState()
-		and nHP > 0.25
+
+	if not BloodMist:GetToggleState() == false
+	and nHP > 0.5
 	then
-		if J.IsValidHero( botTarget )
-			and J.IsInRange( bot, botTarget, nCastRange * 0.8 )
-			and J.CanCastOnNonMagicImmune( botTarget )
+		if J.IsValidHero(botTarget)
+		and J.IsInRange(bot, botTarget, nRadius * 0.8)
+		and J.CanCastOnNonMagicImmune(botTarget)
 		then
 			return BOT_ACTION_DESIRE_HIGH
-		end	
+		end
 	end
-	
-
 
 	return BOT_MODE_NONE
-
 end
-
 
 function X.ConsiderQ()
 

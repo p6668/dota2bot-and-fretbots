@@ -699,6 +699,17 @@ Item['item_boots_of_bearing']	= GetItemComponents( 'item_boots_of_bearing' )[1]
 
 Item['item_wraith_pact']	= GetItemComponents( 'item_wraith_pact' )[1]
 
+---------- 7.33 NEW ITEMS ---------------
+Item["item_pavise"] 							= { "item_energy_booster", "item_ring_of_protection", "item_fluffy_hat", "item_recipe_pavise" }
+Item["item_phylactery"] 						= { "item_point_booster", "item_diadem", "item_recipe_phylactery" }
+Item["item_harpoon"] 							= { "item_echo_sabre", "item_diadem", "item_recipe_harpoon" }
+Item["item_disperser"] 							= { "item_diffusal_blade", "item_eagle", "item_recipe_disperser" }
+Item["item_blood_grenade"] 						= GetItemComponents( 'item_blood_grenade' )[1]
+
+---------- 7.35 NEW ITEMS ---------------
+Item["item_angels_demise"] 						= { "item_phylactery", "item_lesser_crit", "item_recipe_angels_demise" }
+Item["item_devastator"] 						= { "item_witch_blade", "item_mystic_staff" }
+
 --新自定义物品
 Item['item_new_1']	= GetItemComponents( 'item_new_1' )[1]
 

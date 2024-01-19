@@ -37,11 +37,11 @@
 			-- percentages, by role (1, 2, 3, 4, 5).  A random number is chosen between the clamps
 			variance = 
 			{
-				{1.1, 1.2},
-				{1.1, 1.2},
-				{1.0, 1.2},
-				{1.0, 1.1},
-				{1.0, 1.1}
+				{1.3, 1.5},
+				{1.3, 1.5},
+				{1.1, 1.5},
+				{1.1, 1.5},
+				{1.1, 1.5}
 			},
 			-- Warns players that the bot is very strong if they are over this threshold
 			warningThreshold = 1.2,

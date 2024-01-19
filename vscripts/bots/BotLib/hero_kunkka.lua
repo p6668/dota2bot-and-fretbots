@@ -17,42 +17,66 @@ local sAbilityList = J.Skill.GetAbilityList( bot )
 local sOutfitType = J.Item.GetOutfitType( bot )
 
 local tTalentTreeList = {
-						['t25'] = {10, 0},
-						['t20'] = {10, 0},
-						['t15'] = {10, 0},
-						['t10'] = {0, 10},
+						{--pos2
+							['t25'] = {0, 10},
+							['t20'] = {0, 10},
+							['t15'] = {0, 10},
+							['t10'] = {0, 10},
+						},
+						{--pos3
+							['t25'] = {0, 10},
+							['t20'] = {0, 10},
+							['t15'] = {0, 10},
+							['t10'] = {0, 10},
+						},
 }
 
 local tAllAbilityBuildList = {
-						{2,1,2,3,2,6,2,3,3,3,6,1,1,1,6},
-						{1,2,3,2,3,6,3,3,2,2,6,1,1,1,6},
-						{1,3,2,3,3,6,3,2,2,2,6,1,1,1,6},
+						{2,1,2,3,2,6,2,3,3,3,1,6,1,1,6},--pos2
+						{2,1,2,3,2,6,2,3,3,3,6,1,1,1,6},--pos3
 }
 
-local nAbilityBuildList = J.Skill.GetRandomBuild( tAllAbilityBuildList )
+local nAbilityBuildList
+local nTalentBuildList
 
-local nTalentBuildList = J.Skill.GetTalentBuild( tTalentTreeList )
+if sOutfitType == "outfit_mid"
+then
+    nAbilityBuildList   = tAllAbilityBuildList[1]
+    nTalentBuildList    = J.Skill.GetTalentBuild(tTalentTreeList[1])
+elseif sOutfitType == "outfit_tank"
+then
+    nAbilityBuildList   = tAllAbilityBuildList[2]
+    nTalentBuildList    = J.Skill.GetTalentBuild(tTalentTreeList[2])
+end
 
 local tOutFitList = {}
 
-tOutFitList['outfit_carry'] = {
+tOutFitList['outfit_mid'] = {
+	"item_tango",
+	"item_double_branches",
+	"item_quelling_blade",
+	"item_gauntlets",
+	"item_circlet",
 
-	"item_sven_outfit",
-	"item_aghanims_shard",
+	"item_bottle",
+	"item_bracer",
+	"item_phase_boots",
+	"item_magic_wand",
 	"item_blade_mail",
-	"item_lotus_orb",
-	"item_black_king_bar",
-	"item_greater_crit",
+	"item_ultimate_scepter",
+	"item_aghanims_shard",
+	"item_black_king_bar",--
+	"item_shivas_guard",--
+	"item_octarine_core",--
 	"item_travel_boots",
-	"item_abyssal_blade",
-	"item_moon_shard",
-	"item_travel_boots_2",
+	"item_heart",--
+	"item_refresher",--
 	"item_ultimate_scepter_2",
-
-
+	"item_travel_boots_2",--
+	"item_moon_shard"
 }
 
-tOutFitList['outfit_mid'] = tOutFitList['outfit_carry']
+tOutFitList['outfit_carry'] = tOutFitList['outfit_mid']
 
 tOutFitList['outfit_priest'] = tOutFitList['outfit_carry']
 
@@ -60,18 +84,27 @@ tOutFitList['outfit_mage'] = tOutFitList['outfit_carry']
 
 tOutFitList['outfit_tank'] = {
 
-	"item_tank_outfit",
+	"item_tango",
+	"item_double_branches",
+	"item_quelling_blade",
+	"item_double_gauntlets",
+
+	"item_double_bracer",
+	"item_phase_boots",
+	"item_magic_wand",
+	"item_blade_mail",
+	"item_ultimate_scepter",
 	"item_aghanims_shard",
-	"item_crimson_guard",
-	"item_heavens_halberd",
-	"item_lotus_orb",
-	"item_assault",
+	"item_black_king_bar",--
+	"item_shivas_guard",--
+	"item_refresher",--
+	"item_sheepstick",--
 	"item_travel_boots",
-	"item_heart",
-	"item_greater_crit",
-	"item_moon_shard",
-	"item_travel_boots_2",
+	"item_heart",--
+	"item_travel_boots_2",--
+
 	"item_ultimate_scepter_2",
+	"item_moon_shard",
 
 
 }
@@ -79,22 +112,11 @@ tOutFitList['outfit_tank'] = {
 X['sBuyList'] = tOutFitList[sOutfitType]
 
 X['sSellList'] = {
-
-	"item_power_treads",
 	"item_quelling_blade",
-
-	"item_lotus_orb",
-	"item_quelling_blade",
-
-	"item_assault",
+	"item_bottle",
+	"item_bracer",
 	"item_magic_wand",
-	
-	"item_travel_boots",
-	"item_magic_wand",
-
-	"item_assault",
-	"item_ancient_janggo",
-
+	"item_blade_mail",
 }
 
 if J.Role.IsPvNMode() or J.Role.IsAllShadow() then X['sBuyList'], X['sSellList'] = { 'PvN_tank' }, {"item_power_treads", 'item_quelling_blade'} end
@@ -310,12 +332,12 @@ function X.SkillsComplement()
 		return
 
 	end
-	
+
 	--魔晶
 	castASDesire, castASTarget = X.ConsiderAS()
 	if ( castASDesire > 0 )
 	then
-		
+
 		J.SetQueuePtToINT( bot, true )
 
 		bot:ActionQueue_UseAbilityOnLocation( abilityAS, castASTarget )
@@ -486,11 +508,13 @@ function X.ConsiderD()
 	if J.IsRetreating( bot ) or J.IsInTeamFight( bot, 1200 )
 	then
 		local nEnemyHeroList = J.GetEnemyList( bot, 1100 )
-		if #nEnemyHeroList >= 3
-			or ( #nEnemyHeroList >= 2 and nHP <= 0.5 )
-			or ( #nEnemyHeroList >= 1 and nHP <= 0.4 and bot:WasRecentlyDamagedByHero( 3.0 ) )
-		then
-			return BOT_ACTION_DESIRE_HIGH
+		for _, enemy in pairs(nEnemyHeroList) do
+			if #nEnemyHeroList >= 3
+				or ( #nEnemyHeroList >= 2 and nHP <= 0.5 )
+				or ( #nEnemyHeroList >= 1 and nHP <= 0.4 and bot:WasRecentlyDamagedByHero( enemy, 3.0 ) )
+			then
+				return BOT_ACTION_DESIRE_HIGH
+			end
 		end
 	end
 
@@ -678,7 +702,7 @@ function X.ConsiderW()
 	local nNearbyEnemy = X.GetNearbyUnit( bot, npcTarget )
 
 	if J.IsValid( nNearbyEnemy )
-		and GetUnitToUnitDistance( npcTarget, bot ) >  nAttackRange 
+		and GetUnitToUnitDistance( npcTarget, bot ) >  nAttackRange
 	then
 		return BOT_ACTION_DESIRE_HIGH, nNearbyEnemy
 	end
@@ -723,7 +747,7 @@ end
 function X.ConsiderAS()
 
 	if not abilityAS:IsTrained()
-		or not abilityAS:IsFullyCastable() 
+		or not abilityAS:IsFullyCastable()
 	then
 		return BOT_ACTION_DESIRE_NONE, 0
 	end
@@ -741,19 +765,20 @@ function X.ConsiderAS()
 			and J.CanCastOnNonMagicImmune( targetHero )
 		then
 			return BOT_ACTION_DESIRE_HIGH, targetHero:GetLocation()
-		end		
+		end
 	end
-	
+
 
 	if J.IsInTeamFight( bot, 1400 )
 	then
 		local nAoeLoc = J.GetAoeEnemyHeroLocation( bot, nCastRange, nRadius, 2 )
 		if nAoeLoc ~= nil
 		then
+			local loc = bot:GetLocation() + (bot:GetLocation() - nAoeLoc)
 			return BOT_ACTION_DESIRE_HIGH, nAoeLoc
-		end		
+		end
 	end
-	
+
 
 	if J.IsGoingOnSomeone( bot )
 	then
@@ -762,7 +787,8 @@ function X.ConsiderAS()
 			and J.IsInRange( bot, targetHero, 400 )
 			and J.CanCastOnNonMagicImmune( targetHero )
 		then
-			return BOT_ACTION_DESIRE_HIGH, targetHero:GetLocation()
+			local loc = bot:GetLocation() + (bot:GetLocation() - targetHero:GetLocation())
+			return BOT_ACTION_DESIRE_HIGH, loc
 		end
 	end
 

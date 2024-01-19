@@ -34,7 +34,7 @@ local votingTimeElapsed = -1
 -- The playerID of the host.  Used to whitelist chat commands.
 local hostID = -1
 -- default difficulty if no one votes
-noVoteDifficulty = 8
+noVoteDifficulty = 5
 -- Is repurcussion timer started?
 local isRepurcussionTimerStarted = false
 -- Instantiate ourself

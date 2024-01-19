@@ -17,14 +17,14 @@ local sAbilityList = J.Skill.GetAbilityList( bot )
 local sOutfitType = J.Item.GetOutfitType( bot )
 
 local tTalentTreeList = {
-						['t25'] = {10, 0},
-						['t20'] = {0, 10},
-						['t15'] = {10, 0},
+						['t25'] = {0, 10},
+						['t20'] = {10, 0},
+						['t15'] = {0, 10},
 						['t10'] = {0, 10},
 }
 
 local tAllAbilityBuildList = {
-							 {1,3,3,2,3,6,3,1,1,1,6,2,2,2,6},
+							 {1,2,3,2,2,6,2,1,1,1,6,3,3,3,6},
 }
 
 local nAbilityBuildList = J.Skill.GetRandomBuild( tAllAbilityBuildList )
@@ -33,66 +33,73 @@ local nTalentBuildList = J.Skill.GetTalentBuild( tTalentTreeList )
 
 local tOutFitList = {}
 
-tOutFitList['outfit_carry'] = {
-
-	"item_mage_outfit",
-	"item_shadow_amulet",
-	"item_veil_of_discord",
-	"item_cyclone",
-	"item_glimmer_cape", 
-	"item_sheepstick",
-	"item_bloodthorn",
-	"item_wind_waker",
-	"item_moon_shard",
-	"item_ultimate_scepter_2",
-
-}
+tOutFitList['outfit_carry'] = tOutFitList['outfit_carry']
 
 tOutFitList['outfit_mid'] = tOutFitList['outfit_carry']
 
+tOutFitList['outfit_tank'] = tOutFitList['outfit_carry']
+
 tOutFitList['outfit_priest'] = {
+	"item_tango",
+	"item_tango",
+	"item_double_branches",
+	"item_faerie_fire",
+	"item_enchanted_mango",
+	"item_blood_grenade",
 
-	"item_priest_outfit",
-	"item_urn_of_shadows",
-	"item_mekansm",
-	"item_glimmer_cape",
-	"item_guardian_greaves", 
-	"item_spirit_vessel",
---	"item_wraith_pact",
-	"item_shivas_guard",
-	"item_sheepstick",
-	"item_moon_shard",
+	"item_boots",
+	"item_magic_wand",
+	"item_solar_crest",--
+	"item_aghanims_shard",
+	"item_glimmer_cape",--
+	"item_boots_of_bearing",--
+	"item_force_staff",--
+	"item_sheepstick",--
+	"item_aeon_disk",--
 	"item_ultimate_scepter_2",
-
+	"item_moon_shard",
 }
 
 tOutFitList['outfit_mage'] = {
+	"item_tango",
+	"item_tango",
+	"item_double_branches",
+	"item_faerie_fire",
+	"item_enchanted_mango",
+	"item_blood_grenade",
 
-	'item_mage_outfit',
-	'item_ancient_janggo',	
-	'item_glimmer_cape', 
-	'item_boots_of_bearing',	
-	'item_pipe',
-	'item_veil_of_discord',
-	'item_cyclone',
-	'item_sheepstick',
-	"item_wind_waker",
-	"item_moon_shard",
+	"item_boots",
+	"item_magic_wand",
+	"item_solar_crest",--
+	"item_aghanims_shard",
+	"item_glimmer_cape",--
+	"item_guardian_greaves",--
+	"item_force_staff",--
+	"item_sheepstick",--
+	"item_aeon_disk",--
 	"item_ultimate_scepter_2",
-
+	"item_moon_shard",
 }
-
-tOutFitList['outfit_tank'] = tOutFitList['outfit_carry']
 
 X['sBuyList'] = tOutFitList[sOutfitType]
 
-X['sSellList'] = {
-	'item_cyclone',
-	'item_magic_wand',
-
-	"item_shivas_guard",
-	'item_magic_wand',
+Pos4SellList = {
+	"item_magic_wand",
 }
+
+Pos5SellList = {
+	"item_magic_wand",
+}
+
+X['sSellList'] = {}
+
+if sOutfitType == "outfit_priest"
+then
+    X['sSellList'] = Pos4SellList
+elseif sOutfitType == "outfit_mage"
+then
+    X['sSellList'] = Pos5SellList
+end
 
 if J.Role.IsPvNMode() or J.Role.IsAllShadow() then X['sBuyList'], X['sSellList'] = { 'PvN_mage' }, {} end
 
@@ -147,11 +154,13 @@ local aetherRange = 0
 local abilityQ = bot:GetAbilityByName( sAbilityList[1] )
 local abilityW = bot:GetAbilityByName( sAbilityList[2] )
 local abilityR = bot:GetAbilityByName( sAbilityList[6] )
+local CrystalClone = bot:GetAbilityByName( sAbilityList[4] )
 local talent2 = bot:GetAbilityByName( sTalentList[2] )
 
 local castQDesire, castQLoc = 0
 local castWDesire, castWTarget = 0
 local castRDesire = 0
+local CrystalCloneDesire = 0
 
 local nKeepMana, nMP, nHP, nLV
 
@@ -170,6 +179,13 @@ function X.SkillsComplement()
 	if aether ~= nil then aetherRange = 250 end
 --	if talent2:IsTrained() then aetherRange = aetherRange + talent2:GetSpecialValueInt( 'value' ) end
 
+	CrystalCloneDesire = X.ConsiderCrystalClone()
+	if (CrystalCloneDesire > 0)
+	then
+		J.SetQueuePtToINT( bot, false )
+		bot:ActionQueue_UseAbility(CrystalClone)
+		return
+	end
 
 	castQDesire, castQLoc = X.ConsiderQ()
 	if ( castQDesire > 0 )
@@ -871,6 +887,41 @@ function X.ConsiderR()
 
 	return BOT_ACTION_DESIRE_NONE
 
+end
+
+function X.ConsiderCrystalClone()
+	if not CrystalClone:IsTrained()
+	or not CrystalClone:IsFullyCastable()
+	then
+		return BOT_ACTION_DESIRE_NONE
+	end
+
+	local nRange = bot:GetAttackRange()
+
+	if J.IsRetreating(bot)
+	and not J.IsRealInvisible(bot)
+	and not bot:IsFacingLocation(GetAncient(GetTeam()):GetLocation(), 45)
+	and not J.IsRealInvisible(bot)
+	and bot:DistanceFromFountain() > 600
+	and bot:WasRecentlyDamagedByAnyHero(4.0)
+	then
+		return BOT_ACTION_DESIRE_MODERATE
+	end
+
+	if J.IsGoingOnSomeone(bot)
+	then
+		local botTarget = bot:GetTarget()
+
+		if J.IsValidHero(botTarget)
+		and J.IsInRange(bot, botTarget, nRange - 150)
+		and J.CanCastOnNonMagicImmune(botTarget)
+		and bot:IsFacingLocation(botTarget:GetLocation(), 30)
+		then
+			return BOT_ACTION_DESIRE_HIGH
+		end
+	end
+
+	return BOT_ACTION_DESIRE_NONE
 end
 
 function X.cm_GetWeakestUnit( nEnemyUnits )

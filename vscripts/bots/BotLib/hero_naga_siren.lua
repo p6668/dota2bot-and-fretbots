@@ -41,6 +41,7 @@ tOutFitList['outfit_carry'] = {
 	"item_manta",
 	"item_heart",
 	"item_travel_boots",
+	"item_disperser",
 	"item_aghanims_shard",
 	"item_abyssal_blade",
 --	"item_ultimate_scepter",
