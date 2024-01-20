@@ -48,6 +48,7 @@ tOutFitList['outfit_carry'] = {
 	"item_travel_boots",
 	"item_abyssal_blade",
 	"item_heart",
+	"item_disperser",
 	"item_ultimate_scepter_2",
 	sRandomItem_1,
 	"item_moon_shard",

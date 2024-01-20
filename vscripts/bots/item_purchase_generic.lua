@@ -514,16 +514,15 @@ function ItemPurchaseThink()
 	then
 		sell_time = currentTime
 
-		for i = 2 , #sItemSellList, 2
-		do
-			local nNewSlot = bot:FindItemSlot( sItemSellList[i - 1] )
-			local nOldSlot = bot:FindItemSlot( sItemSellList[i] )
-			if nNewSlot >= 0 and nOldSlot >= 0
-			then
-				bot:ActionImmediate_SellItem( bot:GetItemInSlot( nOldSlot ) )
-				return
-			end
-		end
+        for i = 1 , #sItemSellList, 1
+        do
+            local slot = bot:FindItemSlot( sItemSellList[i] )
+            if slot == 6 or slot == 7 or slot == 8
+            then
+                bot:ActionImmediate_SellItem( bot:GetItemInSlot( slot ) )
+                return
+            end
+        end
 
 
 		if currentTime > 18 * 60

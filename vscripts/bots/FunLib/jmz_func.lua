@@ -2853,18 +2853,6 @@ function J.IsHaveAegis( bot )
 
 end
 
-function J.DoesTeamHaveAegis( units )
-	for _, allies in pairs(units)
-	do
-		if allies:FindItemSlot("item_aegis") >= 0
-		then
-			return true
-		end
-	end
-
-	return false
-end
-
 
 function J.IsLocHaveTower( nRadius, bEnemy, nLoc )
 
@@ -3330,18 +3318,6 @@ function J.CountNotStunnedUnits(tUnits, locAOE, nRadius, nUnits)
 		end
 	end
 	return count;
-end
-
-function J.CountInvUnits(pierceImmune, units)
-	local nUnits = 0;
-	if units ~= nil then
-		for _,u in pairs(units) do
-			if ( pierceImmune and J.CanCastOnMagicImmune(u) ) or ( not pierceImmune and J.CanCastOnNonMagicImmune(u) )  then
-				nUnits = nUnits + 1;
-			end
-		end
-	end
-	return nUnits;
 end
 
 function J.GetMostHPPercent(listUnits, magicImmune)

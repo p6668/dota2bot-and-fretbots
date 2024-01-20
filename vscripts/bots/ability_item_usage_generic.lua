@@ -489,24 +489,6 @@ function X.GetNumStashItem( unit )
 
 end
 
-function X.IsThereRecipeInStash( unit )
-	local amount = 0
-
-	for i = 9, 14
-	do
-		local item = unit:GetItemInSlot(i)
-		if item ~= nil
-		then
-			if string.find(item:GetName(), "item_recipe_")
-			then
-				amount = amount + 1
-			end
-		end
-	end
-
-	return amount > 0
-end
-
 
 function X.IsCourierTargetedByUnit( courier )
 
@@ -4106,44 +4088,17 @@ X.ConsiderItemDesire["item_tome_of_knowledge"] = function( hItem )
 end
 
 
-function X.GetLaningTPLocation( bot, nMinTPDistance, botLocation )
+function X.GetLaningTPLocation( nLane )
 
-	local laneToTP
-	local tp = false
-	local team = GetTeam()
-	local position = J.GetPosition(bot)
-
-	if team == TEAM_RADIANT then
-		if position == 1 then
-			laneToTP = LANE_BOT
-		elseif position == 2 then
-			laneToTP = LANE_MID
-		elseif position == 3 or position == 4 then
-			laneToTP = LANE_TOP
-		elseif position == 5 then
-			laneToTP = LANE_BOT
-		end
-	elseif team == TEAM_DIRE then
-		if position == 1 then
-			laneToTP = LANE_TOP
-		elseif position == 2 then
-			laneToTP = LANE_MID
-		elseif position == 3 or position == 4 then
-			laneToTP = LANE_BOT
-		elseif position == 5 then
-			laneToTP = LANE_TOP
-		end
-	end
-
-	local botAmount = GetAmountAlongLane(laneToTP, botLocation)
-	local laneFront = GetLaneFrontAmount(GetTeam(), laneToTP, false)
-	if botAmount.distance > nMinTPDistance
-	or botAmount.amount < laneFront / 5
+	if nLane == LANE_TOP
 	then
-		tp = true
+		return GetLaneFrontLocation( GetTeam(), LANE_TOP, 100 )
+	elseif nLane == LANE_BOT then
+		return GetLaneFrontLocation( GetTeam(), LANE_BOT, 100 )
 	end
 
-	return GetLaneFrontLocation(GetTeam(), laneToTP, 100), tp
+	return GetLaneFrontLocation( GetTeam(), LANE_MID, 100 )
+
 end
 
 function X.GetDefendTPLocation( nLane )
@@ -4339,61 +4294,6 @@ X.ConsiderItemDesire["item_tpscroll"] = function( hItem )
 
 	if bot:GetLevel() > 12 and bot:DistanceFromFountain() < 600 then nMinTPDistance = nMinTPDistance + 600 end
 
-	if nMode == BOT_MODE_LANING
-	then
-		hEffectTarget, shouldTp = X.GetLaningTPLocation(bot, nMinTPDistance, botLocation)
-		sCastMotive = '出去发育'
-		if shouldTp then
-			return BOT_ACTION_DESIRE_ABSOLUTE, hEffectTarget, sCastType, sCastMotive
-		end
-	end
-
-	-- Go complete items
-	if X.IsInvFull(bot) and X.GetNumStashItem(bot) >= 1
-	and (X.IsThereRecipeInStash(bot) or (bot:GetStashValue() >= 1000 and bot:GetGold() > 1100))
-	and (bot:GetActiveMode() ~= BOT_MODE_PUSH_TOWER_TOP or bot:GetActiveMode() ~= BOT_MODE_PUSH_TOWER_MID or bot:GetActiveMode() ~= BOT_MODE_PUSH_TOWER_BOT or bot:GetActiveMode() ~= BOT_MODE_ATTACK)
-	and not J.IsInTeamFight(bot, 1000)
-	and nEnemyCount == 0
-	then
-		hEffectTarget = J.GetTeamFountain()
-		sCastMotive = '撤退:1'
-		return BOT_ACTION_DESIRE_HIGH, hEffectTarget, sCastType, sCastMotive
-	end
-
-	-- Roshan
-	-- if bot:GetActiveMode() == BOT_MODE_ROSHAN
-	-- and not J.IsInTeamFight(bot, 1600)
-	-- and nEnemyCount == 0
-	-- then
-	-- 	local lane = nil
-	-- 	local roshanLoc = nil
-
-	-- 	local timeOfDay, time = J.CheckTimeOfDay()
-	-- 	if timeOfDay == "day" and time > 270 then
-	-- 		lane = LANE_TOP
-	-- 		roshanLoc = Vector(-7549, 7562, 1107)
-	-- 	elseif timeOfDay == "day" then
-	-- 		lane = LANE_BOT
-	-- 		roshanLoc = Vector(7625, -7511, 1092)
-	-- 	end
-
-	-- 	if timeOfDay == "night" and time > 50 then
-	-- 		lane = LANE_BOT
-	-- 		roshanLoc = Vector(7625, -7511, 1092)
-	-- 	elseif timeOfDay == "night" then
-	-- 		lane = LANE_TOP
-	-- 		roshanLoc = Vector(-7549, 7562, 1107)
-	-- 	end
-
-	-- 	local laneFront = GetLaneFrontLocation( GetTeam(), lane, 0 )
-	-- 	hEffectTarget = J.GetNearbyLocationToTp(roshanLoc)
-	-- 	sCastMotive = 'roshan'
-	-- 	if J.GetLocationToLocationDistance( bot:GetLocation(), roshanLoc ) > 6000
-	-- 	and J.GetLocationToLocationDistance( bot:GetLocation(), laneFront ) > 3000
-	-- 	then
-	-- 		return BOT_ACTION_DESIRE_HIGH, hEffectTarget, sCastType, sCastMotive
-	-- 	end
-	-- end
 
 	--守塔
 	if J.IsDefending( bot )

@@ -17,63 +17,68 @@ local sAbilityList = J.Skill.GetAbilityList( bot )
 local sOutfitType = J.Item.GetOutfitType( bot )
 
 local tTalentTreeList = {
-						['t25'] = {0, 10},
-						['t20'] = {10, 0},
+						['t25'] = {10, 0},
+						['t20'] = {0, 10},
 						['t15'] = {0, 10},
 						['t10'] = {0, 10},
 }
 
 local tAllAbilityBuildList = {
-						{3,1,2,3,3,6,3,2,2,2,6,1,1,1,6},--pos3
+						{3,1,3,2,3,6,3,1,1,1,6,2,2,2,6},
+						{3,1,3,2,3,6,3,2,2,2,6,1,1,1,6},
+						{1,3,1,2,1,6,1,3,3,3,6,2,2,2,6},
 }
 
 local nAbilityBuildList = J.Skill.GetRandomBuild( tAllAbilityBuildList )
 
 local nTalentBuildList = J.Skill.GetTalentBuild( tTalentTreeList )
 
-local sLotusHalberd = RandomInt( 1, 2 ) == 1 and "item_lotus_orb" or "item_heavens_halberd"
-
 local tOutFitList = {}
 
-tOutFitList['outfit_carry'] = tOutFitList['outfit_tank']
+tOutFitList['outfit_carry'] = {
 
-tOutFitList['outfit_mid'] = tOutFitList['outfit_tank']
-
-tOutFitList['outfit_priest'] = tOutFitList['outfit_tank']
-
-tOutFitList['outfit_mage'] = tOutFitList['outfit_tank']
-
-tOutFitList['outfit_tank'] = {
-	"item_tango",
-	"item_double_branches",
-	"item_quelling_blade",
-	"item_gauntlets",
-	"item_gauntlets",
-
-	"item_boots",
-	"item_soul_ring",
-	"item_magic_wand",
-	"item_phase_boots",
-	"item_vladmir",--
+	"item_bristleback_outfit",
+	"item_bracer",
+	"item_point_booster",
 	"item_blink",
-	"item_aghanims_shard",
-	"item_pipe",--
-	"item_shivas_guard",--
-	sLotusHalberd,--
 	"item_ultimate_scepter",
-	"item_refresher",--
-	"item_overwhelming_blink",--
+--	"item_aghanims_shard",
+	"item_black_king_bar",	
+	"item_travel_boots",
+	"item_skadi",
+	"item_satanic",
+	"item_overwhelming_blink",	
 	"item_ultimate_scepter_2",
+	"item_greater_crit",
 	"item_moon_shard",
+	"item_travel_boots_2",
+
 }
+
+tOutFitList['outfit_mid'] = tOutFitList['outfit_carry']
+
+tOutFitList['outfit_priest'] = tOutFitList['outfit_carry']
+
+tOutFitList['outfit_mage'] = tOutFitList['outfit_carry']
+
+tOutFitList['outfit_tank'] = tOutFitList['outfit_carry']
 
 X['sBuyList'] = tOutFitList[sOutfitType]
 
 X['sSellList'] = {
+
+	"item_echo_sabre",
 	"item_quelling_blade",
-	"item_phase_boots",
-	"item_soul_ring",
+
+	"item_black_king_bar",
 	"item_magic_wand",
+
+	"item_greater_crit",
+	"item_hand_of_midas",
+
+	"item_abyssal_blade",
+	"item_blight_stone",
+
 }
 
 
@@ -127,7 +132,6 @@ local abilityQ = bot:GetAbilityByName( sAbilityList[1] )
 local abilityW = bot:GetAbilityByName( sAbilityList[2] )
 local abilityE = bot:GetAbilityByName( sAbilityList[3] )
 local abilityR = bot:GetAbilityByName( sAbilityList[6] )
-local DeadInTheWater = bot:GetAbilityByName( 'tidehunter_dead_in_the_water' )
 local talent3 = bot:GetAbilityByName( sTalentList[3] )
 
 
@@ -135,7 +139,6 @@ local castQDesire, castQTarget
 local castWDesire, castWTarget
 local castEDesire, castETarget
 local castRDesire, castRTarget
-local DeadInTheWaterDesire, AnchorTarget
 
 local nKeepMana, nMP, nHP, nLV, hEnemyList, hAllyList, botTarget, sMotive
 local aetherRange = 0
@@ -180,7 +183,6 @@ function X.SkillsComplement()
 		J.SetQueuePtToINT( bot, true )
 		
 		if bot:HasScepter()
-		and castQTarget ~= nil
 		then
 			bot:ActionQueue_UseAbilityOnLocation( abilityQ, castQTarget:GetLocation() )
 		else
@@ -198,15 +200,6 @@ function X.SkillsComplement()
 		--J.SetQueuePtToINT( bot, true )
 
 		bot:Action_UseAbility( abilityE )
-		return
-	end
-
-	DeadInTheWaterDesire, AnchorTarget = X.ConsiderDeadInTheWater()
-	if DeadInTheWaterDesire > 0
-	then
-		J.SetReportMotive( bDebugMode, sMotive )
-		J.SetQueuePtToINT( bot, true )
-		bot:ActionQueue_UseAbilityOnEntity(DeadInTheWater, AnchorTarget)
 		return
 	end
 
@@ -674,59 +667,7 @@ function X.ConsiderR()
 
 end
 
-function X.ConsiderDeadInTheWater()
-	if not DeadInTheWater:IsTrained()
-	or not DeadInTheWater:IsFullyCastable()
-	then
-		return BOT_ACTION_DESIRE_NONE, nil
-	end
-
-	local nCastRange = DeadInTheWater:GetCastRange()
-	local nInRangeEnmyList = bot:GetNearbyHeroes(nCastRange, true, BOT_MODE_NONE)
-
-	if J.IsRetreating(bot)
-	then
-		for _, npcEnemy in pairs(nInRangeEnmyList)
-		do
-			if J.IsValid(npcEnemy)
-			and J.IsMoving(npcEnemy)
-			and J.IsInRange(npcEnemy, bot, nCastRange)
-			and bot:WasRecentlyDamagedByHero(npcEnemy, 4.0)
-			and J.CanCastOnNonMagicImmune(npcEnemy)
-			and X.IsWithoutSpellShield(npcEnemy)
-			and not J.IsDisabled(npcEnemy)
-			then
-				return BOT_ACTION_DESIRE_HIGH, npcEnemy
-			end
-		end
-	end
-
-	if J.IsGoingOnSomeone(bot)
-	then
-		if J.IsValidHero(botTarget)
-		and J.IsMoving(botTarget)
-		and J.IsInRange(botTarget, bot, nCastRange)
-		and J.CanCastOnNonMagicImmune(botTarget)
-		and X.IsWithoutSpellShield(botTarget)
-		and not J.IsDisabled(botTarget)
-		then
-			return BOT_ACTION_DESIRE_HIGH, botTarget
-		end
-	end
-
-	local npcEnemy = nInRangeEnmyList[1]
-	if J.IsValidHero(npcEnemy)
-	and J.IsMoving(npcEnemy)
-	and J.IsInRange(bot, npcEnemy, nCastRange - 100)
-	and J.CanCastOnNonMagicImmune(npcEnemy)
-	and X.IsWithoutSpellShield(npcEnemy)
-	and not J.IsDisabled(npcEnemy)
-	and J.IsRunning(npcEnemy)
-	then
-		return BOT_ACTION_DESIRE_HIGH, npcEnemy
-	end
-
-	return BOT_ACTION_DESIRE_NONE, nil
-end
 
 return X
+-- dota2jmz@163.com QQ:2462331592..
+

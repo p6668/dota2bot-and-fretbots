@@ -74,9 +74,9 @@ tOutFitList['outfit_mage'] = {
 	"item_aether_lens",--
 	"item_guardian_greaves",--
 	"item_ultimate_scepter",
+	"item_ultimate_scepter_2",
 	"item_refresher",--
 	"item_octarine_core",--
-	"item_ultimate_scepter_2",
 	"item_moon_shard",
 }
 

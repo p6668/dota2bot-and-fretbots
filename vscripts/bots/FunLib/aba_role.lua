@@ -1756,8 +1756,12 @@ X['supp'] = {
 	'npc_dota_hero_warlock',
 	'npc_dota_hero_winter_wyvern',
 	'npc_dota_hero_wisp',
+	'npc_dota_hero_necrolyte',
 	'npc_dota_hero_witch_doctor',
+	'npc_dota_hero_zuus',
 	'npc_dota_hero_pugna',
+	'npc_dota_hero_queenofpain',
+	'npc_dota_hero_death_prophet',
 	'npc_dota_hero_windrunner',
 	'npc_dota_hero_venomancer',
 
