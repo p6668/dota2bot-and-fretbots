@@ -82,13 +82,11 @@ X['sSellList'] = {
 	"item_power_treads",
 	"item_quelling_blade",
 
-	'item_travel_boots',
 	'item_armlet',
 
 	"item_assault",
 	"item_magic_wand",
 	
-	"item_travel_boots",
 	"item_magic_wand",
 
 	"item_assault",
