@@ -732,10 +732,9 @@ function X.ConsiderR()
 	if not abilityR:IsFullyCastable() then return 0 end
 
 	local nSkillLV = abilityR:GetLevel()
-	local nRadius = abilityR:GetSpecialValueInt( 'radius' )	
-	local nCastRange = nRadius
+	local nCastRange = abilityR:GetCastRange()
 	
-	if bot:HasScepter() then nCastRange = 1600 end
+	if bot:HasScepter() then nCastRange = 5000 end
 	
 	local nCastPoint = abilityR:GetCastPoint()
 	local nManaCost = abilityR:GetManaCost()
@@ -763,66 +762,6 @@ function X.ConsiderR()
 			return BOT_ACTION_DESIRE_HIGH, hCastTarget, sCastMotive					
 		end
 	end
-	
-	
-	
-	for i = 1, 5
-	do 
-		local npcAlly = GetTeamMember( i )
-		if npcAlly ~= nil
-			and npcAlly:IsAlive()
-			and ( bot:HasScepter() or J.IsInRange( bot, npcAlly, 700 ) )
-		then
-		
-			--团战时辅助进攻
-			if J.IsInTeamFight( npcAlly, 1300 )
-			then
-				local allyList = J.GetAlliesNearLoc( npcAlly:GetLocation(), nCastRange )
-				local enemyList = npcAlly:GetNearbyHeroes( 1400, true, BOT_MODE_NONE )
-				if #enemyList >= 2 
-					and ( #enemyList >= #allyList or #enemyList >= 3 )
-				then
-					local guardianCount = 0
-					for _, allyHero in pairs(allyList)
-					do 
-						if allyHero:WasRecentlyDamagedByAnyHero(3.0)
-							and J.GetHP( allyHero ) < 0.8
-						then
-						
-							guardianCount = guardianCount + 1
-							
-							if J.GetHP( allyHero ) < 0.4 then guardianCount = guardianCount + 1 end
-						
-						end
-					end
-					
-					if guardianCount >= 2
-					then
-						hCastTarget = npcAlly
-						sCastMotive = 'R-攻击时辅助防御:'..J.Chat.GetNormName( hCastTarget )
-						return BOT_ACTION_DESIRE_HIGH, hCastTarget, sCastMotive	
-					end
-				end
-			end
-					
-			
-			--逃跑时辅助攻击
-			if J.IsRetreating( npcAlly )
-				and npcAlly:WasRecentlyDamagedByAnyHero( 5.0 )
-			then
-				local attackModeAlly = npcAlly:GetNearbyHeroes( nRadius, false, BOT_MODE_ATTACK )
-				local retreatModeAlly = npcAlly:GetNearbyHeroes( nRadius, false, BOT_MODE_RETREAT )
-				if ( #attackModeAlly >= 2 or ( #attackModeAlly >= 1 and #retreatModeAlly >= 2 ) )
-				then
-					hCastTarget = npcAlly
-					sCastMotive = 'R-逃跑时辅助攻击:'..J.Chat.GetNormName( hCastTarget )
-					return BOT_ACTION_DESIRE_HIGH, hCastTarget, sCastMotive	
-				end
-			end		
-			
-		end
-	end
-
 
 	return BOT_ACTION_DESIRE_NONE
 
