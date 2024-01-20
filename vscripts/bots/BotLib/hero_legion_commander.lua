@@ -45,6 +45,7 @@ tOutFitList['outfit_carry'] = {
 	"item_travel_boots",
 	"item_greater_crit",
 	"item_abyssal_blade",
+	"item_harpoon",
 --	"item_heart",
 	"item_moon_shard",
 	"item_travel_boots_2",
