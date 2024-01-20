@@ -55,8 +55,8 @@ tOutFitList['outfit_carry'] = {
 	"item_travel_boots",
 	"item_assault",--
 	"item_ultimate_scepter_2",
-	"item_travel_boots_2",--
 	"item_moon_shard",
+	"item_travel_boots_2"
 }
 
 tOutFitList['outfit_mid'] = tOutFitList['outfit_tank']
@@ -85,8 +85,8 @@ tOutFitList['outfit_tank'] = {
 	"item_travel_boots",
 	"item_assault",--
 	"item_ultimate_scepter_2",
-	"item_travel_boots_2",--
 	"item_moon_shard",
+	"item_travel_boots_2"
 }
 
 X['sBuyList'] = tOutFitList[sOutfitType]

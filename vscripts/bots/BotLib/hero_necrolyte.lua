@@ -49,9 +49,7 @@ tOutFitList['outfit_carry'] = {
 	"item_wind_waker",
     "item_shivas_guard",
 	"item_travel_boots_2",
-	"item_ultimate_scepter_2",
-	"item_moon_shard",
-
+	"item_ultimate_scepter_2"
 }
 
 tOutFitList['outfit_mid'] = tOutFitList['outfit_carry']
@@ -66,10 +64,8 @@ tOutFitList['outfit_priest'] = {
 	"item_holy_locket",
 	"item_guardian_greaves",
 	"item_spirit_vessel",
---	"item_wraith_pact",
 	"item_shivas_guard",
 --	"item_sheepstick", 
-	"item_moon_shard",
 
 }
 
@@ -84,8 +80,7 @@ tOutFitList['outfit_mage'] = {
 	"item_aghanims_shard",
 	"item_veil_of_discord",
 --	"item_cyclone",
-	"item_sheepstick",
-	"item_moon_shard",
+	"item_sheepstick"
 
 }
 

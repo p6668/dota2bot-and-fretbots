@@ -55,8 +55,7 @@ tOutFitList['outfit_priest'] = {
 	"item_force_staff",--
 	"item_aeon_disk",--
 	"item_wind_waker",--
-	"item_recipe_ultimate_scepter_2",
-	"item_moon_shard",
+	"item_recipe_ultimate_scepter_2"
 }
 
 tOutFitList['outfit_mage'] = {

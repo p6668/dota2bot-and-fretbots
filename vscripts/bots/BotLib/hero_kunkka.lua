@@ -72,8 +72,8 @@ tOutFitList['outfit_mid'] = {
 	"item_heart",--
 	"item_refresher",--
 	"item_ultimate_scepter_2",
-	"item_travel_boots_2",--
-	"item_moon_shard"
+	"item_moon_shard",
+	"item_travel_boots_2"
 }
 
 tOutFitList['outfit_carry'] = tOutFitList['outfit_mid']
@@ -103,8 +103,8 @@ tOutFitList['outfit_tank'] = {
 	"item_heart",--
 	"item_travel_boots_2",--
 
-	"item_ultimate_scepter_2",
 	"item_moon_shard",
+	"item_ultimate_scepter_2",
 
 
 }

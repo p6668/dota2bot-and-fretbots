@@ -56,8 +56,7 @@ tOutFitList['outfit_tank'] = {
     "item_arcane_blink",--
 	"item_travel_boots_2",--
     "item_aghanims_shard",
-    "item_ultimate_scepter_2",
-    "item_moon_shard"
+    "item_ultimate_scepter_2"
 }
 
 X['sBuyList'] = tOutFitList[sOutfitType]

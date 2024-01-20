@@ -54,8 +54,8 @@ tOutFitList['outfit_carry'] = {
 	"item_abyssal_blade",--
 	"item_ultimate_scepter_2",
 	"item_bloodthorn",--
-	"item_nullifier",--
-	"item_moon_shard"
+	"item_moon_shard",
+	"item_nullifier"
 }
 
 tOutFitList['outfit_mid'] = tOutFitList['outfit_carry']

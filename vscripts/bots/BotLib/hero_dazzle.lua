@@ -53,8 +53,8 @@ tOutFitList['outfit_priest'] = {
 	"item_boots_of_bearing",--
 	"item_octarine_core",--
 	"item_sheepstick",--
-	"item_ultimate_scepter_2",
-	"item_moon_shard"
+	"item_moon_shard",
+	"item_ultimate_scepter_2"
 }
 
 tOutFitList['outfit_mage'] = {

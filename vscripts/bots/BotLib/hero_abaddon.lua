@@ -49,8 +49,7 @@ tOutFitList['outfit_priest'] = {
     "item_lotus_orb",--
     "item_wind_waker",--
     "item_aghanims_shard",
-    "item_recipe_ultimate_scepter_2",
-    "item_moon_shard"
+    "item_recipe_ultimate_scepter_2"
 }
 
 tOutFitList['outfit_mage'] = {
@@ -72,8 +71,7 @@ tOutFitList['outfit_mage'] = {
     "item_lotus_orb",--
     "item_wind_waker",--
     "item_aghanims_shard",
-    "item_recipe_ultimate_scepter_2",
-    "item_moon_shard"
+    "item_recipe_ultimate_scepter_2"
 }
 
 

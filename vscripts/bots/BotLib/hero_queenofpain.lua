@@ -55,8 +55,8 @@ tOutFitList['outfit_mid'] = {
 	"item_cyclone",
 	"item_ultimate_scepter_2",
 	"item_wind_waker",--
-	"item_travel_boots_2",--
 	"item_moon_shard",
+	"item_travel_boots_2"
 }
 
 tOutFitList['outfit_priest'] = {

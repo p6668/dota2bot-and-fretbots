@@ -74,8 +74,8 @@ tOutFitList['outfit_mid'] = {
 	"item_kaya_and_sange",--
 	"item_octarine_core",--
 	"item_refresher",--
-	"item_ultimate_scepter_2",
 	"item_moon_shard",
+	"item_ultimate_scepter_2",
 }
 
 tOutFitList['outfit_priest'] = tOutFitList['outfit_mid']
@@ -100,8 +100,8 @@ tOutFitList['outfit_tank'] = {
 	sPipeHalberd,--
 	"item_guardian_greaves",--
 	"item_refresher",--
-	"item_ultimate_scepter_2",
 	"item_moon_shard",
+	"item_ultimate_scepter_2",
 }
 
 X['sBuyList'] = tOutFitList[sOutfitType]

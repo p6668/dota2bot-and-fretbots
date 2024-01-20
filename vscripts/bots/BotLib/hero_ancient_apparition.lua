@@ -49,8 +49,7 @@ tOutFitList['outfit_priest'] = {
     "item_boots_of_bearing",--
     "item_shivas_guard",--
     "item_aeon_disk",--
-    "item_ultimate_scepter_2",
-    "item_moon_shard"
+    "item_ultimate_scepter_2"
 }
 
 tOutFitList['outfit_mage'] = {
@@ -71,8 +70,7 @@ tOutFitList['outfit_mage'] = {
     "item_guardian_greaves",--
     "item_sheepstick",--
     "item_aeon_disk",--
-    "item_ultimate_scepter_2",
-    "item_moon_shard"
+    "item_ultimate_scepter_2"
 }
 
 X['sBuyList'] = tOutFitList[sOutfitType]
