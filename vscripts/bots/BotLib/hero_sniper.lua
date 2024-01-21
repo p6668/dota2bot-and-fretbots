@@ -53,9 +53,9 @@ tOutFitList['outfit_carry'] = {
 	"item_skadi",--
 	"item_butterfly",--
 	"item_travel_boots",
+	"item_moon_shard",
 	"item_satanic",--
 	"item_travel_boots_2",--
-	"item_moon_shard",
 	"item_ultimate_scepter_2",
 }
 

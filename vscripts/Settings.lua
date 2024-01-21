@@ -34,7 +34,7 @@ local votingTimeElapsed = -1
 -- The playerID of the host.  Used to whitelist chat commands.
 local hostID = -1
 -- default difficulty if no one votes
-noVoteDifficulty = 5
+noVoteDifficulty = 8
 -- Is repurcussion timer started?
 local isRepurcussionTimerStarted = false
 -- Instantiate ourself
@@ -79,8 +79,7 @@ function Settings:Initialize(difficulty)
 	-- no argument implies default, do nothing
 	if difficulty == nil then return end
 	-- Adjust bot skill values by the difficulty value
-	-- 5 is nominal (1.0), and the max scale is 1.8
-	Settings.difficultyScale = 1 + ((difficulty - 2) / 10)
+	Settings.difficultyScale = 1 + ((difficulty - 5) / 10)
 	Settings.difficultyScale = Utilities:Round(Settings.difficultyScale, 2)
   -- Print
   local msg = 'Difficulty Scale: '..Settings.difficultyScale

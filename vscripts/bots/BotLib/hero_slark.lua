@@ -44,7 +44,7 @@ tOutFitList['outfit_carry'] = {
 	"item_power_treads",
 	"item_magic_wand",
 	"item_diffusal_blade",
-	"item_echo_sabre",
+	"item_silver_edge",
 	"item_ultimate_scepter",
 	"item_aghanims_shard",
 	"item_black_king_bar",--
@@ -55,7 +55,6 @@ tOutFitList['outfit_carry'] = {
 	"item_ultimate_scepter_2",
 	"item_moon_shard",
 	"item_bloodthorn",--
-	"item_harpoon"
 }
 
 tOutFitList['outfit_mid'] = tOutFitList['outfit_carry']
