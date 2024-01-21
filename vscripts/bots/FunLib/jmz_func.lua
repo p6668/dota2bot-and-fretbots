@@ -3361,27 +3361,6 @@ function J.GetClosestUnit(units)
 	return target;
 end
 
-function J.IsModeTurbo()
-
-    if GetGameMode() ~= GAMEMODE_AP
-    or GetGameMode() ~= GAMEMODE_CM
-    or GetGameMode() ~= GAMEMODE_RD
-    or GetGameMode() ~= GAMEMODE_SD
-    or GetGameMode() ~= GAMEMODE_AR
-    or GetGameMode() ~= GAMEMODE_REVERSE_CM
-    or GetGameMode() ~= GAMEMODE_MO
-    or GetGameMode() ~= GAMEMODE_CD
-    or GetGameMode() ~= GAMEMODE_ABILITY_DRAFT
-    or GetGameMode() ~= GAMEMODE_ARDM
-    or GetGameMode() ~= GAMEMODE_1V1MID
-    or GetGameMode() ~= GAMEMODE_ALL_DRAFT
-    then
-        return true
-    end
-
-    return false
-end
-
 function J.IsCore(bot)
 
 	local heroID = GetTeamPlayers(GetTeam())
@@ -3394,13 +3373,6 @@ function J.IsCore(bot)
 	end
 
 	return false
-end
-
-function J.GetCoresTotalNetworth()
-	local totalNetworth = GetTeamMember(1):GetNetWorth()
-				  	    + GetTeamMember(2):GetNetWorth()
-				  		+ GetTeamMember(3):GetNetWorth()
-	return totalNetworth
 end
 
 function J.GetPosition(bot)
@@ -3439,23 +3411,6 @@ function J.WeAreStronger(bot, radius)
     end
 
     return #mates > #enemies and ourPower > enemyPower;
-end
-
-function J.RandomForwardVector(length)
-
-    local offset = RandomVector(length)
-
-    if GetTeam() == TEAM_RADIANT then
-        offset.x = offset.x > 0 and offset.x or -offset.x
-        offset.y = offset.y > 0 and offset.y or -offset.y
-    end
-
-    if GetTeam() == TEAM_DIRE then
-        offset.x = offset.x < 0 and offset.x or -offset.x
-        offset.y = offset.y < 0 and offset.y or -offset.y
-    end
-
-    return offset
 end
 
 function J.GetUnitWithMinDistanceToLoc(hUnit, hUnits, cUnits, fMinDist, vLoc)
@@ -3557,102 +3512,6 @@ function J.GetClosestUnitToLocationFrommAll2(hUnit, nRange, vLoc)
 
 end
 
-function J.CheckTimeOfDay()
-    local cycle = 600
-    local time = DotaTime() % cycle
-    local night = 300
-
-    if time < night then return "day", time
-    else return "night", time
-    end
-end
-
-function J.GetArmorReducers(hero)
-	local reducedArmor = 0
-
-	-- Items (Passives for now)
-	if J.HasItem(hero, "item_desolator")
-	and (hero:GetItemInSlot (6) ~= "item_desolator" or hero:GetItemInSlot(7) ~= "item_desolator" or hero:GetItemInSlot(8) ~= "item_desolator")
-	then
-		reducedArmor = reducedArmor + 6
-	end
-
-	if J.HasItem(hero, "item_assault")
-	and (hero:GetItemInSlot (6) ~= "item_assault" or hero:GetItemInSlot(7) ~= "item_assault" or hero:GetItemInSlot(8) ~= "item_assault")
-	then
-		reducedArmor = reducedArmor + 5
-	end
-
-	if J.HasItem(hero, "item_blight_stone")
-	and (hero:GetItemInSlot (6) ~= "item_blight_stone" or hero:GetItemInSlot(7) ~= "item_blight_stone" or hero:GetItemInSlot(8) ~= "item_blight_stone")
-	then
-		reducedArmor = reducedArmor + 2
-	end
-
-	-- Abilities (Passives for now)
-	local NevermoreDarkLord = hero:GetAbilityByName("nevermore_dark_lord")
-	if hero:GetUnitName() == "npc_dota_hero_nevermore"
-	and NevermoreDarkLord ~= nil
-	and NevermoreDarkLord:GetLevel() > 0
-	then
-		reducedArmor = reducedArmor + NevermoreDarkLord:GetSpecialValueInt("presence_armor_reduction")
-	end
-
-	local NagaSirenRiptide = hero:GetAbilityByName("naga_siren_rip_tide")
-	if hero:GetUnitName() == "npc_dota_hero_naga_siren"
-	and NagaSirenRiptide ~= nil
-	and NagaSirenRiptide:GetLevel() > 0 then
-		reducedArmor = reducedArmor + NagaSirenRiptide:GetSpecialValueInt("armor_reduction")
-	end
-
-	return reducedArmor
-end
-
-local killTime = 0.0
-function J.IsRoshanAlive()
-	if GetRoshanKillTime() > killTime
-    then
-        killTime = GetRoshanKillTime()
-    end
-
-    if DotaTime() - GetRoshanKillTime() >= (J.IsModeTurbo() and (6 * 60) or (11 * 60))
-    then
-        return true
-    end
-
-    return false
-end
-
-function J.HasEnoughDPSForRoshan(heroes)
-    local DPS = 0
-    local DPSThreshold = 0
-    local plannedTimeToKill = 60
-
-    -- Roshan Stats
-    local baseHealth = 6000
-    local baseArmor = 30
-    local armorPerInterval = 0.375
-    local maxHealthBonusPerInterval = 130 * 2
-
-    local roshanHealth = baseHealth + maxHealthBonusPerInterval * math.floor(DotaTime() / 60)
-
-    for _, h in pairs(heroes) do
-        local roshanArmor = baseArmor + armorPerInterval * math.floor(DotaTime() / 60) - J.GetArmorReducers(h)
-
-        -- Only right click damage for now
-        local attackDamage = h:GetAttackDamage()
-        local attackSpeed = h:GetAttackSpeed()
-
-        local dps = attackDamage * attackSpeed * (1 - roshanArmor / (roshanArmor + 20))
-        DPS = DPS + dps
-    end
-
-    DPS =  DPS / #heroes
-
-    DPSThreshold = roshanHealth / plannedTimeToKill
-    return DPS >= DPSThreshold
-end
-
 function J.IsNotSelf(bot, ally)
 	if bot:GetUnitName() ~= ally:GetUnitName()
 	then
@@ -3694,54 +3553,6 @@ function J.GetStrongestUnit(nRange, hUnit, bEnemy, bMagicImune, fTime)
 		end
 	end
 	return strongest
-end
-
-function J.ConsolePrintActiveMode(bot)
-	local mode = bot:GetActiveMode()
-
-	if mode == BOT_MODE_NONE then
-		print(string.gsub( bot:GetUnitName(), "npc_dota_", "" ).."'s current mode is: NONE")
-	elseif mode == BOT_MODE_LANING then
-		print(string.gsub( bot:GetUnitName(), "npc_dota_", "" ).."'s current mode is: LANING")
-	elseif mode == BOT_MODE_ATTACK then
-		print(string.gsub( bot:GetUnitName(), "npc_dota_", "" ).."'s current mode is: ATTACK")
-	elseif mode == BOT_MODE_ROAM then
-		print(string.gsub( bot:GetUnitName(), "npc_dota_", "" ).."'s current mode is: ROAM")
-	elseif mode == BOT_MODE_RETREAT then
-		print(string.gsub( bot:GetUnitName(), "npc_dota_", "" ).."'s current mode is: RETREAT")
-	elseif mode == BOT_MODE_SECRET_SHOP then
-		print(string.gsub( bot:GetUnitName(), "npc_dota_", "" ).."'s current mode is: SECRET SHOP")
-	elseif mode == BOT_MODE_SIDE_SHOP then
-		print(string.gsub( bot:GetUnitName(), "npc_dota_", "" ).."'s current mode is: SIDE SHOP")
-	elseif mode == BOT_MODE_PUSH_TOWER_TOP then
-		print(string.gsub( bot:GetUnitName(), "npc_dota_", "" ).."'s current mode is: PUSH TOWER TOP")
-	elseif mode == BOT_MODE_PUSH_TOWER_MID then
-		print(string.gsub( bot:GetUnitName(), "npc_dota_", "" ).."'s current mode is: PUSH TOWER MID")
-	elseif mode == BOT_MODE_PUSH_TOWER_BOT then
-		print(string.gsub( bot:GetUnitName(), "npc_dota_", "" ).."'s current mode is: PUSH TOWER BOT")
-	elseif mode == BOT_MODE_DEFEND_TOWER_TOP then
-		print(string.gsub( bot:GetUnitName(), "npc_dota_", "" ).."'s current mode is: DEFEND TOWER TOP")
-	elseif mode == BOT_MODE_DEFEND_TOWER_MID then
-		print(string.gsub( bot:GetUnitName(), "npc_dota_", "" ).."'s current mode is: DEFEND TOWER MID")
-	elseif mode == BOT_MODE_DEFEND_TOWER_BOT then
-		print(string.gsub( bot:GetUnitName(), "npc_dota_", "" ).."'s current mode is: DEFEND TOWER BOT")
-	elseif mode == BOT_MODE_ASSEMBLE then
-		print(string.gsub( bot:GetUnitName(), "npc_dota_", "" ).."'s current mode is: ASSEMBLE")
-	elseif mode == BOT_MODE_TEAM_ROAM then
-		print(string.gsub( bot:GetUnitName(), "npc_dota_", "" ).."'s current mode is: TEAM ROAM")
-	elseif mode == BOT_MODE_FARM then
-		print(string.gsub( bot:GetUnitName(), "npc_dota_", "" ).."'s current mode is: FARM")
-	elseif mode == BOT_MODE_DEFEND_ALLY then
-		print(string.gsub( bot:GetUnitName(), "npc_dota_", "" ).."'s current mode is: DEFEND ALLY")
-	elseif mode == BOT_MODE_EVASIVE_MANEUVERS then
-		print(string.gsub( bot:GetUnitName(), "npc_dota_", "" ).."'s current mode is: EVASIVE MANEUVERS")
-	elseif mode == BOT_MODE_ROSHAN then
-		print(string.gsub( bot:GetUnitName(), "npc_dota_", "" ).."'s current mode is: ROSHAN")
-	elseif mode == BOT_MODE_ITEM then
-		print(string.gsub( bot:GetUnitName(), "npc_dota_", "" ).."'s current mode is: ITEM")
-	elseif mode == BOT_MODE_WARD then
-		print(string.gsub( bot:GetUnitName(), "npc_dota_", "" ).."'s current mode is: WARD")
-	end
 end
 
 return J
