@@ -44,7 +44,6 @@ X['off'] = {
 }
 
 X['mid'] = {
-	'npc_dota_hero_alchemist',
 	'npc_dota_hero_arc_warden',
 	'npc_dota_hero_bloodseeker',
 	'npc_dota_hero_broodmother',

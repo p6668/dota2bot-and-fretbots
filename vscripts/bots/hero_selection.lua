@@ -232,7 +232,6 @@ local sHasDevelopmentHeroList = {
 	"npc_dota_hero_storm_spirit",
 	"npc_dota_hero_ember_spirit",
 	"npc_dota_hero_faceless_void",
-	"npc_dota_hero_alchemist",
 	"npc_dota_hero_terrorblade",
 	"npc_dota_hero_ursa",
 	"npc_dota_hero_void_spirit",
@@ -351,11 +350,8 @@ local sCarryList = {
 	"npc_dota_hero_juggernaut",
 	"npc_dota_hero_naga_siren",
 	"npc_dota_hero_nevermore",
-
 	"npc_dota_hero_lina",
-
 	"npc_dota_hero_faceless_void",
-	"npc_dota_hero_alchemist",
 	"npc_dota_hero_terrorblade",
 	"npc_dota_hero_ursa",
 	"npc_dota_hero_tiny",

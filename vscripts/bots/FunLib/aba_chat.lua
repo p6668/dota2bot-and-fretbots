@@ -12,7 +12,6 @@ Chat['sAllHeroList'] = {
 	'sRandomHero',
 	'npc_dota_hero_abaddon',
 	'npc_dota_hero_abyssal_underlord',
-	'npc_dota_hero_alchemist',
 	'npc_dota_hero_ancient_apparition',
 	'npc_dota_hero_antimage',
 	'npc_dota_hero_arc_warden',
