@@ -70,6 +70,7 @@ tOutFitList['outfit_mage'] = {
 	"item_magic_wand",
 	"item_glimmer_cape",--
 	"item_aether_lens",--
+	"item_ethereal_blade",
 	"item_aghanims_shard",
 	"item_force_staff",--
 	"item_guardian_greaves",--
