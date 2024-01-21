@@ -57,7 +57,7 @@ tOutFitList['outfit_priest'] = {
 	"item_boots_of_bearing",--
 	"item_phylactery",--
 	"item_refresher",--
-	"item_recipe_ultimate_scepter_2",
+	"item_ultimate_scepter_2",
 }
 
 tOutFitList['outfit_mage'] = {
