@@ -9,7 +9,7 @@ new heroes from: https://github.com/ryndrb/dota2bot
 This is typically `<SteamDir>\steamapps\common\dota 2 beta\game\dota\scripts\vscripts`.
 2. Launch Dota 2 with the console enabled. The console can be enabled under `Advanced Options`.
 ![](https://github.com/fretmute/fretbots/blob/master/images/EnableConsole.png)
-3. Create a lobby and select "Local Dev Script". Ensure that `Enable Cheats` is checked; this is required because the scripts use functions that are considered cheats to give gold, items, stats, and experience to the bots. The scripts monitor player chat, and will announce to chat when any player enters cheat commands.
+3. Create a lobby and select `Local Dev Script`. Ensure that `Enable Cheats` is checked; this is required because the scripts use functions that are considered cheats to give gold, items, stats, and experience to the bots. The scripts monitor player chat, and will announce to chat when any player enters cheat commands.
 ![](https://github.com/fretmute/fretbots/blob/master/images/EnableCheats.png)
 4. After starting the game, open the console, and input `sv_cheats 1; script_reload_code fretbots`.
 5. The scripts are now running! You should receive a message in chat with the current version string.  If you did not, you probably received an error message in the console instead.
