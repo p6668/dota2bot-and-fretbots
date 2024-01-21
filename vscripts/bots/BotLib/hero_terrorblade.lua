@@ -37,14 +37,14 @@ tOutFitList['outfit_carry'] = {
     "item_magic_wand",
     "item_dragon_lance",
     "item_manta",--
+    "item_hurricane_pike",--
     "item_skadi",--
     "item_black_king_bar",--
     "item_greater_crit",--
-    "item_butterfly",--
-    "item_hurricane_pike",--
     "item_moon_shard",
-    "item_aghanims_shard",
+    "item_butterfly",--
     "item_ultimate_scepter_2",
+    "item_aghanims_shard",
 }
 
 tOutFitList['outfit_mid'] = tOutFitList['outfit_carry']

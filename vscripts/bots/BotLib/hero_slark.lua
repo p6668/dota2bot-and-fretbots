@@ -53,9 +53,9 @@ tOutFitList['outfit_carry'] = {
 	"item_disperser",--
 	"item_abyssal_blade",--
 	"item_ultimate_scepter_2",
-	"item_bloodthorn",--
 	"item_moon_shard",
-	"item_nullifier"
+	"item_bloodthorn",--
+	"item_harpoon"
 }
 
 tOutFitList['outfit_mid'] = tOutFitList['outfit_carry']
@@ -72,8 +72,7 @@ X['sSellList'] = {
 	"item_quelling_blade",
 	"item_wraith_band",
 	"item_power_treads",
-	"item_magic_wand",
-	"item_echo_sabre",
+	"item_magic_wand"
 }
 
 

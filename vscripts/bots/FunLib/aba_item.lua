@@ -196,6 +196,7 @@ Item['sBasicItems'] = {
 	'item_blitz_knuckles', --闪电指套
 	'item_voodoo_mask', --巫毒面具
 	'item_fluffy_hat', --毛毛帽
+	'item_blood_grenade',
 }
 
 Item['sSeniorItems'] = {
@@ -243,6 +244,7 @@ Item['sTopItems'] = {
 	'item_faerie_fire',
 	'item_enchanted_mango',
 	'item_infused_raindrop',
+	'item_blood_grenade',
 
 	'item_abyssal_blade',
 	'item_aether_lens',
@@ -340,6 +342,7 @@ Item['tEarlyItem'] = {
 	 -- 'item_ancient_janggo',
 	 'item_refresher_shard',
 	 'item_cheese',
+	 'item_blood_grenade',
 }
 
 Item['tEarlyBoots'] = {
@@ -372,6 +375,7 @@ local sConsumableList = {
 	'item_faerie_fire',
 	'item_enchanted_mango',
 	'item_infused_raindrop',
+	'item_blood_grenade',
 
 	'item_mango_tree',
 	'item_royal_jelly',
