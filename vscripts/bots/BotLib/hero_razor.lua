@@ -176,9 +176,6 @@ local aetherRange = 0
 function X.SkillsComplement()
 
 
-	J.ConsiderForMkbDisassembleMask( bot )
-
-
 	if J.CanNotUseAbility( bot ) or bot:IsInvisible() then return end
 
 

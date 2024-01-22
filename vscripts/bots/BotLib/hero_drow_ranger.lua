@@ -140,8 +140,6 @@ local nKeepMana, nMP, nHP, nLV, hEnemyList, hAllyList, botTarget, sMotive
 
 function X.SkillsComplement()
 
-	J.ConsiderForMkbDisassembleMask( bot )
-
 	if J.CanNotUseAbility( bot ) or bot:IsInvisible() then return end
 
 	nKeepMana = 90

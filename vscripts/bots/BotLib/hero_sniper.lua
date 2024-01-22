@@ -144,7 +144,6 @@ function X.SkillsComplement()
 
 
 	X.ConsiderTarget()
-	J.ConsiderForMkbDisassembleMask( bot )
 
 	if J.CanNotUseAbility( bot ) or bot:IsInvisible() then return end
 

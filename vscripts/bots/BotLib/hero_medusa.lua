@@ -145,8 +145,6 @@ local lastToggleTime = 0
 
 
 function X.SkillsComplement()
-
-	J.ConsiderForMkbDisassembleMask( bot )
 	J.ConsiderTarget()
 
 	if J.CanNotUseAbility( bot ) or bot:IsInvisible() then return end

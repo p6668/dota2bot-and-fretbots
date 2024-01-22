@@ -377,7 +377,7 @@ function X.ConsiderIceBlastRelease()
 		if p ~= nil and p.ability:GetName() == "ancient_apparition_ice_blast"
         then
 			if IceBlastReleaseLocation ~= nil
-            and J.GetLocationToLocationDistance(IceBlastReleaseLocation, p.location) < 100
+            and J.GetLocationToLocationDistance(IceBlastReleaseLocation, p.location) < 10
             then
 				return BOT_ACTION_DESIRE_HIGH
 			end
