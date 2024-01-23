@@ -1022,7 +1022,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_antimage"] = function()
 	local botNetWorth = bot:GetNetWorth()
 
 	if DotaTime() > 9 * 60
-	   and ( bot:GetLevel() < 25 or botNetWorth < 23000 )
+	   and ( botNetWorth < 23000 )
 	then
 		return true
 	end
@@ -1052,7 +1052,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_arc_warden"] = function()
 	local botNetWorth = bot:GetNetWorth()
 
 	if DotaTime() > 15 * 60
-		and ( bot:GetLevel() < 25 or botNetWorth < 22000 )
+		and ( botNetWorth < 22000 )
 	then
 		return true
 	end	
@@ -1088,7 +1088,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_axe"] = function()
 	local botNetWorth = bot:GetNetWorth()
 
 	if DotaTime() > 7 * 60
-	   and ( bot:GetLevel() < 25 or botNetWorth < 20000 )
+	   and ( botNetWorth < 20000 )
 	then
 		return true
 	end
@@ -1118,7 +1118,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_bloodseeker"] = function()
 	local botNetWorth = bot:GetNetWorth()
 
 	if DotaTime() > 9 * 60
-		and ( bot:GetLevel() < 25 or botNetWorth < 22000 )
+		and (  botNetWorth < 22000 )
 	then
 		return true
 	end
@@ -1219,7 +1219,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_drow_ranger"] = function()
 	local botNetWorth = bot:GetNetWorth()
 
 	if bot:GetLevel() >= 6
-	   and ( bot:GetLevel() < 25 or botNetWorth < 20000 )
+	   and ( botNetWorth < 20000 )
 	then
 		return true
 	end
@@ -1269,7 +1269,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_huskar"] = function()
 	local botNetWorth = bot:GetNetWorth()
 
 	if DotaTime() > 9 * 60
-		and ( bot:GetLevel() < 25 or botNetWorth < 20000 )
+		and ( botNetWorth < 20000 )
 	then
 		return true
 	end
@@ -1306,7 +1306,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_juggernaut"] = function()
 	local botNetWorth = bot:GetNetWorth()
 
 	if DotaTime() > 9 * 60
-		and ( bot:GetLevel() < 25 or botNetWorth < 20000 )
+		and ( botNetWorth < 20000 )
 	then
 		return true
 	end
@@ -1358,7 +1358,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_medusa"] = function()
 	local botNetWorth = bot:GetNetWorth()
 
 	if DotaTime() > 9 * 60
-		and ( bot:GetLevel() < 25 or botNetWorth < 20000 )
+		and ( botNetWorth < 20000 )
 	then
 		return true
 	end
@@ -1388,7 +1388,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_nevermore"] = function()
 	local botNetWorth = bot:GetNetWorth()
 
 	if DotaTime() > 9 * 60
-		and ( bot:GetLevel() < 25 or botNetWorth < 22000 )
+		and ( botNetWorth < 22000 )
 	then
 		return true
 	end
@@ -1430,7 +1430,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_phantom_assassin"] = function()
 	local botNetWorth = bot:GetNetWorth()
 
 	if DotaTime() > 9 * 60
-		and ( bot:GetLevel() < 25 or botNetWorth < 20000 )
+		and ( botNetWorth < 20000 )
 	then
 		return true
 	end
@@ -1471,7 +1471,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_phantom_lancer"] = function()
 	local botNetWorth = bot:GetNetWorth()
 
 	if DotaTime() > 9 * 60
-		and ( bot:GetLevel() < 25 or botNetWorth < 23000 )
+		and ( botNetWorth < 23000 )
 	then
 		return true
 	end
@@ -1518,7 +1518,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_razor"] = function()
 	local botNetWorth = bot:GetNetWorth()
 
 	if DotaTime() > 7 * 60
-	   and ( bot:GetLevel() < 25 or botNetWorth < 20000 )
+	   and ( botNetWorth < 20000 )
 	then
 		return true
 	end
@@ -1560,7 +1560,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_legion_commander"] = function()
 	local botNetWorth = bot:GetNetWorth()
 
 	if DotaTime() > 7 * 60
-	   and ( bot:GetLevel() < 25 or botNetWorth < 20000 )
+	   and ( botNetWorth < 20000 )
 	then
 		return true
 	end
@@ -1590,7 +1590,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_slark"] = function()
 	local botNetWorth = bot:GetNetWorth()
 
 	if DotaTime() > 9 * 60
-		and ( bot:GetLevel() < 25 or botNetWorth < 20000 )
+		and ( botNetWorth < 20000 )
 	then
 		return true
 	end
@@ -1635,7 +1635,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_sven"] = function()
 	local botNetWorth = bot:GetNetWorth()
 
 	if DotaTime() > 9 * 60
-		and ( bot:GetLevel() < 25 or botNetWorth < 20000 )
+		and ( botNetWorth < 20000 )
 	then
 		return true
 	end
@@ -1696,7 +1696,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_templar_assassin"] = function()
 	local botNetWorth = bot:GetNetWorth()
 
 	if DotaTime() > 9 * 60
-		and ( bot:GetLevel() < 25 or botNetWorth < 20000 )
+		and ( botNetWorth < 20000 )
 	then
 		return true
 	end
