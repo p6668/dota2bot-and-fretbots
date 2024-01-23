@@ -371,7 +371,6 @@ local sMidList = {
 	"npc_dota_hero_kunkka",
 	"npc_dota_hero_queenofpain",
 	"npc_dota_hero_necrolyte",
-	"npc_dota_hero_huskar",
 	"npc_dota_hero_ogre_magi",
 	"npc_dota_hero_bounty_hunter",
 	"npc_dota_hero_death_prophet",
