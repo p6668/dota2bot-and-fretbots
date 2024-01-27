@@ -241,6 +241,12 @@ local sHasDevelopmentHeroList = {
 	"npc_dota_hero_ancient_apparition",
 	"npc_dota_hero_batrider",
 	"npc_dota_hero_beastmaster",
+	"npc_dota_hero_brewmaster",
+	"npc_dota_hero_broodmother",
+	"npc_dota_hero_centaur",
+	"npc_dota_hero_chen",
+	"npc_dota_hero_clinkz",
+	"npc_dota_hero_rattletrap",
 }
 
 
@@ -355,7 +361,7 @@ local sCarryList = {
 	"npc_dota_hero_terrorblade",
 	"npc_dota_hero_ursa",
 	"npc_dota_hero_tiny",
-
+	"npc_dota_hero_clinkz",
 }
 
 local sMidList = {
@@ -381,6 +387,8 @@ local sMidList = {
 	"npc_dota_hero_earth_spirit",
 	"npc_dota_hero_tiny",
 	"npc_dota_hero_batrider",
+	"npc_dota_hero_broodmother",
+	"npc_dota_hero_clinkz",
 }
 
 local sTankList = {
@@ -407,6 +415,9 @@ local sTankList = {
 	"npc_dota_hero_mars",
 	"npc_dota_hero_batrider",
 	"npc_dota_hero_beastmaster",
+	"npc_dota_hero_brewmaster",
+	"npc_dota_hero_broodmother",
+	"npc_dota_hero_centaur",
 }
 
 local sPriestList = {
@@ -426,6 +437,8 @@ local sPriestList = {
 
 	"npc_dota_hero_abaddon",
 	"npc_dota_hero_ancient_apparition",
+	"npc_dota_hero_chen",
+	"npc_dota_hero_rattletrap",
 }
 
 local sMageList = {
@@ -445,6 +458,8 @@ local sMageList = {
 
 	"npc_dota_hero_abaddon",
 	"npc_dota_hero_ancient_apparition",
+	"npc_dota_hero_chen",
+	"npc_dota_hero_rattletrap",
 }
 
 tSelectPoolList = {
@@ -953,9 +968,6 @@ function Think()
 		then
 
 			if X.IsRepeatHero( sSelectList[i] ) 
-				or ( nHumanCount == 0 --无玩家时阵容更偏向预设值
-					 and RandomInt( 1, 99 ) <= 75
-					 and not X.IsExistInTable( sSelectList[i], tRecommendSelectPoolList[i] ) )
 			then
 				sSelectHero = X.GetNotRepeatHero( tSelectPoolList[i] )
 			else

@@ -37,14 +37,14 @@ tOutFitList['outfit_carry'] = {
     "item_magic_wand",
     "item_dragon_lance",
     "item_manta",--
-    "item_hurricane_pike",--
     "item_skadi",--
     "item_black_king_bar",--
     "item_greater_crit",--
-    "item_moon_shard",
     "item_butterfly",--
-    "item_ultimate_scepter_2",
+    "item_hurricane_pike",--
+    "item_moon_shard",
     "item_aghanims_shard",
+    "item_ultimate_scepter_2",
 }
 
 tOutFitList['outfit_mid'] = tOutFitList['outfit_carry']
@@ -198,7 +198,6 @@ function X.ConsiderReflection()
 end
 
 function X.ConsiderConjureImage()
-
 	if not ConjureImage:IsFullyCastable()
 	then
 		return BOT_ACTION_DESIRE_NONE
@@ -340,8 +339,8 @@ function X.ConsiderSunder()
 end
 
 function X.ConsiderDemonZeal()
-    if not Metamorphosis:IsFullyCastable()
-	or not J.HasAghanimsShard(bot)
+    if not DemonZeal:IsTrained()
+	or not DemonZeal:IsFullyCastable()
 	then
 		return BOT_ACTION_DESIRE_NONE
 	end
@@ -373,9 +372,9 @@ function X.ConsiderDemonZeal()
 end
 
 function X.ConsiderTerrorWave()
-    if not Metamorphosis:IsFullyCastable()
+	if not bot:HasScepter()
+    or not TerrorWave:IsFullyCastable()
 	or bot:HasModifier('modifier_terrorblade_metamorphosis_transform')
-	or not bot:HasScepter()
 	then
 		return BOT_ACTION_DESIRE_NONE
 	end

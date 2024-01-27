@@ -72,7 +72,7 @@ local	neutrals =
 	{name = 'item_defiant_shell',				tier = 3, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Defiant Shell'},
     {name = 'item_doubloon',				tier = 3, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Doubloon'},
     {name = 'item_nemesis_curse',				tier = 3, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Nemesis Curse'},
-    {name = 'item_unwavering_condition', 					tier = 3, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Unwavering Condition'},
+--     {name = 'item_unwavering_condition', 					tier = 3, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Unwavering Condition'},
 
 
 	-- tier 4

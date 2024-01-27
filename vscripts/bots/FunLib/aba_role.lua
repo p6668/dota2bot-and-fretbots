@@ -1686,6 +1686,7 @@ X['safe'] = {
 	'npc_dota_hero_antimage',
 	'npc_dota_hero_chaos_knight',
 	'npc_dota_hero_drow_ranger',
+	'npc_dota_hero_clinkz',
 	'npc_dota_hero_faceless_void',
 	'npc_dota_hero_gyrocopter',
 	'npc_dota_hero_juggernaut',
@@ -1706,10 +1707,7 @@ X['safe'] = {
 	'npc_dota_hero_troll_warlord',
 	'npc_dota_hero_ursa',
 	'npc_dota_hero_shredder',
-	'npc_dota_hero_axe',
 	'npc_dota_hero_weaver',
-	'npc_dota_hero_ogre_magi',
-	'npc_dota_hero_omniknight',
 	'npc_dota_hero_marci',
 
 }
@@ -1736,6 +1734,7 @@ X['supp'] = {
 	'npc_dota_hero_oracle',
 	'npc_dota_hero_phoenix',
 	'npc_dota_hero_pudge',
+	'npc_dota_hero_rattletrap',
 	'npc_dota_hero_rubick',
 	'npc_dota_hero_shadow_demon',
 	'npc_dota_hero_shadow_shaman',
@@ -2121,8 +2120,7 @@ function X.IsABAHero()
 		["npc_dota_hero_bloodseeker"] = true,
 		["npc_dota_hero_bounty_hunter"] = true,
 		["npc_dota_hero_bristleback"] = true, 
-		["npc_dota_hero_chaos_knight"] = true, 
-		["npc_dota_hero_clinkz"] = true, 
+		["npc_dota_hero_chaos_knight"] = true,
 		["npc_dota_hero_crystal_maiden"] = true,
 		["npc_dota_hero_dazzle"] = true,
 		["npc_dota_hero_death_prophet"] = true, 		
@@ -2178,6 +2176,12 @@ function X.IsABAHero()
 		["npc_dota_hero_ancient_apparition"] = true,
 		["npc_dota_hero_batrider"] = true,
 		["npc_dota_hero_beastmaster"] = true,
+		["npc_dota_hero_brewmaster"] = true,
+		["npc_dota_hero_broodmother"] = true,
+		["npc_dota_hero_centaur"] = true,
+		["npc_dota_hero_chen"] = true,
+		["npc_dota_hero_clinkz"] = true,
+		["npc_dota_hero_rattletrap"] = true,
 	}
 
 	return sABAHeroIndex[botName] == true

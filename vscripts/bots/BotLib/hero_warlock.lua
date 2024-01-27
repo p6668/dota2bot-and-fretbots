@@ -52,7 +52,7 @@ tOutFitList['outfit_priest'] = {
 	"item_aghanims_shard",
 	"item_force_staff",--
 	"item_solar_crest",--
-	"item_guardian_greaves",--
+	"item_boots_of_bearing",--
 	"item_ultimate_scepter",
 	"item_refresher",--
 	"item_octarine_core",--
@@ -74,9 +74,9 @@ tOutFitList['outfit_mage'] = {
 	"item_aether_lens",--
 	"item_guardian_greaves",--
 	"item_ultimate_scepter",
-	"item_ultimate_scepter_2",
 	"item_refresher",--
 	"item_octarine_core",--
+	"item_ultimate_scepter_2",
 	"item_moon_shard",
 }
 
