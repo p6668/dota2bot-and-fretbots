@@ -46,7 +46,6 @@ X['off'] = {
 X['mid'] = {
 	'npc_dota_hero_arc_warden',
 	'npc_dota_hero_bloodseeker',
-	'npc_dota_hero_broodmother',
 	'npc_dota_hero_clinkz',
 	'npc_dota_hero_death_prophet',
 	'npc_dota_hero_dragon_knight',
@@ -104,10 +103,8 @@ X['safe'] = {
 }
 
 X['supp'] = {
-	'npc_dota_hero_ancient_apparition',
 	'npc_dota_hero_bane',
 	'npc_dota_hero_bounty_hunter',
-	'npc_dota_hero_chen',
 	'npc_dota_hero_crystal_maiden',
 	'npc_dota_hero_dark_willow',
 	'npc_dota_hero_dazzle',

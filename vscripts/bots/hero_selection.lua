@@ -238,7 +238,6 @@ local sHasDevelopmentHeroList = {
 	"npc_dota_hero_earth_spirit",
 	"npc_dota_hero_tiny",
 	"npc_dota_hero_abaddon",
-	"npc_dota_hero_ancient_apparition",
 	"npc_dota_hero_batrider",
 	"npc_dota_hero_beastmaster",
 	"npc_dota_hero_brewmaster",
@@ -430,9 +429,7 @@ local sPriestList = {
 	"npc_dota_hero_lion",
 	"npc_dota_hero_dazzle",
 	"npc_dota_hero_bane",
-
 	"npc_dota_hero_abaddon",
-	"npc_dota_hero_ancient_apparition",
 	"npc_dota_hero_rattletrap",
 }
 
@@ -450,9 +447,7 @@ local sMageList = {
 	"npc_dota_hero_lion",
 	"npc_dota_hero_dazzle",
 	"npc_dota_hero_bane",
-
 	"npc_dota_hero_abaddon",
-	"npc_dota_hero_ancient_apparition",
 	"npc_dota_hero_rattletrap",
 }
 
