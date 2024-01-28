@@ -244,7 +244,6 @@ local sHasDevelopmentHeroList = {
 	"npc_dota_hero_brewmaster",
 	"npc_dota_hero_broodmother",
 	"npc_dota_hero_centaur",
-	"npc_dota_hero_chen",
 	"npc_dota_hero_clinkz",
 	"npc_dota_hero_rattletrap",
 }
@@ -437,7 +436,6 @@ local sPriestList = {
 
 	"npc_dota_hero_abaddon",
 	"npc_dota_hero_ancient_apparition",
-	"npc_dota_hero_chen",
 	"npc_dota_hero_rattletrap",
 }
 
@@ -458,7 +456,6 @@ local sMageList = {
 
 	"npc_dota_hero_abaddon",
 	"npc_dota_hero_ancient_apparition",
-	"npc_dota_hero_chen",
 	"npc_dota_hero_rattletrap",
 }
 
