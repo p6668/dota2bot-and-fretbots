@@ -242,7 +242,6 @@ local sHasDevelopmentHeroList = {
 	"npc_dota_hero_batrider",
 	"npc_dota_hero_beastmaster",
 	"npc_dota_hero_brewmaster",
-	"npc_dota_hero_broodmother",
 	"npc_dota_hero_centaur",
 	"npc_dota_hero_clinkz",
 	"npc_dota_hero_rattletrap",
@@ -386,7 +385,6 @@ local sMidList = {
 	"npc_dota_hero_earth_spirit",
 	"npc_dota_hero_tiny",
 	"npc_dota_hero_batrider",
-	"npc_dota_hero_broodmother",
 	"npc_dota_hero_clinkz",
 }
 
@@ -415,7 +413,6 @@ local sTankList = {
 	"npc_dota_hero_batrider",
 	"npc_dota_hero_beastmaster",
 	"npc_dota_hero_brewmaster",
-	"npc_dota_hero_broodmother",
 	"npc_dota_hero_centaur",
 }
 
