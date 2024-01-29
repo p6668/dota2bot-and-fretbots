@@ -41,7 +41,7 @@ tOutFitList['outfit_carry'] = {
 	"item_echo_sabre",
 	"item_ultimate_scepter",
 	"item_blink",
---	"item_aghanims_shard",
+	"item_aghanims_shard",
 	"item_black_king_bar",
 	"item_harpoon",
 	"item_travel_boots",
@@ -71,8 +71,8 @@ tOutFitList['outfit_tank'] = {
 	"item_assault",
 	"item_travel_boots",
 	"item_aghanims_shard",
-	"item_satanic",
 	"item_ultimate_scepter_2",
+	"item_satanic",
 	"item_heart",
 	"item_moon_shard",
 	"item_travel_boots_2",
@@ -92,7 +92,6 @@ X['sSellList'] = {
 	-- "item_heart",
 	-- "item_armlet",
 	
-	"item_travel_boots",
 	"item_magic_wand",
 	
 	
