@@ -72,9 +72,8 @@ tOutFitList['outfit_tank'] = {
 	"item_travel_boots",
 	"item_aghanims_shard",
 	"item_ultimate_scepter_2",
-	"item_satanic",
-	"item_heart",
 	"item_moon_shard",
+	"item_heart",
 	"item_travel_boots_2",
 	
 }
@@ -86,17 +85,7 @@ X['sSellList'] = {
 	"item_power_treads",
 	"item_quelling_blade",
 
-	"item_assault",
-	"item_magic_wand",
-
-	-- "item_heart",
-	-- "item_armlet",
-	
-	"item_magic_wand",
-	
-	
-	"item_assault",
-	"item_ancient_janggo",
+	"item_magic_wand"
 
 }
 
