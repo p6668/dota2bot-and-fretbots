@@ -240,7 +240,6 @@ local sHasDevelopmentHeroList = {
 	"npc_dota_hero_abaddon",
 	"npc_dota_hero_batrider",
 	"npc_dota_hero_beastmaster",
-	"npc_dota_hero_brewmaster",
 	"npc_dota_hero_centaur",
 	"npc_dota_hero_clinkz",
 	"npc_dota_hero_rattletrap",
@@ -411,7 +410,6 @@ local sTankList = {
 	"npc_dota_hero_mars",
 	"npc_dota_hero_batrider",
 	"npc_dota_hero_beastmaster",
-	"npc_dota_hero_brewmaster",
 	"npc_dota_hero_centaur",
 }
 

@@ -1553,7 +1553,6 @@ function X.IsSpecialCarry(bot)
 		["npc_dota_hero_tiny"] = true,
 		["npc_dota_hero_batrider"] = true,
 		["npc_dota_hero_beastmaster"] = true,
-		["npc_dota_hero_brewmaster"] = true,
 		["npc_dota_hero_centaur"] = true,
 		["npc_dota_hero_clinkz"] = true,
 	}

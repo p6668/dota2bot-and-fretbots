@@ -66,14 +66,13 @@ X['sSellList'] = {
 	"item_echo_sabre",
 	"item_quelling_blade",
 
-	"item_travel_boots",
+	"item_echo_sabre",
 	"item_magic_wand",
 
 	"item_greater_crit",
 	"item_hand_of_midas",
 
 	"item_overwhelming_blink",
-	"item_echo_sabre",
 }
 
 if J.Role.IsPvNMode() or J.Role.IsAllShadow() then X['sBuyList'], X['sSellList'] = { 'PvN_str_carry' }, {"item_power_treads", 'item_quelling_blade'} end

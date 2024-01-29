@@ -19,7 +19,6 @@ X['off'] = {
 	'npc_dota_hero_axe',
 	'npc_dota_hero_batrider',
 	'npc_dota_hero_beastmaster',
-	'npc_dota_hero_brewmaster',
 	'npc_dota_hero_bristleback',
 	'npc_dota_hero_centaur',
 	'npc_dota_hero_dark_seer',
