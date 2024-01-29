@@ -79,7 +79,7 @@ tOutFitList['outfit_mage'] = {
 	"item_guardian_greaves",--
 	"item_phylactery",--
 	"item_refresher",--
-	"item_recipe_ultimate_scepter_2"
+	"item_ultimate_scepter_2"
 }
 
 X['sBuyList'] = tOutFitList[sOutfitType]
