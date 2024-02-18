@@ -58,6 +58,8 @@ tOutFitList['outfit_priest'] = {
 	"item_ethereal_blade",
 	"item_phylactery",--
 	"item_refresher",--
+	"item_ethereal_blade",
+	"item_ultimate_scepter",
 	"item_ultimate_scepter_2",
 }
 
@@ -79,6 +81,8 @@ tOutFitList['outfit_mage'] = {
 	"item_guardian_greaves",--
 	"item_phylactery",--
 	"item_refresher",--
+	"item_ethereal_blade",
+	"item_ultimate_scepter",
 	"item_ultimate_scepter_2"
 }
 
