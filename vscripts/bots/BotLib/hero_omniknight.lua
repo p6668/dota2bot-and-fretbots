@@ -14,89 +14,67 @@ local J = require( GetScriptDirectory()..'/FunLib/jmz_func' )
 local Minion = dofile( GetScriptDirectory()..'/FunLib/aba_minion' )
 local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
-local sOutfitType = J.Item.GetOutfitType( bot )
+local sRole = J.Item.GetRoleItemsBuyList( bot )
 
 local tTalentTreeList = {
-						['t25'] = {0, 10},
+						['t25'] = {10, 0},
 						['t20'] = {10, 0},
 						['t15'] = {0, 10},
 						['t10'] = {10, 0},
 }
 
 local tAllAbilityBuildList = {
-						{1,2,1,3,1,6,1,2,2,2,6,3,3,3,6},
-						{1,3,1,2,1,6,1,3,3,3,6,2,2,2,6},
+						{3,1,3,1,3,1,1,3,2,6,6,2,2,2,6},--pos3
 }
 
 local nAbilityBuildList = J.Skill.GetRandomBuild( tAllAbilityBuildList )
 
 local nTalentBuildList = J.Skill.GetTalentBuild( tTalentTreeList )
 
-local tOutFitList = {}
+local utilityItems = {"item_crimson_guard", "item_pipe", "item_heavens_halberd"}
+local sCrimsonPipeHalberd = utilityItems[RandomInt(1, #utilityItems)]
 
-tOutFitList['outfit_carry'] = {
+local sRoleItemsBuyList = {}
 
-	"item_bristleback_outfit",
+sRoleItemsBuyList['outfit_carry'] = sRoleItemsBuyList['outfit_tank']
+
+sRoleItemsBuyList['outfit_mid'] = sRoleItemsBuyList['outfit_tank']
+
+sRoleItemsBuyList['outfit_priest'] = sRoleItemsBuyList['outfit_tank']
+
+sRoleItemsBuyList['outfit_mage'] = sRoleItemsBuyList['outfit_tank']
+
+sRoleItemsBuyList['outfit_tank'] = {
+	"item_tango",
+	"item_double_branches",
+	"item_quelling_blade",
+	"item_gauntlets",
+	"item_circlet",
+
+	"item_bracer",
+	"item_phase_boots",
 	"item_soul_ring",
-	"item_harpoon",
-	"item_aghanims_shard",
-	"item_ultimate_scepter",
-	"item_lotus_orb",
-	"item_black_king_bar",
-	"item_travel_boots",
-	"item_abyssal_blade",
-	"item_heart",
-	"item_moon_shard",
-	"item_travel_boots_2",
-	"item_ultimate_scepter_2",
-	"item_sheepstick",
-
-}
-
-tOutFitList['outfit_mid'] = tOutFitList['outfit_carry']
-
-tOutFitList['outfit_priest'] = tOutFitList['outfit_carry']
-
-tOutFitList['outfit_mage'] = tOutFitList['outfit_carry']
-
-tOutFitList['outfit_tank'] = {
-	
-	"item_tank_outfit",
+	"item_magic_wand",
 	"item_echo_sabre",
 	"item_aghanims_shard",
-	"item_crimson_guard",
-	"item_ultimate_scepter",
-	"item_heavens_halberd",
-	"item_travel_boots",
-	"item_assault",
-	"item_refresher",
+	"item_harpoon",--
+	"item_blink",
+	sCrimsonPipeHalberd,--
+	"item_black_king_bar",--
+	"item_shivas_guard",--
+	"item_guardian_greaves",--
+	"item_overwhelming_blink",--
 	"item_moon_shard",
-	"item_travel_boots_2",
 	"item_ultimate_scepter_2",
-	"item_sheepstick",
-	
-
 }
 
-X['sBuyList'] = tOutFitList[sOutfitType]
+X['sBuyList'] = sRoleItemsBuyList[sRole]
 
 X['sSellList'] = {
-
-	"item_power_treads",
 	"item_quelling_blade",
-
-	"item_black_king_bar",
+	"item_bracer",
+	"item_soul_ring",
 	"item_magic_wand",
-	
-	"item_ultimate_scepter",
-	"item_echo_sabre",
-
-	"item_travel_boots",
-	"item_magic_wand",
-
-	"item_assault",
-	"item_ancient_janggo",
-
 }
 
 
@@ -188,7 +166,7 @@ function X.SkillsComplement()
 
 		J.SetQueuePtToINT( bot, true )
 
-		bot:ActionQueue_UseAbility( abilityR )
+		bot:ActionQueue_UseAbilityOnEntity( abilityR, castRTarget )
 		return
 	end
 	
@@ -731,17 +709,11 @@ function X.ConsiderR()
 
 	if not abilityR:IsFullyCastable() then return 0 end
 
-	local nSkillLV = abilityR:GetLevel()
-	local nCastRange = abilityR:GetCastRange()
+	local nRadius = abilityR:GetSpecialValueInt( 'radius' )	
+	local nCastRange = nRadius
 	
-	if bot:HasScepter() then nCastRange = 5000 end
-	
-	local nCastPoint = abilityR:GetCastPoint()
-	local nManaCost = abilityR:GetManaCost()
-	local nDamage = 0
-	local nDamageType = DAMAGE_TYPE_MAGICAL
---	local nInRangeEnemyList = J.GetAroundEnemyHeroList( nCastRange )
---	local nInBonusEnemyList = J.GetAroundEnemyHeroList( nCastRange + 200 )
+	if bot:HasScepter() then nCastRange = 1600 end
+
 	local hCastTarget = nil
 	local sCastMotive = nil
 
@@ -753,22 +725,71 @@ function X.ConsiderR()
 		if J.IsValidHero( botTarget )
 			and J.IsInRange( bot, botTarget, 500 )
 			and J.CanCastOnMagicImmune( botTarget )
+			and not J.IsSuspiciousIllusion(botTarget)
 			and not J.IsDisabled( botTarget )
 			and not botTarget:IsDisarmed()
-			and botTarget:GetAttackTarget() ~= nil
+			and botTarget:GetAttackTarget() == bot
 		then
 			hCastTarget = bot
 			sCastMotive = 'R-辅助攻击:'..J.Chat.GetNormName( botTarget )
 			return BOT_ACTION_DESIRE_HIGH, hCastTarget, sCastMotive					
 		end
 	end
+	
+	
+	
+	for i = 1, 5
+	do 
+		local npcAlly = GetTeamMember( i )
+		if npcAlly ~= nil
+			and npcAlly:IsAlive()
+			and ( bot:HasScepter() or J.IsInRange( bot, npcAlly, 700 ) )
+		then
+			if J.IsInTeamFight( npcAlly, 1300 )
+			then
+				local allyList = J.GetAlliesNearLoc( npcAlly:GetLocation(), nCastRange )
+				local enemyList = npcAlly:GetNearbyHeroes( 1400, true, BOT_MODE_NONE )
+				if #enemyList >= 2 
+					and ( #enemyList >= #allyList or #enemyList >= 3 )
+				then
+					local guardianCount = 0
+					for _, allyHero in pairs(allyList)
+					do 
+						if allyHero:WasRecentlyDamagedByAnyHero(3.0)
+							and J.GetHP( allyHero ) < 0.8
+						then
+						
+							guardianCount = guardianCount + 1
+							
+							if J.GetHP( allyHero ) < 0.4 then guardianCount = guardianCount + 1 end
+						
+						end
+					end
+					
+					if guardianCount >= 2
+					then
+						hCastTarget = npcAlly
+						sCastMotive = 'R-攻击时辅助防御:'..J.Chat.GetNormName( hCastTarget )
+						return BOT_ACTION_DESIRE_HIGH, hCastTarget, sCastMotive	
+					end
+				end
+			end
+			if J.IsRetreating( npcAlly )
+				and npcAlly:WasRecentlyDamagedByAnyHero( 5.0 )
+			then
+				local attackModeAlly = npcAlly:GetNearbyHeroes( nRadius, false, BOT_MODE_ATTACK )
+				local retreatModeAlly = npcAlly:GetNearbyHeroes( nRadius, false, BOT_MODE_RETREAT )
+				if ( #attackModeAlly >= 2 or ( #attackModeAlly >= 1 and #retreatModeAlly >= 2 ) )
+				then
+					hCastTarget = npcAlly
+					sCastMotive = 'R-逃跑时辅助攻击:'..J.Chat.GetNormName( hCastTarget )
+					return BOT_ACTION_DESIRE_HIGH, hCastTarget, sCastMotive	
+				end
+			end
+		end
+	end
 
 	return BOT_ACTION_DESIRE_NONE
-
-
 end
 
-
 return X
--- dota2jmz@163.com QQ:2462331592
-

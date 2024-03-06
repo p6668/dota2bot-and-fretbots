@@ -712,7 +712,7 @@ Item["item_blood_grenade"] 						= GetItemComponents( 'item_blood_grenade' )[1]
 
 ---------- 7.35 NEW ITEMS ---------------
 Item["item_angels_demise"] 						= { "item_phylactery", "item_lesser_crit", "item_recipe_angels_demise" }
-Item["item_devastator"] 						= { "item_witch_blade", "item_mystic_staff" }
+Item["item_devastator"] 						= GetItemComponents( 'item_devastator' )[1]
 
 --新自定义物品
 Item['item_new_1']	= GetItemComponents( 'item_new_1' )[1]

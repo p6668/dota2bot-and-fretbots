@@ -523,7 +523,12 @@ function X.CheckFlag(bitfield, flag)
 end
 
 function X.CanCastAbility(ability)
-	return ability ~= nil and ability:IsFullyCastable() and ability:IsPassive() == false;
+	return ability ~= nil
+		and ability:IsFullyCastable()
+		and ability:GetName() ~= ''
+		and not ability:IsPassive()
+		and not ability:IsHidden()
+		and not ability:IsNull()
 end
 
 function X.ConsiderUnitTarget(minion, ability)
