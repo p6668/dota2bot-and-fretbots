@@ -1,9 +1,8 @@
 # About
-This is a customized version of fretbots + beginner AI.  
-This script takes the laning/pushing logic from beginner AI and new heroes from dota2bot. 
+This is a customized version of fretbots + beginner AI. This script takes the laning/pushing logic from beginner AI and new heroes from dota2bot. 
 It is updated under the assumption the user will also use fretbots with a difficulty of at least 5.
 This means that the GPM for enemy bots would be around 1100-1300 so any farming logic from dota2bots will make them too passive while having 2-3 items ahead.
-The default beginner AI has more aggressive push/defend behavior which is what me and my friends considers fun.
+The default beginner AI has more aggressive push/defend behavior which is what me and my friends consider fun.
 
 fretbots: https://github.com/fretmute/fretbots   
 beginner AI: https://steamcommunity.com/sharedfiles/filedetails/?id=1627071163  
