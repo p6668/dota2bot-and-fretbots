@@ -273,14 +273,12 @@ local sPos4List = {
 	"npc_dota_hero_skywrath_mage",
 	"npc_dota_hero_warlock",
 	"npc_dota_hero_witch_doctor",
-    "npc_dota_hero_dark_willow"
 }
 
 local sPos5List = {
 	"npc_dota_hero_abaddon",
 	"npc_dota_hero_bane",
 	"npc_dota_hero_crystal_maiden",
-	"npc_dota_hero_dark_willow",
 	"npc_dota_hero_dazzle",
 	"npc_dota_hero_disruptor",
 	"npc_dota_hero_earthshaker",

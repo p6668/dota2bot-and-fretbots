@@ -5,7 +5,7 @@ local J = require( GetScriptDirectory()..'/FunLib/jmz_func' )
 local Minion = dofile( GetScriptDirectory()..'/FunLib/aba_minion' )
 local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
-local sRole = J.Item.GetRoleItemsBuyList( bot )
+local sRole = J.Item.GetOutfitType( bot )
 
 local tTalentTreeList = {
 						['t25'] = {10, 0},
