@@ -1,10 +1,15 @@
 # About
 This is a customized version of fretbots + beginner AI.  
+This script takes the laning/pushing logic from beginner AI and new heroes from dota2bot. 
+It is updated under the assumption the user will also use fretbots with a difficulty of at least 5.
+This means that the GPM for enemy bots would be around 1100-1300 so any farming logic from dota2bots will make them too passive while having 2-3 items ahead.
+The default beginner AI has more aggressive push/defend behavior which is what me and my friends considers fun.
+
 fretbots: https://github.com/fretmute/fretbots   
 beginner AI: https://steamcommunity.com/sharedfiles/filedetails/?id=1627071163  
-new heroes from: https://github.com/ryndrb/dota2bot  
+new heroes from: https://github.com/ryndrb/dota2bot
 
-# How To
+# Setup Instructions
 1. Download the script and extract the files from `vscripts` to your Dota 2 vscripts directory.
 This is typically `<SteamDir>\steamapps\common\dota 2 beta\game\dota\scripts\vscripts`.
 2. Launch Dota 2 with the console enabled. The console can be enabled under `Advanced Options`.
