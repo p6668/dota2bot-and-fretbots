@@ -228,7 +228,9 @@ local sPos3List = {
 	"npc_dota_hero_centaur",
 	"npc_dota_hero_chaos_knight",
 	"npc_dota_hero_dark_seer",
+    "npc_dota_hero_brewmaster",
 	"npc_dota_hero_dawnbreaker",
+    "npc_dota_hero_enigma",
 	"npc_dota_hero_death_prophet",
 	"npc_dota_hero_doom_bringer",
 	"npc_dota_hero_dragon_knight",
@@ -273,6 +275,8 @@ local sPos4List = {
 	"npc_dota_hero_skywrath_mage",
 	"npc_dota_hero_warlock",
 	"npc_dota_hero_witch_doctor",
+	"npc_dota_hero_chen",
+	"npc_dota_hero_enchantress",
 }
 
 local sPos5List = {
@@ -298,6 +302,8 @@ local sPos5List = {
 	"npc_dota_hero_skywrath_mage",
 	"npc_dota_hero_warlock",
 	"npc_dota_hero_witch_doctor",
+	"npc_dota_hero_chen",
+	"npc_dota_hero_enchantress",
 }
 
 tSelectPoolList = {
