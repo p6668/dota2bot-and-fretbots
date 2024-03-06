@@ -215,6 +215,7 @@ local sPos2List = {
 	"npc_dota_hero_viper",
 	"npc_dota_hero_void_spirit",
 	"npc_dota_hero_zuus",
+	"npc_dota_hero_muerta",
 	"npc_dota_hero_magnataur"
 }
 
@@ -247,6 +248,7 @@ local sPos3List = {
 	"npc_dota_hero_slardar",
 	"npc_dota_hero_tidehunter",
 	"npc_dota_hero_viper",
+	"npc_dota_hero_marci"
 }
 
 local sPos4List = {
@@ -270,17 +272,20 @@ local sPos4List = {
 	"npc_dota_hero_silencer",
 	"npc_dota_hero_skywrath_mage",
 	"npc_dota_hero_warlock",
-	"npc_dota_hero_witch_doctor"
+	"npc_dota_hero_witch_doctor",
+    "npc_dota_hero_dark_willow"
 }
 
 local sPos5List = {
 	"npc_dota_hero_abaddon",
 	"npc_dota_hero_bane",
 	"npc_dota_hero_crystal_maiden",
+	"npc_dota_hero_dark_willow",
 	"npc_dota_hero_dazzle",
 	"npc_dota_hero_disruptor",
 	"npc_dota_hero_earthshaker",
 	"npc_dota_hero_grimstroke",
+	"npc_dota_hero_hoodwink",
 	"npc_dota_hero_jakiro",
 	"npc_dota_hero_lich",
 	"npc_dota_hero_lion",
