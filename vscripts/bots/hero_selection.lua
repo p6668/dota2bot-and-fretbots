@@ -250,7 +250,6 @@ local sPos3List = {
 	"npc_dota_hero_slardar",
 	"npc_dota_hero_tidehunter",
 	"npc_dota_hero_viper",
-	"npc_dota_hero_marci"
 }
 
 local sPos4List = {
