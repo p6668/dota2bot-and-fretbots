@@ -455,6 +455,23 @@ function J.GetAlliesNearLoc( vLoc, nRadius )
 
 end
 
+function J.GetEnemiesNearLoc(vLoc, nRadius)
+	local enemies = {}
+	for _, enemyHero in pairs(GetUnitList(UNIT_LIST_ENEMY_HEROES))
+	do
+		if  J.IsValidHero(enemyHero)
+		and GetUnitToLocationDistance(enemyHero, vLoc) <= nRadius
+		and not J.IsSuspiciousIllusion(enemyHero)
+		and not J.IsMeepoClone(enemyHero)
+		and not enemyHero:HasModifier('modifier_arc_warden_tempest_double')
+		then
+			table.insert(enemies, enemyHero)
+		end
+	end
+
+	return enemies
+end
+
 
 function J.IsAllyHeroBetweenAllyAndEnemy( hAlly, hEnemy, vLoc, nRadius )
 
@@ -709,7 +726,7 @@ end
 function J.CanCastOnNonMagicImmune( npcTarget )
 
 	return npcTarget:CanBeSeen()
-			and not npcTarget:IsMagicImmune()
+			and (not npcTarget:IsMagicImmune() or (not npcTarget:IsMagicImmune() and J.IsInEtherealForm( npcTarget )))
 			and not npcTarget:IsInvulnerable()
 			and not J.IsSuspiciousIllusion( npcTarget )
 			and not J.HasForbiddenModifier( npcTarget )
@@ -717,6 +734,13 @@ function J.CanCastOnNonMagicImmune( npcTarget )
 
 end
 
+function J.IsInEtherealForm( npcTarget )
+	return npcTarget:HasModifier( "modifier_ghost_state" )
+    or npcTarget:HasModifier( "modifier_item_ethereal_blade_ethereal" )
+    or npcTarget:HasModifier( "modifier_necrolyte_death_seeker" )
+    or npcTarget:HasModifier( "modifier_necrolyte_sadist_active" )
+    or npcTarget:HasModifier( "modifier_pugna_decrepify" )
+end
 
 function J.CanCastOnTargetAdvanced( npcTarget )
 
@@ -889,23 +913,23 @@ function J.HasForbiddenModifier( npcTarget )
 				end
 			end
 		end
-		
+
 		if not npcTarget:IsBot()
 		then
-			
+
 			local nID = npcTarget:GetPlayerID()
 			local nKillCount = GetHeroKills( nID )
 			local nDeathCount = GetHeroDeaths( nID )
-			
-			if nDeathCount >= 6 
+
+			if nDeathCount >= 6
 				and nKillCount <= 6
 				and nKillCount / nDeathCount <= 0.5
 			then
 				return true
 			end
-		
+
 		end
-		
+
 	else
 		if npcTarget:HasModifier( "modifier_crystal_maiden_frostbite" )
 			or npcTarget:HasModifier( "modifier_fountain_glyph" )
@@ -913,7 +937,7 @@ function J.HasForbiddenModifier( npcTarget )
 			return true
 		end
 	end
-	
+
 	return false
 end
 
@@ -997,7 +1021,7 @@ function J.IsInTeamFight( bot, nRadius )
 
 	local attackModeAllyList = bot:GetNearbyHeroes( nRadius, false, BOT_MODE_ATTACK )
 
-	return #attackModeAllyList >= 2 and bot:GetActiveMode() ~= BOT_MODE_RETREAT
+	return #attackModeAllyList >= 2 -- and bot:GetActiveMode() ~= BOT_MODE_RETREAT
 
 end
 
@@ -1008,11 +1032,11 @@ function J.IsRetreating( bot )
 	local modeDesire = bot:GetActiveModeDesire()
 	local bDamagedByAnyHero = bot:WasRecentlyDamagedByAnyHero( 2.0 )
 
-	return ( mode == BOT_MODE_RETREAT and modeDesire >= BOT_MODE_DESIRE_HIGH and bot:DistanceFromFountain() > 600 )
+	return ( mode == BOT_MODE_RETREAT and modeDesire > BOT_MODE_DESIRE_MODERATE and bot:DistanceFromFountain() > 0 )
 		 or ( mode == BOT_MODE_EVASIVE_MANEUVERS and bDamagedByAnyHero )
 		 or ( bot:HasModifier( 'modifier_bloodseeker_rupture' ) and bDamagedByAnyHero )
 		 or ( mode == BOT_MODE_FARM and modeDesire > BOT_MODE_DESIRE_ABSOLUTE )
-		
+
 end
 
 
@@ -1022,6 +1046,7 @@ function J.IsGoingOnSomeone( bot )
 
 	return mode == BOT_MODE_ROAM
 		or mode == BOT_MODE_TEAM_ROAM
+		or mode == BOT_MODE_GANK
 		or mode == BOT_MODE_ATTACK
 		or mode == BOT_MODE_DEFEND_ALLY
 
@@ -2060,7 +2085,7 @@ function J.SetQueueToInvisible( bot )
 			bot:ActionQueue_UseAbilityOnEntity( itemAmulet, bot )
 			return
 		end
-	
+
 		local itemGlimer = J.IsItemAvailable( 'item_glimmer_cape' )
 		if itemGlimer ~= nil and itemGlimer:IsFullyCastable()
 		then
@@ -2180,8 +2205,8 @@ function J.ShouldSwitchPTStat( bot, pt )
 
 	local ptStatus = pt:GetPowerTreadsStat()
 	local botAttribute = bot:GetPrimaryAttribute()
-	
-	
+
+
 	if ptStatus == ATTRIBUTE_INTELLECT
 	then
 		ptStatus = ATTRIBUTE_AGILITY
@@ -2189,7 +2214,7 @@ function J.ShouldSwitchPTStat( bot, pt )
 		then
 			ptStatus = ATTRIBUTE_INTELLECT
 	end
-	
+
 	if botAttribute ~= ATTRIBUTE_INTELLECT
 		and botAttribute ~= ATTRIBUTE_STRENGTH
 		and botAttribute ~= ATTRIBUTE_AGILITY
@@ -2689,12 +2714,20 @@ function J.GetAttackableWeakestUnit( bot, nRadius, bHero, bEnemy )
 end
 
 
-function J.CanBeAttacked( npcTarget )
-
-	return not npcTarget:IsAttackImmune()
-			and not npcTarget:IsInvulnerable()
-			and not J.HasForbiddenModifier( npcTarget )
-
+function J.CanBeAttacked( unit )
+	return  unit ~= nil
+			and not J.HasForbiddenModifier( unit )
+			and unit:IsAlive()
+			and unit:CanBeSeen()
+			and not unit:IsNull()
+			and not unit:IsAttackImmune()
+			and not unit:IsInvulnerable()
+			and not unit:HasModifier("modifier_fountain_glyph")
+			and (unit:GetTeam() == GetTeam()
+					or not unit:HasModifier("modifier_crystal_maiden_frostbite") )
+			and (unit:GetTeam() ~= GetTeam()
+			     or ( unit:GetUnitName() ~= "npc_dota_wraith_king_skeleton_warrior"
+					  and unit:GetHealth()/unit:GetMaxHealth() < 0.5 ) )
 end
 
 
@@ -2819,7 +2852,6 @@ function J.GetEnemyCount( bot, nRadius )
 
 end
 
-
 function J.ConsiderTarget()
 
 	local bot = GetBot()
@@ -2851,6 +2883,18 @@ function J.IsHaveAegis( bot )
 
 	return bot:FindItemSlot( "item_aegis" ) >= 0
 
+end
+
+function J.DoesTeamHaveAegis( units )
+	for _, allies in pairs(units)
+	do
+		if allies:FindItemSlot("item_aegis") >= 0
+		then
+			return true
+		end
+	end
+
+	return false
 end
 
 
@@ -3005,12 +3049,12 @@ function J.IsInAllyArea( bot )
 
 	local hAllyAcient = GetAncient( GetTeam() )
 	local hEnemyAcient = GetAncient( GetOpposingTeam() )
-	
+
 	if GetUnitToUnitDistance( bot, hAllyAcient ) + 768 < GetUnitToUnitDistance( bot, hEnemyAcient )
 	then
 		return true
 	end
-	
+
 	return false
 
 end
@@ -3020,12 +3064,12 @@ function J.IsInEnemyArea( bot )
 
 	local hAllyAcient = GetAncient( GetTeam() )
 	local hEnemyAcient = GetAncient( GetOpposingTeam() )
-	
+
 	if GetUnitToUnitDistance( bot, hEnemyAcient ) + 1280 < GetUnitToUnitDistance( bot, hAllyAcient )
 	then
 		return true
 	end
-	
+
 	return false
 
 end
@@ -3320,6 +3364,18 @@ function J.CountNotStunnedUnits(tUnits, locAOE, nRadius, nUnits)
 	return count;
 end
 
+function J.CountInvUnits(pierceImmune, units)
+	local nUnits = 0;
+	if units ~= nil then
+		for _,u in pairs(units) do
+			if ( pierceImmune and J.CanCastOnMagicImmune(u) ) or ( not pierceImmune and J.CanCastOnNonMagicImmune(u) )  then
+				nUnits = nUnits + 1;
+			end
+		end
+	end
+	return nUnits;
+end
+
 function J.GetMostHPPercent(listUnits, magicImmune)
 	local mostPHP = 0;
 	local mostPHPUnit = nil;
@@ -3362,22 +3418,17 @@ function J.GetClosestUnit(units)
 end
 
 function J.IsModeTurbo()
-
-    if GetGameMode() ~= GAMEMODE_AP
-    or GetGameMode() ~= GAMEMODE_CM
-    or GetGameMode() ~= GAMEMODE_RD
-    or GetGameMode() ~= GAMEMODE_SD
-    or GetGameMode() ~= GAMEMODE_AR
-    or GetGameMode() ~= GAMEMODE_REVERSE_CM
-    or GetGameMode() ~= GAMEMODE_MO
-    or GetGameMode() ~= GAMEMODE_CD
-    or GetGameMode() ~= GAMEMODE_ABILITY_DRAFT
-    or GetGameMode() ~= GAMEMODE_ARDM
-    or GetGameMode() ~= GAMEMODE_1V1MID
-    or GetGameMode() ~= GAMEMODE_ALL_DRAFT
-    then
-        return true
-    end
+	for _, u in pairs(GetUnitList(UNIT_LIST_ALLIES))
+	do
+		if  u ~= nil
+		and u:GetUnitName() == 'npc_dota_courier'
+		then
+			if u:GetCurrentMovementSpeed() == 1100
+			then
+				return true
+			end
+		end
+	end
 
     return false
 end
@@ -3675,6 +3726,21 @@ function J.IsThereCoreNearby(nRadius)
     return false
 end
 
+function J.GetAliveAllyCoreCount()
+	local count = 0
+	for _, allyHero in pairs(GetUnitList(UNIT_LIST_ALLIED_HEROES))
+	do
+		if  J.IsValidHero(allyHero)
+		and J.IsCore(allyHero)
+		and not allyHero:IsIllusion()
+		then
+			count = count + 1
+		end
+	end
+
+	return count
+end
+
 function J.GetStrongestUnit(nRange, hUnit, bEnemy, bMagicImune, fTime)
 	local units = hUnit:GetNearbyHeroes(nRange, bEnemy, BOT_MODE_NONE)
 	local strongest = nil
@@ -3700,21 +3766,370 @@ function J.GetDistance(s, t)
     return math.sqrt((s[1] - t[1]) * (s[1]-t[1]) + (s[2] - t[2]) * (s[2] - t[2]))
 end
 
-function J.GetEnemiesNearLoc(vLoc, nRadius)
-	local enemies = {}
-	for _, enemyHero in pairs(GetUnitList(UNIT_LIST_ENEMY_HEROES))
-	do
-		if  J.IsValidHero(enemyHero)
-		and GetUnitToLocationDistance(enemyHero, vLoc) <= nRadius
-		and not J.IsSuspiciousIllusion(enemyHero)
-		and not J.IsMeepoClone(enemyHero)
-		and not enemyHero:HasModifier('modifier_arc_warden_tempest_double')
+function J.IsHeroBetweenMeAndLocation(hSource, vLoc, nRadius)
+	local vStart = hSource:GetLocation()
+	local vEnd = vLoc
+	local bot = GetBot()
+
+	local nAllyHeroes = bot:GetNearbyHeroes(1600, false, BOT_MODE_NONE)
+	for _, allyHero in pairs(nAllyHeroes)
+    do
+		if allyHero ~= hSource
 		then
-			table.insert(enemies, enemyHero)
+			local tResult = PointToLineDistance(vStart, vEnd, allyHero:GetLocation())
+			if  tResult ~= nil and tResult.within and tResult.distance < nRadius then return true end
 		end
 	end
 
-	return enemies
+	local nEnemyHeroes = bot:GetNearbyHeroes(1600, true, BOT_MODE_NONE)
+	for _, enemyHero in pairs(nEnemyHeroes)
+    do
+		if enemyHero ~= hSource
+		and not J.IsSuspiciousIllusion(enemyHero)
+		then
+			local tResult = PointToLineDistance(vStart, vEnd, enemyHero:GetLocation())
+			if  tResult ~= nil and tResult.within and tResult.distance < nRadius then return true end
+		end
+	end
+
+	return false
+end
+
+function J.IsEnemyBetweenMeAndLocation(hSource, vLoc, nRadius)
+	local vStart = hSource:GetLocation()
+	local vEnd = vLoc
+	local bot = GetBot()
+
+	local nEnemyHeroes = bot:GetNearbyHeroes(1600, true, BOT_MODE_NONE)
+	for _, enemyHero in pairs(nEnemyHeroes)
+    do
+		if enemyHero ~= hSource
+		and not J.IsSuspiciousIllusion(enemyHero)
+		then
+			local tResult = PointToLineDistance(vStart, vEnd, enemyHero:GetLocation())
+			if  tResult ~= nil and tResult.within and tResult.distance < nRadius then return true end
+		end
+	end
+
+	return false
+end
+
+function J.IsHeroBetweenMeAndTarget(hSource, hTarget, vLoc, nRadius)
+	local vStart = hSource:GetLocation()
+	local vEnd = vLoc
+
+	local nAllyHeroes = hSource:GetNearbyHeroes(1600, false, BOT_MODE_NONE)
+	for _, allyHero in pairs(nAllyHeroes)
+    do
+		if allyHero ~= hTarget and allyHero ~= hSource
+		then
+			local tResult = PointToLineDistance(vStart, vEnd, allyHero:GetLocation())
+			if  tResult ~= nil and tResult.within == true and tResult.distance < nRadius then return true end
+		end
+	end
+
+	local nEnemyHeroes = hSource:GetNearbyHeroes(1600, true, BOT_MODE_NONE)
+	for _, enemyHero in pairs(nEnemyHeroes)
+    do
+		if enemyHero ~= hTarget and enemyHero ~= hSource
+		then
+			local tResult = PointToLineDistance(vStart, vEnd, enemyHero:GetLocation())
+			if  tResult ~= nil and tResult.within and tResult.distance < nRadius then return true end
+		end
+	end
+
+	return false
+end
+
+function J.IsCreepBetweenMeAndLocation(hSource, vLoc, nRadius)
+	local vStart = hSource:GetLocation()
+	local vEnd = vLoc
+	local bot = GetBot()
+
+	local nAllyLaneCreeps = bot:GetNearbyLaneCreeps(1600, true)
+	for _, creep in pairs(nAllyLaneCreeps)
+    do
+		local tResult = PointToLineDistance(vStart, vEnd, creep:GetLocation())
+		if  tResult ~= nil and tResult.within and tResult.distance < nRadius then return true end
+	end
+
+	local nEnemyLaneCreeps = bot:GetNearbyLaneCreeps(1600, false)
+	for _, creep in pairs(nEnemyLaneCreeps)
+    do
+		local tResult = PointToLineDistance(vStart, vEnd, creep:GetLocation())
+
+		if  tResult ~= nil and tResult.within and tResult.distance < nRadius then return true end
+	end
+
+	return false
+end
+
+function J.IsNonSiegeCreepBetweenMeAndLocation(hSource, vLoc, nRadius)
+	local vStart = hSource:GetLocation()
+	local vEnd = vLoc
+
+	local nAllyLaneCreeps = hSource:GetNearbyLaneCreeps(1600, true)
+	for _, creep in pairs(nAllyLaneCreeps)
+    do
+		if  J.IsValid(creep)
+		and not J.IsKeyWordUnit('siege', creep)
+		then
+			local tResult = PointToLineDistance(vStart, vEnd, creep:GetLocation())
+			if tResult ~= nil and tResult.within and tResult.distance < nRadius then return true end
+		end
+	end
+
+	local nEnemyLaneCreeps = hSource:GetNearbyLaneCreeps(1600, false)
+	for _, creep in pairs(nEnemyLaneCreeps)
+    do
+		if  J.IsValid(creep)
+		and not J.IsKeyWordUnit('siege', creep)
+		then
+			local tResult = PointToLineDistance(vStart, vEnd, creep:GetLocation())
+			if tResult ~= nil and tResult.within and tResult.distance < nRadius then return true end
+		end
+	end
+
+	return false
+end
+
+function J.IsCreepBetweenMeAndTarget(hSource, hTarget, vLoc, nRadius)
+	if not J.IsAllyCreepBetweenMeAndTarget(hSource, hTarget, vLoc, nRadius)
+	then
+		return J.IsEnemyCreepBetweenMeAndTarget(hSource, hTarget, vLoc, nRadius)
+	end
+
+	return false
+end
+
+function J.IsEnemyCreepBetweenMeAndTarget(hSource, hTarget, vLoc, nRadius)
+	local vStart = hSource:GetLocation()
+	local vEnd = vLoc
+
+	local nAllyLaneCreeps = hTarget:GetNearbyLaneCreeps(1600, false)
+	for _, creep in pairs(nAllyLaneCreeps)
+	do
+		local tResult = PointToLineDistance(vStart, vEnd, creep:GetLocation())
+		if tResult ~= nil and tResult.within and tResult.distance < nRadius then return true end
+	end
+
+	local nEnemyLaneCreeps = hSource:GetNearbyLaneCreeps(1600, true)
+	for _, creep in pairs(nEnemyLaneCreeps)
+	do
+		local tResult = PointToLineDistance(vStart, vEnd, creep:GetLocation())
+		if tResult ~= nil and tResult.within and tResult.distance < nRadius then return true end
+	end
+
+	return false
+end
+
+function J.IsAllyCreepBetweenMeAndTarget(hSource, hTarget, vLoc, nRadius)
+	local vStart = hSource:GetLocation()
+	local vEnd = vLoc
+
+	local nAllyLaneCreeps = hSource:GetNearbyLaneCreeps(1600, false)
+	for _, creep in pairs(nAllyLaneCreeps)
+	do
+		local tResult = PointToLineDistance(vStart, vEnd, creep:GetLocation())
+		if tResult ~= nil and tResult.within and tResult.distance < nRadius then
+			return true
+		end
+	end
+
+	local nEnemyLaneCreeps = hTarget:GetNearbyLaneCreeps(1600, true)
+	for _, creep in pairs(nEnemyLaneCreeps)
+	do
+		local tResult = PointToLineDistance(vStart, vEnd, creep:GetLocation())
+		if tResult ~= nil and tResult.within and tResult.distance < nRadius then
+			return true
+		end
+	end
+
+	return false
+end
+
+function J.IsAllyHeroBetweenMeAndTarget(hSource, hTarget, vLoc, nRadius)
+	local vStart = hSource:GetLocation()
+	local vEnd = vLoc
+
+	local nAllyHeroes = hSource:GetNearbyHeroes(1600, false, BOT_MODE_NONE)
+	for _, allyHero in pairs(nAllyHeroes)
+	do
+		if allyHero ~= hSource
+		then
+			local tResult = PointToLineDistance(vStart, vEnd, allyHero:GetLocation())
+			if tResult ~= nil and tResult.within and tResult.distance <= nRadius + 50 then return true end
+		end
+	end
+
+	local nEnemyHeroes = hTarget:GetNearbyHeroes(1600, true, BOT_MODE_NONE)
+	for _, enemyHero in pairs(nEnemyHeroes)
+	do
+		if enemyHero ~= hSource
+		and not J.IsSuspiciousIllusion(enemyHero)
+		then
+			local tResult = PointToLineDistance(vStart, vEnd, enemyHero:GetLocation())
+			if tResult ~= nil and tResult.within and tResult.distance <= nRadius + 50 then return true end
+		end
+	end
+
+	return false
+end
+
+local sIgnoreAbilityIndex = {
+	["antimage_blink"] = true,
+	["arc_warden_magnetic_field"] = true,
+	["arc_warden_spark_wraith"] = true,
+	["arc_warden_tempest_double"] = true,
+	["chaos_knight_phantasm"] = true,
+	["clinkz_burning_army"] = true,
+	["death_prophet_exorcism"] = true,
+	["dragon_knight_elder_dragon_form"] = true,
+	["juggernaut_healing_ward"] = true,
+	["necrolyte_death_pulse"] = true,
+	["necrolyte_sadist"] = true,
+	["omniknight_guardian_angel"] = true,
+	["phantom_assassin_blur"] = true,
+	["pugna_nether_ward"] = true,
+	["skeleton_king_mortal_strike"] = true,
+	["sven_warcry"] = true,
+	["sven_gods_strength"] = true,
+	["templar_assassin_refraction"] = true,
+	["templar_assassin_psionic_trap"] = true,
+	["windrunner_windrun"] = true,
+	["witch_doctor_voodoo_restoration"] = true,
+}
+function J.DidEnemyCastAbility()
+	local bot = GetBot()
+	local nEnemyHeroes = bot:GetNearbyHeroes(1200, true, BOT_MODE_NONE)
+
+	for _, npcEnemy in pairs(nEnemyHeroes)
+	do
+		if  npcEnemy ~= nil and npcEnemy:IsAlive()
+		and npcEnemy:IsFacingLocation(bot:GetLocation(), 30)
+		and (npcEnemy:IsCastingAbility() or npcEnemy:IsUsingAbility())
+		then
+			local nAbility = npcEnemy:GetCurrentActiveAbility()
+			if nAbility ~= nil
+			then
+				local nAbilityBehavior = nAbility:GetBehavior()
+				local sAbilityName = nAbility:GetName()
+
+				if nAbilityBehavior ~= ABILITY_BEHAVIOR_UNIT_TARGET
+				and (npcEnemy:IsBot() or npcEnemy:GetLevel() >= 5)
+				and not sIgnoreAbilityIndex[sAbilityName]
+				then
+					return true
+				end
+
+				if  nAbilityBehavior == ABILITY_BEHAVIOR_UNIT_TARGET
+				and npcEnemy:GetLevel() >= 6
+				and not npcEnemy:IsBot()
+				and not J.IsAllyUnitSpell(sAbilityName)
+				and (not J.IsProjectileUnitSpell(sAbilityName) or J.IsInRange(bot, npcEnemy, 400))
+				then
+					return true
+				end
+			end
+		end
+	end
+
+	return false
+end
+
+function J.GetWeakestUnit(nEnemyUnits)
+	local nWeakestUnit = nil
+	local nWeakestUnitLowestHealth = 10000
+
+	for _, unit in pairs(nEnemyUnits)
+	do
+		if 	unit:IsAlive()
+        and J.CanCastOnNonMagicImmune(unit)
+        and J.CanCastOnTargetAdvanced(unit)
+		then
+			if unit:GetHealth() < nWeakestUnitLowestHealth
+			then
+				nWeakestUnitLowestHealth = unit:GetHealth()
+				nWeakestUnit = unit
+			end
+		end
+	end
+
+	return nWeakestUnit, nWeakestUnitLowestHealth
+end
+
+function J.AdjustLocationWithOffset(vLoc, offset, target)
+	local targetLoc = vLoc
+
+	local facingDir = target:GetFacing()
+	local offsetX = offset * math.cos(facingDir)
+	local offsetY = offset * math.sin(facingDir)
+
+	targetLoc = targetLoc + Vector(offsetX, offsetY)
+
+	return targetLoc
+end
+
+function J.IsInLaningPhase()
+	return (J.IsModeTurbo() and DotaTime() < 8 * 60) or DotaTime() < 12 * 60
+end
+
+function J.IsTormentor(nTarget)
+	return nTarget ~= nil
+			and not nTarget:IsNull()
+			and nTarget:CanBeSeen()
+			and nTarget:IsAlive()
+			and string.find(nTarget:GetUnitName(), 'miniboss') ~= nil
+end
+
+function J.IsDoingTormentor(bot)
+	return bot:GetActiveMode() == BOT_MODE_SIDE_SHOP
+end
+
+function J.IsLocationInChrono(loc)
+	for _, enemyHero in pairs(GetUnitList(UNIT_LIST_ENEMY_HEROES))
+	do
+		if  J.IsValidHero(enemyHero)
+		and not J.IsSuspiciousIllusion(enemyHero)
+		and GetUnitToLocationDistance(enemyHero, loc) < 300
+		and enemyHero:HasModifier('modifier_faceless_void_chronosphere_freeze')
+		then
+			return true
+		end
+	end
+
+	return false
+end
+
+function J.IsLocationInBlackHole(loc)
+	for _, enemyHero in pairs(GetUnitList(UNIT_LIST_ENEMY_HEROES))
+	do
+		if  J.IsValidHero(enemyHero)
+		and not J.IsSuspiciousIllusion(enemyHero)
+		and GetUnitToLocationDistance(enemyHero, loc) < 300
+		and enemyHero:HasModifier('modifier_enigma_black_hole_pull')
+		then
+			return true
+		end
+	end
+
+	return false
+end
+
+function J.GetMeepos()
+	local Meepos = {}
+
+	for _, allyHero in pairs(GetUnitList(UNIT_LIST_ALLIED_HEROES))
+	do
+		if  J.IsValidHero(allyHero)
+		and allyHero:GetUnitName() == 'npc_dota_hero_meepo'
+		and not J.IsSuspiciousIllusion(allyHero)
+		then
+			table.insert(Meepos, allyHero)
+		end
+	end
+
+	return Meepos
 end
 
 function J.IsMeepoClone(hero)
@@ -3745,164 +4160,13 @@ function J.IsMeepoClone(hero)
     end
 end
 
-function J.IsHeroBetweenMeAndLocation(hSource, vLoc, nRadius)
-	local vStart = hSource:GetLocation()
-	local vEnd = vLoc
-	local bot = GetBot()
-
-	local nAllyHeroes = bot:GetNearbyHeroes(1600, false, BOT_MODE_NONE)
-	for _, allyHero in pairs(nAllyHeroes)
-    do
-		if allyHero ~= hSource
-		then
-			local tResult = PointToLineDistance(vStart, vEnd, allyHero:GetLocation())
-			if  tResult ~= nil and tResult.within and tResult.distance < nRadius + 25 then return true end
-		end
-	end
-
-	local nEnemyHeroes = bot:GetNearbyHeroes(1600, true, BOT_MODE_NONE)
-	for _, enemyHero in pairs(nEnemyHeroes)
-    do
-		if enemyHero ~= hSource
-		and not J.IsSuspiciousIllusion(enemyHero)
-		then
-			local tResult = PointToLineDistance(vStart, vEnd, enemyHero:GetLocation())
-			if  tResult ~= nil and tResult.within and tResult.distance < nRadius + 25 then return true end
-		end
-	end
-
-	return false
-end
-
-function J.IsHeroBetweenMeAndTarget(hSource, hTarget, vLoc, nRadius)
-	local vStart = hSource:GetLocation()
-	local vEnd = vLoc
-	local bot = GetBot()
-
-	local nAllyHeroes = bot:GetNearbyHeroes(1600, false, BOT_MODE_NONE)
-	for _, allyHero in pairs(nAllyHeroes)
-    do
-		if allyHero ~= hTarget and allyHero ~= hSource
-		then
-			local tResult = PointToLineDistance(vStart, vEnd, allyHero:GetLocation())
-			if  tResult ~= nil and tResult.within == true and tResult.distance < nRadius + 25 then return true end
-		end
-	end
-
-	local nEnemyHeroes = bot:GetNearbyHeroes(1600, true, BOT_MODE_NONE)
-	for _, enemyHero in pairs(nEnemyHeroes)
-    do
-		if enemyHero ~= hTarget and enemyHero ~= hSource
-		and not J.IsSuspiciousIllusion(enemyHero)
-		then
-			local tResult = PointToLineDistance(vStart, vEnd, nEnemyHeroes:GetLocation())
-			if  tResult ~= nil and tResult.within and tResult.distance < nRadius + 25 then return true end
-		end
-	end
-
-	return false
-end
-
-function J.IsCreepBetweenMeAndLocation(hSource, vLoc, nRadius)
-	local vStart = hSource:GetLocation()
-	local vEnd = vLoc
-	local bot = GetBot()
-
-	local nAllyLaneCreeps = bot:GetNearbyLaneCreeps(1600, true)
-	for _, creep in pairs(nAllyLaneCreeps)
-    do
-		local tResult = PointToLineDistance(vStart, vEnd, creep:GetLocation())
-		if  tResult ~= nil and tResult.within and tResult.distance < nRadius + 25 then return true end
-	end
-
-	local nEnemyLaneCreeps = bot:GetNearbyLaneCreeps(1600, false)
-	for _, creep in pairs(nEnemyLaneCreeps)
-    do
-		local tResult = PointToLineDistance(vStart, vEnd, creep:GetLocation())
-
-		if  tResult ~= nil and tResult.within and tResult.distance < nRadius + 25 then return true end
-	end
-
-	return false
-end
-
-function J.IsCreepBetweenMeAndTarget(hSource, hTarget, vLoc, nRadius)
-	if not J.IsAllyCreepBetweenMeAndTarget(hSource, hTarget, vLoc, nRadius)
-	then
-		return J.IsEnemyCreepBetweenMeAndTarget(hSource, hTarget, vLoc, nRadius)
-	end
-
-	return true
-end
-
-function J.IsEnemyCreepBetweenMeAndTarget(hSource, hTarget, vLoc, nRadius)
-	local vStart = hSource:GetLocation()
-	local vEnd = vLoc
-
-	local nAllyLaneCreeps = hTarget:GetNearbyLaneCreeps(1600, false)
-	for _, creep in pairs(nAllyLaneCreeps)
+function J.DoesSomeoneHaveModifier(nUnitList, modifierName)
+	for _, unit in pairs(nUnitList)
 	do
-		local tResult = PointToLineDistance(vStart, vEnd, creep:GetLocation())
-		if tResult ~= nil and tResult.within and tResult.distance <= nRadius + 50 then return true end
-	end
-
-	local nEnemyLaneCreeps = hSource:GetNearbyLaneCreeps(1600, true)
-	for _, creep in pairs(nEnemyLaneCreeps)
-	do
-		local tResult = PointToLineDistance(vStart, vEnd, creep:GetLocation())
-		if tResult ~= nil and tResult.within and tResult.distance <= nRadius + 50 then return true end
-	end
-
-	return false
-end
-
-function J.IsAllyCreepBetweenMeAndTarget(hSource, hTarget, vLoc, nRadius)
-	local vStart = hSource:GetLocation()
-	local vEnd = vLoc
-
-	local nAllyLaneCreeps = hSource:GetNearbyLaneCreeps(1600, false)
-	for _, creep in pairs(nAllyLaneCreeps)
-	do
-		local tResult = PointToLineDistance(vStart, vEnd, creep:GetLocation())
-		if tResult ~= nil and tResult.within and tResult.distance <= nRadius + 50 then
+		if  J.IsValid(unit)
+		and unit:HasModifier(modifierName)
+		then
 			return true
-		end
-	end
-
-	local nEnemyLaneCreeps = hTarget:GetNearbyLaneCreeps(1600, true)
-	for _, creep in pairs(nEnemyLaneCreeps)
-	do
-		local tResult = PointToLineDistance(vStart, vEnd, creep:GetLocation())
-		if tResult ~= nil and tResult.within and tResult.distance <= nRadius + 50 then
-			return true
-		end
-	end
-
-	return false
-end
-
-function J.IsAllyHeroBetweenMeAndTarget(hSource, hTarget, vLoc, nRadius)
-	local vStart = hSource:GetLocation()
-	local vEnd = vLoc
-
-	local nAllyHeroes = hSource:GetNearbyHeroes(1600, false, BOT_MODE_NONE)
-	for _, allyHero in pairs(nAllyHeroes)
-	do
-		if allyHero ~= hSource
-		then
-			local tResult = PointToLineDistance(vStart, vEnd, allyHero:GetLocation())
-			if tResult ~= nil and tResult.within and tResult.distance <= nRadius + 50 then return true end
-		end
-	end
-
-	local nEnemyHeroes = hTarget:GetNearbyHeroes(1600, true, BOT_MODE_NONE)
-	for _, enemyHero in pairs(nEnemyHeroes)
-	do
-		if enemyHero ~= hSource
-		and not J.IsSuspiciousIllusion(enemyHero)
-		then
-			local tResult = PointToLineDistance(vStart, vEnd, enemyHero:GetLocation())
-			if tResult ~= nil and tResult.within and tResult.distance <= nRadius + 50 then return true end
 		end
 	end
 
