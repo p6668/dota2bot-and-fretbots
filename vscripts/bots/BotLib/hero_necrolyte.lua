@@ -14,7 +14,7 @@ local J = require( GetScriptDirectory()..'/FunLib/jmz_func' )
 local Minion = dofile( GetScriptDirectory()..'/FunLib/aba_minion' )
 local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
-local sOutfitType = J.Item.GetOutfitType( bot )
+local sRole = J.Item.GetOutfitType( bot )
 
 local tTalentTreeList = {
 						{--pos2
@@ -39,11 +39,11 @@ local tAllAbilityBuildList = {
 local nAbilityBuildList
 local nTalentBuildList
 
-if sOutfitType == "outfit_mid"
+if sRole == "outfit_mid"
 then
     nAbilityBuildList   = tAllAbilityBuildList[1]
     nTalentBuildList    = J.Skill.GetTalentBuild(tTalentTreeList[1])
-elseif sOutfitType == "outfit_tank"
+elseif sRole == "outfit_tank"
 then
     nAbilityBuildList   = tAllAbilityBuildList[2]
     nTalentBuildList    = J.Skill.GetTalentBuild(tTalentTreeList[2])
@@ -51,11 +51,11 @@ end
 
 local sHalberdPipe = RandomInt( 1, 2 ) == 1 and "item_heavens_halberd" or "item_pipe"
 
-local tOutFitList = {}
+local sRoleItemsBuyList = {}
 
-tOutFitList['outfit_carry'] = tOutFitList['outfit_mid']
+sRoleItemsBuyList['pos_1'] = sRoleItemsBuyList['pos_1']
 
-tOutFitList['outfit_mid'] = {
+sRoleItemsBuyList['outfit_mid'] = {
 	"item_tango",
 	"item_double_branches",
 	"item_faerie_fire",
@@ -75,39 +75,11 @@ tOutFitList['outfit_mid'] = {
 	"item_octarine_core",--
 	"item_travel_boots_2",--
 	"item_ultimate_scepter_2",
-	"item_moon_shard",
 	"item_wind_waker",--
+	"item_moon_shard",
 }
 
-tOutFitList['outfit_priest'] = {
-
-	"item_priest_outfit",
-	"item_urn_of_shadows",
-	"item_mekansm",
-	"item_glimmer_cape",
-	"item_aghanims_shard",
-	"item_holy_locket",
-	"item_guardian_greaves",
-	"item_spirit_vessel",
-	"item_shivas_guard",
-
-}
-
-tOutFitList['outfit_mage'] = {
-
-	"item_mage_outfit",
-	"item_ancient_janggo",
-	"item_glimmer_cape",
-	"item_boots_of_bearing",
-	"item_holy_locket",
-	"item_pipe",
-	"item_aghanims_shard",
-	"item_shivas_guard",
-	"item_sheepstick"
-
-}
-
-tOutFitList['outfit_tank'] = {
+sRoleItemsBuyList['outfit_tank'] = {
 	"item_tango",
 	"item_double_branches",
 	"item_faerie_fire",
@@ -131,7 +103,11 @@ tOutFitList['outfit_tank'] = {
 	"item_moon_shard",
 }
 
-X['sBuyList'] = tOutFitList[sOutfitType]
+sRoleItemsBuyList['outfit_priest'] = sRoleItemsBuyList['outfit_priest']
+
+sRoleItemsBuyList['outfit_mage'] = sRoleItemsBuyList['outfit_mage']
+
+X['sBuyList'] = sRoleItemsBuyList[sRole]
 
 X['sSellList'] = {
 	"item_bracer",

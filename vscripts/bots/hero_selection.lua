@@ -181,11 +181,11 @@ local sPos1List = {
 	"npc_dota_hero_terrorblade",
 	"npc_dota_hero_tiny",
 	"npc_dota_hero_ursa",
-    "npc_dota_hero_muerta",
 	"npc_dota_hero_huskar"
 }
 
 local sPos2List = {
+	"npc_dota_hero_arc_warden",
 	"npc_dota_hero_batrider",
 	"npc_dota_hero_death_prophet",
 	"npc_dota_hero_doom_bringer",
@@ -210,7 +210,6 @@ local sPos2List = {
 	"npc_dota_hero_viper",
 	"npc_dota_hero_void_spirit",
 	"npc_dota_hero_zuus",
-	"npc_dota_hero_muerta",
 	"npc_dota_hero_magnataur"
 }
 
