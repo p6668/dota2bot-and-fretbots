@@ -3700,6 +3700,51 @@ function J.GetDistance(s, t)
     return math.sqrt((s[1] - t[1]) * (s[1]-t[1]) + (s[2] - t[2]) * (s[2] - t[2]))
 end
 
+function J.GetEnemiesNearLoc(vLoc, nRadius)
+	local enemies = {}
+	for _, enemyHero in pairs(GetUnitList(UNIT_LIST_ENEMY_HEROES))
+	do
+		if  J.IsValidHero(enemyHero)
+		and GetUnitToLocationDistance(enemyHero, vLoc) <= nRadius
+		and not J.IsSuspiciousIllusion(enemyHero)
+		and not J.IsMeepoClone(enemyHero)
+		and not enemyHero:HasModifier('modifier_arc_warden_tempest_double')
+		then
+			table.insert(enemies, enemyHero)
+		end
+	end
+
+	return enemies
+end
+
+function J.IsMeepoClone(hero)
+	if  J.IsValidHero(hero)
+	and hero:GetUnitName() == 'npc_dota_hero_meepo'
+	then
+		for i = 0, 5
+		do
+			local hItem = hero:GetItemInSlot(i)
+
+			if  hItem ~= nil
+			and not (hItem:GetName() == 'item_boots'
+					or hItem:GetName() == 'item_tranquil_boots'
+					or hItem:GetName() == 'item_arcane_boots'
+					or hItem:GetName() == 'item_power_treads'
+					or hItem:GetName() == 'item_phase_boots'
+					or hItem:GetName() == 'item_travel_boots'
+					or hItem:GetName() == 'item_boots_of_bearing'
+					or hItem:GetName() == 'item_guardian_greaves'
+					or hItem:GetName() == 'item_travel_boots_2'
+				)
+			then
+				return false
+			end
+		end
+
+		return true
+    end
+end
+
 function J.IsHeroBetweenMeAndLocation(hSource, vLoc, nRadius)
 	local vStart = hSource:GetLocation()
 	local vEnd = vLoc

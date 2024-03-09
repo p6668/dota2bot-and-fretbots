@@ -180,23 +180,20 @@ local sPos1List = {
 	"npc_dota_hero_templar_assassin",
 	"npc_dota_hero_terrorblade",
 	"npc_dota_hero_tiny",
-	"npc_dota_hero_ursa"
+	"npc_dota_hero_ursa",
+    "npc_dota_hero_muerta",
+	"npc_dota_hero_huskar"
 }
 
 local sPos2List = {
 	"npc_dota_hero_arc_warden",
 	"npc_dota_hero_batrider",
-	"npc_dota_hero_bounty_hunter",
-	"npc_dota_hero_clinkz",
 	"npc_dota_hero_death_prophet",
 	"npc_dota_hero_doom_bringer",
-	"npc_dota_hero_dragon_knight",
 	"npc_dota_hero_earth_spirit",
 	"npc_dota_hero_ember_spirit",
-	"npc_dota_hero_huskar",
 	"npc_dota_hero_invoker",
 	"npc_dota_hero_keeper_of_the_light",
-	"npc_dota_hero_kunkka",
 	"npc_dota_hero_leshrac",
 	"npc_dota_hero_lina",
 	"npc_dota_hero_mirana",
@@ -211,7 +208,6 @@ local sPos2List = {
 	"npc_dota_hero_sniper",
 	"npc_dota_hero_storm_spirit",
 	"npc_dota_hero_templar_assassin",
-	"npc_dota_hero_tiny",
 	"npc_dota_hero_viper",
 	"npc_dota_hero_void_spirit",
 	"npc_dota_hero_zuus",
@@ -276,6 +272,7 @@ local sPos4List = {
 	"npc_dota_hero_witch_doctor",
 	"npc_dota_hero_chen",
 	"npc_dota_hero_enchantress",
+    "npc_dota_hero_enigma",
 }
 
 local sPos5List = {
@@ -303,6 +300,7 @@ local sPos5List = {
 	"npc_dota_hero_witch_doctor",
 	"npc_dota_hero_chen",
 	"npc_dota_hero_enchantress",
+    "npc_dota_hero_enigma",
 }
 
 tSelectPoolList = {
