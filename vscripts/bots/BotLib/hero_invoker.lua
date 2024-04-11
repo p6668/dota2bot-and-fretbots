@@ -832,30 +832,7 @@ function X.ConsiderSunstrike()
     then
         if J.IsInTeamFight(bot, 1200)
 		then
-			local nInRangeEnemy = bot:GetNearbyHeroes(1200, true, BOT_MODE_NONE)
-			local nNotMovingEnemyCount = 0
-
-			for _, enemyHero in pairs(nInRangeEnemy)
-            do
-				if  J.IsValidHero(enemyHero)
-				and J.CanCastOnMagicImmune(enemyHero)
-				and (enemyHero:IsStunned()
-					or enemyHero:IsRooted()
-                    or enemyHero:IsHexed()
-                    or enemyHero:IsNightmared()
-                    or enemyHero:HasModifier('modifier_enigma_black_hole_pull')
-                    or enemyHero:HasModifier('modifier_faceless_void_chronosphere_freeze'))
-                    or J.IsTaunted(enemyHero)
-                and not J.IsSuspiciousIllusion(enemyHero)
-				then
-					nNotMovingEnemyCount = nNotMovingEnemyCount + 1
-				end
-			end
-
-			if nNotMovingEnemyCount >= 1
-            then
-				return BOT_ACTION_DESIRE_HIGH, 0
-			end
+			return BOT_ACTION_DESIRE_HIGH, 0
 		end
 
 		if J.IsGoingOnSomeone(bot)

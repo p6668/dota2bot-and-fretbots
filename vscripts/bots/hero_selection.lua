@@ -152,7 +152,6 @@ local HeroSet = {}
 ---------------------------------------------------------
 
 local sPos1List = {
-	"npc_dota_hero_alchemist",
 	"npc_dota_hero_antimage",
 	"npc_dota_hero_arc_warden",
 	"npc_dota_hero_bloodseeker",

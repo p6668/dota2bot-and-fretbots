@@ -61,11 +61,7 @@ tOutFitList['outfit_tank'] = tOutFitList['outfit_carry']
 X['sBuyList'] = tOutFitList[sOutfitType]
 
 X['sSellList'] = {
-
-	'item_travel_boots',
 	'item_magic_wand',
-
-	"item_sheepstick",
 	"item_hand_of_midas",
 
 }
