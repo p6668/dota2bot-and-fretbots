@@ -48,6 +48,7 @@ tOutFitList['outfit_carry'] = {
 	"item_overwhelming_blink",	
 	"item_abyssal_blade",
 	"item_moon_shard",
+    "item_ultimate_scepter_2",
 	"item_travel_boots_2",
 
 }

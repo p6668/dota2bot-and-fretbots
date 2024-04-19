@@ -19,7 +19,7 @@ local sOutfitType = J.Item.GetOutfitType( bot )
 local tTalentTreeList = {
 						['t25'] = {0, 10},
 						['t20'] = {0, 10},
-						['t15'] = {10, 0},
+						['t15'] = {0, 10},
 						['t10'] = {10, 0},
 }
 
@@ -48,14 +48,14 @@ tOutFitList['outfit_carry'] = {
 	"item_manta",
 	"item_ultimate_scepter",
 	"item_hurricane_pike",--
-	RandomItem,--
+	"item_black_king_bar",--
 	"item_butterfly",--
+    "item_moon_shard",
 	"item_aghanims_shard",
 	"item_greater_crit",--
 	"item_satanic",--
 	"item_ultimate_scepter_2",
 	"item_travel_boots",
-	"item_moon_shard",
 	"item_travel_boots_2",--
 }
 
