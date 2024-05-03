@@ -47,6 +47,9 @@ tOutFitList['outfit_carry'] = {
 	"item_moon_shard",
 	"item_ultimate_scepter_2",
 	"item_octarine_core",
+    "item_shivas_guard",
+    "item_boots_of_bearing",
+    "item_refresher",
 
 }
 
