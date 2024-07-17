@@ -3,7 +3,7 @@ This is a customized version of fretbots + dota2bot. This script uses dota2bot w
 It is updated under the assumption the user will also use fretbots with a difficulty of at least 5.
 This means that the GPM for enemy bots would be around 1100-1300.
 
-bots from: https://github.com/ryndrb/dota2bot
+bots from: https://github.com/ryndrb/dota2bot  
 fretbots: https://github.com/fretmute/fretbots   
 beginner AI: https://steamcommunity.com/sharedfiles/filedetails/?id=1627071163
 
