@@ -108,18 +108,13 @@ function GetDesire()
 	
 	if DotaTime() < 50 then return 0.0 end
 	
-	local aliveEnemyCount = J.GetNumOfAliveHeroes(true);
-	local aliveAllyCount  = J.GetNumOfAliveHeroes(false);
-
-	if X.IsUnitAroundLocation(GetAncient(GetTeam()):GetLocation(), 3000) 
-	and (aliveAllyCount >= aliveEnemyCount or J.WeAreStronger(bot, 1600))
-	then
+	if X.IsUnitAroundLocation(GetAncient(GetTeam()):GetLocation(), 3000) then
 		return BOT_MODE_DESIRE_NONE;
 	end
 	
 	minute = math.floor(DotaTime() / 60);
 	sec = DotaTime() % 60;
-	
+
 		
 	if not J.Role.IsCampRefreshDone()
 	   and J.Role.GetAvailableCampCount() < J.Role.GetCampCount()
@@ -333,7 +328,7 @@ function GetDesire()
 				elseif farmState == 1
 				    then 
 						bot.farmLocation = preferedCamp.cattr.location
-					    return BOT_MODE_DESIRE_ABSOLUTE
+					    return BOT_MODE_DESIRE_ABSOLUTE *0.89;
 				else
 					
 					if aliveEnemyCount >= 3
@@ -382,7 +377,7 @@ function GetDesire()
 					
 					if botName == 'npc_dota_hero_medusa' and farmDistance < 133 then return 0.33 end 
 					bot.farmLocation = preferedCamp.cattr.location
-					return math.floor((RemapValClamped(farmDistance, 6000, 0, BOT_MODE_DESIRE_MODERATE, BOT_MODE_DESIRE_ABSOLUTE))*10)/10;
+					return math.floor((RemapValClamped(farmDistance, 6000, 0, BOT_MODE_DESIRE_MODERATE, BOT_MODE_DESIRE_VERYHIGH))*10)/10;
 				end
 			end
 		end
@@ -540,7 +535,7 @@ function Think()
 	if preferedCamp ~= nil then
 		local targetFarmLoc = preferedCamp.cattr.location;
 		local cDist = GetUnitToLocationDistance(bot, targetFarmLoc);
-		local nNeutrals = bot:GetNearbyNeutralCreeps(1600);
+		local nNeutrals = bot:GetNearbyNeutralCreeps(888);
 		if #nNeutrals >= 3 and cDist <= 600 and cDist > 240
 		   and ( bot:GetLevel() >= 10 or not nNeutrals[1]:IsAncientCreep())
 		then farmState = 1 end;
