@@ -1004,7 +1004,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_antimage"] = function()
 	if not Site.IsHaveItem( bot, "item_satanic" )
 		and botNetWorth < 22000
 	then
-		if Site.GetAroundAllyCount( bot, 2400 ) <= 2
+		if Site.GetAroundAllyCount( bot, 1100 ) <= 2
 		then
 			return true
 		end
@@ -1040,7 +1040,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_arc_warden"] = function()
 	end
 
 	if Site.IsHaveItem( bot, "item_hand_of_midas" )
-		and Site.GetAroundAllyCount( bot, 2400 ) <= 3
+		and Site.GetAroundAllyCount( bot, 1100 ) <= 3
 		and botNetWorth <= 22000
 	then
 		return true
@@ -1070,7 +1070,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_axe"] = function()
 	if not Site.IsHaveItem( bot, "item_heart" )
 		and botNetWorth < 21000
 	then
-		if Site.GetAroundAllyCount( bot, 2400 ) <= 1
+		if Site.GetAroundAllyCount( bot, 1100 ) <= 1
 		then
 			return true
 		end
@@ -1100,7 +1100,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_bloodseeker"] = function()
 	if not Site.IsHaveItem( bot, "item_abyssal_blade" )
 		and botNetWorth < 20000
 	then
-		if Site.GetAroundAllyCount( bot, 2400 ) <= 1
+		if Site.GetAroundAllyCount( bot, 1100 ) <= 1
 		then
 			return true
 		end
@@ -1156,7 +1156,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_dragon_knight"] = function()
 	if not Site.IsHaveItem( bot, "item_assault" )
 	   and botNetWorth < 20000
 	then
-		local allyCount = Site.GetAroundAllyCount( bot, 2400 )
+		local allyCount = Site.GetAroundAllyCount( bot, 1100 )
 		if bot:GetAttackRange() > 300
 			and allyCount <= 2
 		then
@@ -1215,7 +1215,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_drow_ranger"] = function()
 	if Site.IsHaveItem( bot, "item_ultimate_scepter" )
 		and botNetWorth < 20000
 	then
-		if Site.GetAroundAllyCount( bot, 2400 ) <= 2
+		if Site.GetAroundAllyCount( bot, 1100 ) <= 2
 		then
 			return true
 		end
@@ -1245,7 +1245,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_huskar"] = function()
 	if not Site.IsHaveItem( bot, "item_black_king_bar" )
 		and botNetWorth < 22000
 	then
-		if Site.GetAroundAllyCount( bot, 2400 ) < 2
+		if Site.GetAroundAllyCount( bot, 1100 ) < 2
 		then
 			return true
 		end
@@ -1254,7 +1254,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_huskar"] = function()
 	if bot:GetLevel() > 20
 	   and botNetWorth < 22000
 	then
-		if Site.GetAroundAllyCount( bot, 2400 ) <= 1
+		if Site.GetAroundAllyCount( bot, 1100 ) <= 1
 		then
 			return true
 		end
@@ -1277,7 +1277,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_juggernaut"] = function()
 	if not Site.IsHaveItem( bot, "item_black_king_bar" )
 		and botNetWorth < 20000
 	then
-		if Site.GetAroundAllyCount( bot, 2400 ) <= 2
+		if Site.GetAroundAllyCount( bot, 1100 ) <= 2
 		then
 			return true
 		end
@@ -1286,7 +1286,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_juggernaut"] = function()
 	if not Site.IsHaveItem( bot, "item_satanic" )
 		and botNetWorth < 22000
 	then
-		if Site.GetAroundAllyCount( bot, 2400 ) <= 1
+		if Site.GetAroundAllyCount( bot, 1100 ) <= 1
 		then
 			return true
 		end
@@ -1334,7 +1334,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_medusa"] = function()
 	if not Site.IsHaveItem( bot, "item_satanic" )
 		and botNetWorth < 22000
 	then
-		if Site.GetAroundAllyCount( bot, 2400 ) <= 1
+		if Site.GetAroundAllyCount( bot, 1100 ) <= 1
 		then
 			return true
 		end
@@ -1364,7 +1364,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_nevermore"] = function()
 	if not Site.IsHaveItem( bot, "item_sphere" )
 		and botNetWorth < 22000
 	then
-		if Site.GetAroundAllyCount( bot, 2400 ) <= 2
+		if Site.GetAroundAllyCount( bot, 1100 ) <= 2
 		then
 			return true
 		end
@@ -1406,7 +1406,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_phantom_assassin"] = function()
 	if not Site.IsHaveItem( bot, "item_black_king_bar" )
 		and botNetWorth < 22000
 	then
-		if Site.GetAroundAllyCount( bot, 2400 ) <= 2
+		if Site.GetAroundAllyCount( bot, 1100 ) <= 2
 		then
 			return true
 		end
@@ -1415,7 +1415,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_phantom_assassin"] = function()
 	if not Site.IsHaveItem( bot, "item_satanic" )
 		and botNetWorth < 26000
 	then
-		if Site.GetAroundAllyCount( bot, 2400 ) <= 1
+		if Site.GetAroundAllyCount( bot, 1100 ) <= 1
 		then
 			return true
 		end
@@ -1447,7 +1447,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_phantom_lancer"] = function()
 	if not Site.IsHaveItem( bot, "item_sphere" )
 		and botNetWorth < 22000
 	then
-		if Site.GetAroundAllyCount( bot, 2400 ) <= 3
+		if Site.GetAroundAllyCount( bot, 1100 ) <= 3
 		then
 			return true
 		end
@@ -1456,7 +1456,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_phantom_lancer"] = function()
 	if not Site.IsHaveItem( bot, "item_heart" )
 		and botNetWorth < 22000
 	then
-		if Site.GetAroundAllyCount( bot, 2400 ) <= 1
+		if Site.GetAroundAllyCount( bot, 1100 ) <= 1
 		then
 			return true
 		end
@@ -1494,7 +1494,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_razor"] = function()
 	if not Site.IsHaveItem( bot, "item_satanic" )
 		and botNetWorth < 22000
 	then
-		if Site.GetAroundAllyCount( bot, 2400 ) <= 1
+		if Site.GetAroundAllyCount( bot, 1100 ) <= 1
 		then
 			return true
 		end
@@ -1536,7 +1536,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_legion_commander"] = function()
 	if not Site.IsHaveItem( bot, "item_heart" )
 		and botNetWorth < 21000
 	then
-		if Site.GetAroundAllyCount( bot, 2400 ) <= 1
+		if Site.GetAroundAllyCount( bot, 1100 ) <= 1
 		then
 			return true
 		end
@@ -1566,7 +1566,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_slark"] = function()
 	if not Site.IsHaveItem( bot, "item_silver_edge" )
 		and botNetWorth < 21000
 	then
-		if Site.GetAroundAllyCount( bot, 2400 ) <= 2
+		if Site.GetAroundAllyCount( bot, 1100 ) <= 2
 		then
 			return true
 		end
@@ -1575,7 +1575,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_slark"] = function()
 	if not Site.IsHaveItem( bot, "item_abyssal_blade" )
 		and botNetWorth < 22000
 	then
-		if Site.GetAroundAllyCount( bot, 2400 ) <= 1
+		if Site.GetAroundAllyCount( bot, 1100 ) <= 1
 		then
 			return true
 		end
@@ -1610,7 +1610,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_sven"] = function()
 	if not Site.IsHaveItem( bot, "item_satanic" )
 		and botNetWorth < 22000
 	then
-		if Site.GetAroundAllyCount( bot, 2400 ) <= 2
+		if Site.GetAroundAllyCount( bot, 1100 ) <= 2
 		then
 			return true
 		end
@@ -1619,7 +1619,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_sven"] = function()
 	if not Site.IsHaveItem( bot, "item_greater_crit" )
 		and botNetWorth < 22000
 	then
-		if Site.GetAroundAllyCount( bot, 2400 ) <= 1
+		if Site.GetAroundAllyCount( bot, 1100 ) <= 1
 		then
 			return true
 		end
@@ -1642,7 +1642,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_sniper"] = function()
 		local botDeaths = GetHeroDeaths( bot:GetPlayerID() )
 		if botKills - 3 <=  botDeaths
 			and botDeaths > 2
-			and Site.GetAroundAllyCount( bot, 2400 ) <= 2
+			and Site.GetAroundAllyCount( bot, 1100 ) <= 2
 		then
 			return true
 		end
@@ -1672,7 +1672,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_templar_assassin"] = function()
 	if not Site.IsHaveItem( bot, "item_hurricane_pike" )
 		and botNetWorth < 20000
 	then
-		if Site.GetAroundAllyCount( bot, 2400 ) <= 3
+		if Site.GetAroundAllyCount( bot, 1100 ) <= 3
 		then
 			return true
 		end
@@ -1681,7 +1681,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_templar_assassin"] = function()
 	if not Site.IsHaveItem( bot, "item_satanic" )
 		and botNetWorth < 22000
 	then
-		if Site.GetAroundAllyCount( bot, 2400 ) <= 1
+		if Site.GetAroundAllyCount( bot, 1100 ) <= 1
 		then
 			return true
 		end
