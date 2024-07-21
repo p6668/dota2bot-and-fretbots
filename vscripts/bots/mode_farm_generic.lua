@@ -167,6 +167,8 @@ function GetDesire()
 		return BOT_MODE_DESIRE_NONE;
 	end
 	
+	local aliveEnemyCount = J.GetNumOfAliveHeroes(true);
+	local aliveAllyCount  = J.GetNumOfAliveHeroes(false);
 	if aliveEnemyCount <= 1
 	then
 		return BOT_MODE_DESIRE_NONE;
@@ -274,7 +276,6 @@ function GetDesire()
 		
 		if #hLaneCreepList > 0 
 		then
-			bot.farmLocation = J.GetCenterOfUnits(hLaneCreepList)
 			return BOT_MODE_DESIRE_HIGH;
 		else
 			if preferedCamp == nil then preferedCamp = J.Site.GetClosestNeutralSpwan(bot, availableCamp);end
@@ -290,8 +291,7 @@ function GetDesire()
 						teamTime = DotaTime();
 						return BOT_MODE_DESIRE_VERYLOW;
 				elseif farmState == 1
-				    then 
-						bot.farmLocation = preferedCamp.cattr.location
+				    then
 					    return BOT_MODE_DESIRE_ABSOLUTE *0.89;
 				else
 					
@@ -300,7 +300,6 @@ function GetDesire()
 						if pushTime > DotaTime() - 8.0
 						then
 							if preferedCamp == nil then preferedCamp = J.Site.GetClosestNeutralSpwan(bot, availableCamp);end
-							bot.farmLocation = preferedCamp.cattr.location
 							return BOT_MODE_DESIRE_MODERATE;
 						end
 						
@@ -317,7 +316,6 @@ function GetDesire()
 								and #allies < 2
 							then
 								pushTime = DotaTime();
-								bot.farmLocation = preferedCamp.cattr.location
 								return  BOT_MODE_DESIRE_ABSOLUTE *0.93;
 							end
 							
@@ -329,7 +327,6 @@ function GetDesire()
 									and #allies < 2
 								then
 									pushTime = DotaTime();
-									bot.farmLocation = preferedCamp.cattr.location
 									return  BOT_MODE_DESIRE_ABSOLUTE *0.98;
 								end
 							end
@@ -340,7 +337,7 @@ function GetDesire()
 					local farmDistance = GetUnitToLocationDistance(bot,preferedCamp.cattr.location);
 					
 					if botName == 'npc_dota_hero_medusa' and farmDistance < 133 then return 0.33 end 
-					bot.farmLocation = preferedCamp.cattr.location
+
 					return math.floor((RemapValClamped(farmDistance, 6000, 0, BOT_MODE_DESIRE_MODERATE, BOT_MODE_DESIRE_VERYHIGH))*10)/10;
 				end
 			end
