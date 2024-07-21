@@ -67,18 +67,6 @@ function GetDesire()
 		beVeryHighFarmer = J.GetPosition(bot) == 1
 	end
 
-	local TormentorLocation = J.GetTormentorLocation(GetTeam())
-	local nNeutralCreeps = bot:GetNearbyNeutralCreeps(700)
-	for _, c in pairs(nNeutralCreeps)
-	do
-		local nInRangeAlly = J.GetAlliesNearLoc(TormentorLocation, 700)
-		if  c ~= nil
-		and (c:GetUnitName() == "npc_dota_miniboss"
-			or nInRangeAlly ~= nil and #nInRangeAlly >= 2)
-		then
-			return BOT_ACTION_DESIRE_NONE
-		end
-	end
 	
 	if teamPlayers == nil then teamPlayers = GetTeamPlayers(GetTeam()) end
 	
@@ -169,29 +157,6 @@ function GetDesire()
 	then
 		if preferedCamp == nil then preferedCamp = J.Site.GetClosestNeutralSpwan(bot, availableCamp) end;
 		return 0.99;
-	end
-
-	if  bot:IsAlive()
-	and J.IsMeepoClone(bot)
-	then
-		if J.IsDoingRoshan(bot)
-		then
-			local botTarget = bot:GetAttackTarget()
-
-			if  J.IsRoshan(botTarget)
-			and J.IsInRange(bot, botTarget, 400)
-			and J.GetHP(botTarget) < 0.33
-			then
-				if preferedCamp == nil then preferedCamp = J.Site.GetClosestNeutralSpwan(bot, availableCamp) end
-				return BOT_MODE_DESIRE_ABSOLUTE
-			end
-		end
-
-		if nMode == BOT_MODE_ITEM
-		then
-			if preferedCamp == nil then preferedCamp = J.Site.GetClosestNeutralSpwan(bot, availableCamp) end
-			return bot:GetActiveModeDesire() + 0.1
-		end
 	end
 
 	if not bot:IsAlive() 
@@ -291,11 +256,10 @@ function GetDesire()
 	end
 	
 	if GetGameMode() ~= GAMEMODE_MO 
-	and (J.Site.IsTimeToFarm(bot))
-	-- and J.Site.IsTimeToFarm(bot)
-	-- and (not J.IsHumanPlayerInTeam() or enemyKills > allyKills + 16)
-	-- and ( bot:GetNextItemPurchaseValue() > 0 or not bot:HasModifier("modifier_item_moon_shard_consumed") )
-	and (DotaTime() > 7 * 60 or bot:GetLevel() >= 8 or ( bot:GetAttackRange() < 220 and bot:GetLevel() >= 6 ))
+	   and ( J.Site.IsTimeToFarm(bot) )
+	   and ( not X.IsHumanPlayerInTeam() or enemyKills > allyKills + 16 )
+	   and ( bot:GetNextItemPurchaseValue() > 0 or not bot:HasModifier("modifier_item_moon_shard_consumed") )
+	   and ( DotaTime() > 7 * 60 or bot:GetLevel() >= 8 or ( bot:GetAttackRange() < 220 and bot:GetLevel() >= 6 ) )
 	then
 		if J.GetDistanceFromEnemyFountain(bot) > 4000 
 		then
@@ -311,7 +275,7 @@ function GetDesire()
 		if #hLaneCreepList > 0 
 		then
 			bot.farmLocation = J.GetCenterOfUnits(hLaneCreepList)
-			return BOT_MODE_DESIRE_HIGH
+			return BOT_MODE_DESIRE_HIGH;
 		else
 			if preferedCamp == nil then preferedCamp = J.Site.GetClosestNeutralSpwan(bot, availableCamp);end
 			
@@ -681,6 +645,19 @@ function Think()
 	bot:Action_MoveToLocation( ( RB + DB )/2 );
 	return;
 end
+
+
+function X.IsHumanPlayerInTeam()
+
+	local numPlayer =  GetTeamPlayers(GetTeam());
+	if not IsPlayerBot(numPlayer[1])
+	then
+		return true;
+	end
+
+	return false;
+end
+
 
 function X.IsThereT3Detroyed()
 	

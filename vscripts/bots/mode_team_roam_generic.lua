@@ -2095,15 +2095,15 @@ function TrySwapInvItemForRefresherShard()
 end
 
 function IsDoingTormentor()
-	local nCreeps = bot:GetNearbyNeutralCreeps(700)
+-- 	local nCreeps = bot:GetNearbyNeutralCreeps(700)
 
-	for _, c in pairs(nCreeps)
-	do
-		if c:GetUnitName() == 'npc_dota_miniboss' or #J.GetAlliesNearLoc(TormentorLocation, 400) >= 2
-		then
-			return true
-		end
-	end
+-- 	for _, c in pairs(nCreeps)
+-- 	do
+-- 		if c:GetUnitName() == 'npc_dota_miniboss' or #J.GetAlliesNearLoc(TormentorLocation, 400) >= 2
+-- 		then
+-- 			return true
+-- 		end
+-- 	end
 
 	return false
 end

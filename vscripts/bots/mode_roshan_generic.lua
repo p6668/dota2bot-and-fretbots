@@ -40,7 +40,7 @@ function GetDesire()
     and not roshTimeFlag
     then
         sinceRoshAliveTime = DotaTime()
-        roshTimeFlag = true
+        roshTimeFlag = trueF
     else
         if not shouldKillRoshan
         then
@@ -85,7 +85,7 @@ function GetDesire()
         local mul = RemapValClamped(DotaTime(), sinceRoshAliveTime, sinceRoshAliveTime + (2.5 * 60), 1, 2)
         local nRoshanDesire = (GetRoshanDesire() * mul)
 
-        return Clamp(nRoshanDesire, 0, 1)
+        return Clamp(nRoshanDesire, 0, 0.8)
     end
 
     return BOT_ACTION_DESIRE_NONE
