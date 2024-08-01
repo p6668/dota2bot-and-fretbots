@@ -7,7 +7,6 @@ local	neutrals =
 	{name = 'item_arcane_ring', 					tier = 1, ranged = 1, 	melee = 1, 		roles={7,7,7,7,7}, realName = 'Arcane Ring'},
 	{name = 'item_broom_handle', 					tier = 1, ranged = 0, 	melee = 2,		roles={7,7,7,7,7}, realName = 'Broom Handle'},
 	{name = 'item_faded_broach', 					tier = 1, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Faded Broach'},
-	--{name = 'item_iron_talon', 						tier = 1, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Iron Talon'},
 	--{name = 'item_keen_optic', 						tier = 1, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Keen Optic'},
 	-- Just going to comment out items we don't want entirely rather than force the code to do a rollup on the roles count
 	--{name = 'item_mango_tree', 						tier = 1, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Mango Tree'},
@@ -16,10 +15,10 @@ local	neutrals =
 -- 	{name = 'item_royal_jelly', 					tier = 1, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Royal Jelly'},
 --     {name = 'item_safety_bubble', 					tier = 1, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Safety Bubble'},
 	--{name = 'item_trusty_shovel',					tier = 1, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Trusty Shovel'},
-	--{name = 'item_ironwood_tree',					tier = 1, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Ironwood Tree'},
+	{name = 'item_ironwood_tree',					tier = 1, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Ironwood Tree'},
 	--{name = 'item_chipped_vest',					tier = 1, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Chipped Vest'},	
 	--{name = 'item_possessed_mask',				tier = 1, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Possessed Mask'},
-	{name = 'item_mysterious_hat',				tier = 1, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = "Fairy's Trinket"},	
+-- 	{name = 'item_mysterious_hat',				tier = 1, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = "Fairy's Trinket"},
 	{name = 'item_unstable_wand',					tier = 1, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = "Pig Pole"},	
 -- 	{name = 'item_pogo_stick',						tier = 1, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = "Tumbler's Toy"},
 	{name = 'item_seeds_of_serenity',			tier = 1, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = "Seeds of Serenity"},	
@@ -30,13 +29,13 @@ local	neutrals =
 
 	-- tier 2                                                                    		
 	{name = 'item_dragon_scale', 					tier = 2, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Dragon Scale'},
+    {name = 'item_iron_talon', 						tier = 2, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Iron Talon'},
 	--{name = 'item_essence_ring', 					tier = 2, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Essence Ring'},
 	{name = 'item_grove_bow', 						tier = 2, ranged = 2, 	melee = 0,		roles={7,7,7,7,7}, realName = 'Grove Bow'},
 	--{name = 'item_imp_claw', 							tier = 2, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Imp Claw'},
 	--{name = 'item_nether_shawl', 					tier = 2, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Nether Shawl'},
 	{name = 'item_philosophers_stone', 		tier = 2, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = "Philosopher's Stone"},
 	{name = 'item_pupils_gift',						tier = 2, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = "Pupil's Gift"},
-	{name = 'item_vambrace',							tier = 2, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Vambrace'},
 -- 	{name = 'item_ring_of_aquila', 				tier = 2, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Ring of Aquila'},
 	{name = 'item_vampire_fangs',					tier = 2, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Vampire Fangs'},
   --{name = 'item_clumsy_net', 						tier = 2, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Clumsy Net'},	
@@ -55,6 +54,7 @@ local	neutrals =
 	-- tier 3
 	{name = 'item_craggy_coat', 					tier = 3, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Craggy Coat'},
 	{name = 'item_enchanted_quiver', 			tier = 3, ranged = 3, 	melee = 0,		roles={7,7,7,7,7}, realName = 'Enchanted Quiver'},
+    {name = 'item_vambrace',							tier = 3, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Vambrace'},
 	--{name = 'item_greater_faerie_fire', 	tier = 3, ranged = 1,		melee = 1,		roles={7,7,7,7,7}, realName = 'Greater Faerie Fire'},
 	{name = 'item_paladin_sword',					tier = 3, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Paladin Sword'},
 -- 	{name = 'item_quickening_charm',			tier = 3, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Quickening Charm'},
@@ -66,7 +66,6 @@ local	neutrals =
 	{name = 'item_ceremonial_robe', 			tier = 3, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Ceremonial Robe'},
 	{name = 'item_psychic_headband', 			tier = 3, ranged = 3, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Psychic Headband'},
 	--{name = 'item_black_powder_bag',			tier = 3, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Blast Rig'},
-	{name = 'item_ogre_seal_totem',				tier = 3, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Ogre Seal Totem'},	
     {name = 'item_vindicators_axe',				tier = 3, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = "Vindicator's Axe"},
 	{name = 'item_dandelion_amulet',				tier = 3, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Dandelion Amulet'},
 	{name = 'item_defiant_shell',				tier = 3, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Defiant Shell'},
@@ -77,6 +76,7 @@ local	neutrals =
 
 	-- tier 4
     {name = 'item_mind_breaker', 					tier = 3, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Mind Breaker'},
+    {name = 'item_ogre_seal_totem',				tier = 4, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Ogre Seal Totem'},
     {name = 'item_spy_gadget', 						tier = 4, ranged = 2, 	melee = 0,		roles={7,7,7,7,7}, realName = 'Telescope'},
 	--{name = 'item_flicker', 							tier = 4, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Flicker'},
 	{name = 'item_havoc_hammer', 					tier = 4, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Havoc Hammer'},
@@ -92,7 +92,7 @@ local	neutrals =
 	{name = 'item_stormcrafter',					tier = 4, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Stormcrafter'},	
 	{name = 'item_trickster_cloak',				tier = 4, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Trickster Cloak'},	
 	{name = 'item_ascetic_cap',						tier = 4, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = "Ascetic's Cap"},
-    {name = 'item_martyrs_plate',						tier = 4, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = "Martyr's Blade"},
+--     {name = 'item_martyrs_plate',						tier = 4, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = "Martyr's Blade"},
 	--{name = 'item_heavy_blade',						tier = 4, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = 'Witchbane'},
     {name = 'item_ancient_guardian',						tier = 4, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = "Ancient Guardian"},
     {name = 'item_avianas_feather',						tier = 4, ranged = 1, 	melee = 1,		roles={7,7,7,7,7}, realName = "Aviana's Feather"},
