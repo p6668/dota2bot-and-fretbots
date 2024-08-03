@@ -36,6 +36,19 @@ function X.Consider()
 	local nEnemyHeroes = bot:GetNearbyHeroes(1600, true, BOT_MODE_NONE)
     local nEnemyTowers = bot:GetNearbyTowers(888, true)
 
+	if bot.InfoBuffer ~= nil
+	then
+		-- try to backtrack ~^40% of damage
+		for i = 1, math.ceil(nDamageWindow)
+		do
+			local prevHealth = bot.InfoBuffer[i].health
+			if prevHealth and (prevHealth / bot:GetMaxHealth()) - J.GetHP(bot) >= 0.4
+			then
+				return BOT_ACTION_DESIRE_HIGH, J.Site.GetXUnitsTowardsLocation(bot, J.GetTeamFountain(), nCastRange)
+			end
+		end
+	end
+
 	if J.IsStuck(bot)
 	then
 		return BOT_ACTION_DESIRE_HIGH, J.Site.GetXUnitsTowardsLocation(bot, J.GetTeamFountain(), nCastRange)

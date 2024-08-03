@@ -6544,6 +6544,26 @@ X.ConsiderItemDesire["item_light_collector"] = function(hItem)
 	return BOT_ACTION_DESIRE_NONE
 end
 
+-- Iron Talon
+X.ConsiderItemDesire["item_iron_talon"] = function(hItem)
+	local nCastRange = 350
+
+	-- Only use it for creeps
+	local nCreep = bot:GetNearbyNeutralCreeps(nCastRange)
+	if J.IsFarming(bot)
+	and #nCreep > 0
+	then
+		local creepTarget = J.GetMostHpUnit(nCreep)
+		if J.CanBeAttacked(creepTarget)
+		and J.GetHP(creepTarget) > 0.5
+		then
+			return BOT_ACTION_DESIRE_HIGH, creepTarget, 'unit', nil
+		end
+	end
+
+	return BOT_ACTION_DESIRE_NONE
+end
+
 -- TIER 3
 
 -- Craggy Coat
@@ -7233,12 +7253,29 @@ local function UseGlyph()
 
 end
 
+-- store some bot values for last 10 sec
+local infoBuffer = {}
+local timeDelta = 10
+local currIdx = 0
+
+for i = 1, timeDelta do infoBuffer[i] = {health = 0, location = bot:GetLocation()} end
+
+function X.UpdateInfoBuffer()
+	currIdx = (currIdx % timeDelta) + 1
+	infoBuffer[timeDelta + 1 - currIdx] = {
+		health = bot:GetHealth(),
+		location = bot:GetLocation(),
+	}
+	bot.InfoBuffer = infoBuffer
+end
 
 function ItemUsageThink()
 	ItemUsageComplement()
 end
 
 function AbilityUsageThink()
+	if DotaTime() % 1 == 0 then X.UpdateInfoBuffer() end
+
 	if U['spell_order'] ~= nil and U['spell_order'][bot:GetUnitName()] ~= nil
 	then
 		S.AbilityUsage(U['spell_order'][bot:GetUnitName()])
