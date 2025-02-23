@@ -674,7 +674,7 @@ Item['item_yasha_and_kaya']	= GetItemComponents( 'item_yasha_and_kaya' )[1]
 
 Item['item_falcon_blade']	= {"item_sobi_mask", "item_blades_of_attack", "item_fluffy_hat", "item_recipe_falcon_blade"}
 
-Item['item_orb_of_corrosion']	= {"item_orb_of_venom", "item_gloves", "item_ring_of_protection"}
+Item['item_orb_of_corrosion']	= {"item_orb_of_venom", "item_blight_stone", "item_boots_of_elves"}
 
 Item['item_witch_blade']	= GetItemComponents( 'item_witch_blade' )[1]
 
@@ -709,7 +709,7 @@ Item["item_disperser"] 							= { "item_diffusal_blade", "item_eagle", "item_rec
 Item["item_blood_grenade"] 						= GetItemComponents( 'item_blood_grenade' )[1]
 
 ---------- 7.35 NEW ITEMS ---------------
-Item["item_angels_demise"] 						= { "item_phylactery", "item_lesser_crit", "item_recipe_angels_demise" }
+Item["item_angels_demise"] 						= { "item_phylactery", "item_tiara_of_selemene", "item_recipe_angels_demise" }
 Item["item_devastator"] 						= { "item_witch_blade", "item_mystic_staff", "item_recipe_devastator" }
 
 --新自定义物品
