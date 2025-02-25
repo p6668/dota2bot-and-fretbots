@@ -7,6 +7,9 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_slark'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
 local sUtility = {}
@@ -33,9 +36,9 @@ local HeroBuild = {
 				"item_slippers",
 				"item_circlet",
 			
+				"item_magic_wand",
 				"item_wraith_band",
 				"item_power_treads",
-				"item_magic_wand",
 				"item_diffusal_blade",
 				"item_yasha",
 				"item_ultimate_scepter",
@@ -43,18 +46,18 @@ local HeroBuild = {
 				"item_aghanims_shard",
 				"item_sange_and_yasha",--
 				"item_skadi",--
-				"item_basher",
 				"item_disperser",--
-				"item_bloodthorn",--
-				"item_abyssal_blade",--
+				"item_basher",
 				"item_ultimate_scepter_2",
+				"item_abyssal_blade",--
+				"item_bloodthorn",--
 				"item_moon_shard",
 			},
             ['sell_list'] = {
-				"item_quelling_blade",
-				"item_wraith_band",
-				"item_power_treads",
-				"item_magic_wand",
+				"item_quelling_blade", "item_ultimate_scepter",
+				"item_magic_wand", "item_black_king_bar",
+				"item_wraith_band", "item_skadi",
+				"item_power_treads", "item_bloodthorn",
 			},
         },
     },
@@ -73,13 +76,45 @@ local HeroBuild = {
     ['pos_3'] = {
         [1] = {
             ['talent'] = {
-                [1] = {},
+				[1] = {
+					['t25'] = {10, 0},
+					['t20'] = {0, 10},
+					['t15'] = {0, 10},
+					['t10'] = {0, 10},
+				}
             },
             ['ability'] = {
-                [1] = {},
+                [1] = {3,2,1,1,1,6,1,2,2,2,6,3,3,3,6},
             },
-            ['buy_list'] = {},
-            ['sell_list'] = {},
+            ['buy_list'] = {
+				"item_tango",
+				"item_double_branches",
+				"item_quelling_blade",
+				"item_slippers",
+				"item_circlet",
+			
+				"item_magic_wand",
+				"item_wraith_band",
+				"item_power_treads",
+				"item_diffusal_blade",
+				"item_heavens_halberd",--
+				"item_black_king_bar",--
+				"item_aghanims_shard",
+				"item_basher",
+				"item_ultimate_scepter",
+				"item_disperser",--
+				"item_abyssal_blade",--
+				"item_sheepstick",--
+				"item_ultimate_scepter_2",
+				"item_satanic",--
+				"item_moon_shard",
+			},
+            ['sell_list'] = {
+				"item_quelling_blade", "item_black_king_bar",
+				"item_magic_wand", "item_basher",
+				"item_wraith_band", "item_ultimate_scepter",
+				"item_power_treads", "item_satanic",
+			},
         },
     },
     ['pos_4'] = {
@@ -134,6 +169,8 @@ function X.MinionThink( hMinionUnit )
 
 end
 
+end
+
 --[[
 
 npc_dota_hero_slark
@@ -174,11 +211,11 @@ modifier_slark_shadow_dance_visual
 
 --]]
 
-local abilityQ = bot:GetAbilityByName( sAbilityList[1] )
-local abilityW = bot:GetAbilityByName( sAbilityList[2] )
-local abilityE = bot:GetAbilityByName( sAbilityList[3] )
-local abilityR = bot:GetAbilityByName( sAbilityList[6] )
-local abilityAS = bot:GetAbilityByName( sAbilityList[4] )
+local abilityQ = bot:GetAbilityByName('slark_dark_pact')
+local abilityW = bot:GetAbilityByName('slark_pounce')
+local abilityE = bot:GetAbilityByName('slark_essence_shift')
+local abilityAS = bot:GetAbilityByName('slark_depth_shroud')
+local abilityR = bot:GetAbilityByName('slark_shadow_dance')
 local talent2 = bot:GetAbilityByName( sTalentList[2] )
 local talent6 = bot:GetAbilityByName( sTalentList[6] )
 
@@ -195,6 +232,11 @@ local aetherRange = 0
 function X.SkillsComplement()
 
 	if J.CanNotUseAbility( bot ) or bot:IsInvisible() then return end
+
+	abilityQ = bot:GetAbilityByName('slark_dark_pact')
+	abilityW = bot:GetAbilityByName('slark_pounce')
+	abilityAS = bot:GetAbilityByName('slark_depth_shroud')
+	abilityR = bot:GetAbilityByName('slark_shadow_dance')
 
 	nKeepMana = 400
 	aetherRange = 0
@@ -253,7 +295,7 @@ end
 function X.ConsiderQ()
 
 
-	if not abilityQ:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityQ) then return 0 end
 
 	local nSkillLV = abilityQ:GetLevel()
 	local nCastRange = abilityQ:GetCastRange()
@@ -368,7 +410,26 @@ function X.ConsiderQ()
 	    end
 	end
 	
-	
+	if J.IsDoingRoshan(bot)
+	then
+		if J.IsRoshan( botTarget )
+		and J.IsInRange( botTarget, bot, nRadius )
+		and J.CanBeAttacked(botTarget)
+		and J.IsAttacking(bot)
+		then
+			return BOT_ACTION_DESIRE_HIGH
+		end
+	end
+
+    if J.IsDoingTormentor(bot)
+	then
+		if J.IsTormentor(botTarget)
+        and J.IsInRange( botTarget, bot, nRadius )
+        and J.IsAttacking(bot)
+		then
+			return BOT_ACTION_DESIRE_HIGH
+		end
+	end
 
 
 
@@ -381,7 +442,7 @@ end
 function X.ConsiderW()
 
 
-	if not abilityW:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityW) then return 0 end
 
 	local nSkillLV = abilityW:GetLevel()
 	local nCastRange = abilityW:GetSpecialValueInt( 'pounce_distance' )
@@ -454,8 +515,7 @@ end
 function X.ConsiderAS()
 
 
-	if not abilityAS:IsTrained() 
-		or not abilityAS:IsFullyCastable() 
+	if not J.CanCastAbility(abilityAS)
 		or bot:HasModifier( "modifier_slark_shadow_dance" )
 		or nHP > 0.85
 	then return 0 end
@@ -516,7 +576,7 @@ end
 function X.ConsiderR()
 
 
-	if not abilityR:IsFullyCastable() or nHP > 0.8 then return 0 end
+	if not J.CanCastAbility(abilityR) or nHP > 0.8 then return 0 end
 
 	local nSkillLV = abilityR:GetLevel()
 	local nCastRange = abilityR:GetCastRange()
@@ -600,7 +660,8 @@ function X.IsEnemyCastAbility()
 
 	for _, npcEnemy in pairs( enemyList )
 	do
-		if npcEnemy ~= nil and npcEnemy:IsAlive()
+		if J.IsValidHero(npcEnemy)
+		and npcEnemy ~= nil and npcEnemy:IsAlive()
 			and ( npcEnemy:IsCastingAbility() or npcEnemy:IsUsingAbility() )
 			and npcEnemy:IsFacingLocation( bot:GetLocation(), 30 )
 		then
@@ -634,4 +695,3 @@ end
 
 
 return X
--- dota2jmz@163.com QQ:2462331592..

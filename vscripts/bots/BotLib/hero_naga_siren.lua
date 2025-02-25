@@ -7,6 +7,9 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_naga_siren'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
 local sUtility = {}
@@ -34,24 +37,23 @@ local HeroBuild = {
 				"item_circlet",
 			
 				"item_wraith_band",
-				"item_power_treads",
 				"item_magic_wand",
+				"item_power_treads",
 				"item_manta",--
 				"item_orchid",
 				"item_heart",--
 				"item_butterfly",--
 				"item_bloodthorn",--
 				"item_aghanims_shard",
-				"item_travel_boots",
 				"item_skadi",--
 				"item_travel_boots_2",--
 				"item_moon_shard",
 				"item_ultimate_scepter_2",
 			},
             ['sell_list'] = {
-				"item_quelling_blade",
-				"item_wraith_band",
-				"item_magic_wand",
+				"item_quelling_blade", "item_heart",
+				"item_magic_wand", "item_butterfly",
+				"item_wraith_band", "item_skadi",
 			},
         },
     },
@@ -131,6 +133,8 @@ function X.MinionThink(hMinionUnit)
 
 end
 
+end
+
 --[[
 
 
@@ -163,19 +167,21 @@ modifier_naga_siren_song_of_the_siren_ignore_me
 
 --]]
 
-local abilityQ = bot:GetAbilityByName( sAbilityList[1] )
-local abilityW = bot:GetAbilityByName( sAbilityList[2] )
-local abilityE = bot:GetAbilityByName( sAbilityList[3] )
-local abilityR = bot:GetAbilityByName( sAbilityList[6] )
-local abilitySR = bot:GetAbilityByName( 'naga_siren_song_of_the_siren_cancel' )
+local abilityQ = bot:GetAbilityByName('naga_siren_mirror_image')
+local abilityW = bot:GetAbilityByName('naga_siren_ensnare')
+local abilityE = bot:GetAbilityByName('naga_siren_rip_tide')
 local ReelIn = bot:GetAbilityByName( 'naga_siren_reel_in' )
+local Deluge = bot:GetAbilityByName( 'naga_siren_deluge' )
+local abilityR = bot:GetAbilityByName('naga_siren_song_of_the_siren')
+local abilitySR = bot:GetAbilityByName( 'naga_siren_song_of_the_siren_cancel' )
 
 local castQDesire, castQTarget
 local castWDesire, castWTarget
 local castEDesire, castETarget
+local ReelInDesire
+local DelugeDesire
 local castRDesire, castRTarget
 local castSRDesire, castSRTarget
-local ReelInDesire
 
 local nKeepMana,nMP,nHP,nLV,hEnemyList,hAllyList,botTarget,sMotive;
 local aetherRange = 0
@@ -185,6 +191,13 @@ function X.SkillsComplement()
 
 	if J.CanNotUseAbility(bot) or bot:IsInvisible() then return end
 	
+	abilityQ = bot:GetAbilityByName('naga_siren_mirror_image')
+	abilityW = bot:GetAbilityByName('naga_siren_ensnare')
+	abilityE = bot:GetAbilityByName('naga_siren_rip_tide')
+	ReelIn = bot:GetAbilityByName( 'naga_siren_reel_in' )
+	Deluge = bot:GetAbilityByName( 'naga_siren_deluge' )
+	abilityR = bot:GetAbilityByName('naga_siren_song_of_the_siren')
+	abilitySR = bot:GetAbilityByName( 'naga_siren_song_of_the_siren_cancel' )
 	
 	nKeepMana = 400
 	aetherRange = 0
@@ -224,7 +237,7 @@ function X.SkillsComplement()
 	if (ReelInDesire > 0)
 	then
 		J.SetQueuePtToINT(bot, true)
-		bot:Action_UseAbility(ReelIn)
+		bot:ActionQueue_UseAbility(ReelIn)
 		return;
 	end
 	
@@ -248,13 +261,19 @@ function X.SkillsComplement()
 	
 	end
 
+	DelugeDesire = X.ConsiderDeluge()
+	if DelugeDesire > 0 then
+		bot:Action_UseAbility(Deluge)
+		return
+	end
+
 end
 
 
 function X.ConsiderQ()
 
 
-	if not abilityQ:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityQ) then return 0 end
 	
 	local nSkillLV    = abilityQ:GetLevel(); 
 	local nCastRange  = abilityQ:GetCastRange()
@@ -388,6 +407,27 @@ function X.ConsiderQ()
 			return BOT_ACTION_DESIRE_HIGH, hCastTarget, sCastMotive
 		end
 	end
+
+	if J.IsDoingRoshan(bot)
+	then
+		if J.IsRoshan( botTarget )
+		and J.IsInRange( botTarget, bot, 800 )
+		and J.CanBeAttacked(botTarget)
+		and J.IsAttacking(bot)
+		then
+			return BOT_ACTION_DESIRE_HIGH
+		end
+	end
+
+    if J.IsDoingTormentor(bot)
+	then
+		if J.IsTormentor(botTarget)
+        and J.IsInRange( botTarget, bot, 800 )
+        and J.IsAttacking(bot)
+		then
+			return BOT_ACTION_DESIRE_HIGH
+		end
+	end
 	
 	
 	return BOT_ACTION_DESIRE_NONE
@@ -398,7 +438,7 @@ end
 function X.ConsiderW()
 
 
-	if not abilityW:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityW) then return 0 end
 	
 	local nSkillLV    = abilityW:GetLevel(); 
 	local nCastRange  = abilityW:GetCastRange() + aetherRange
@@ -503,7 +543,7 @@ end
 function X.ConsiderR()
 
 
-	if not abilityR:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityR) then return 0 end
 	
 	local nSkillLV    = abilityR:GetLevel(); 
 	local nCastRange  = abilityR:GetSpecialValueInt( 'radius' )
@@ -566,9 +606,7 @@ end
 function X.ConsiderSR()
 
 
-	if abilitySR:IsHidden()
-		or not abilitySR:IsTrained()
-		or not abilitySR:IsFullyCastable() 
+	if not J.CanCastAbility(abilitySR)
 	then return 0 end	
 
 	
@@ -595,7 +633,7 @@ end
 
 function X.ConsiderReelIn()
 	if not bot:HasScepter()
-	or not ReelIn:IsFullyCastable()
+	or not J.CanCastAbility(ReelIn)
 	or J.IsInTeamFight(bot, 1400)
 	then
 		return BOT_ACTION_DESIRE_NONE
@@ -627,6 +665,47 @@ function X.ConsiderReelIn()
 		and #nInRangeAllyList >= #nInRangeEnemyList
 		then
 			return BOT_ACTION_DESIRE_HIGH
+		end
+	end
+
+	return BOT_ACTION_DESIRE_NONE
+end
+
+function X.ConsiderDeluge()
+	if not J.CanCastAbility(Deluge) then
+		return BOT_ACTION_DESIRE_NONE
+	end
+
+	local nRadius = Deluge:GetSpecialValueInt('radius')
+
+	if J.IsGoingOnSomeone(bot) then
+		if J.IsValidHero(botTarget)
+		and J.CanBeAttacked(botTarget)
+		and J.CanCastOnNonMagicImmune(botTarget)
+		and J.IsInRange(bot, botTarget, nRadius)
+		and not botTarget:HasModifier('modifier_necrolyte_reapers_scythe')
+		then
+			return BOT_ACTION_DESIRE_HIGH
+		end
+	end
+
+	local nAllyHeroes = bot:GetNearbyHeroes(1200, false, BOT_MODE_NONE)
+	local nEnemyHeroes = bot:GetNearbyHeroes(nRadius, true, BOT_MODE_NONE)
+
+	if J.IsRetreating(bot)
+	and not J.IsRealInvisible(bot)
+	and bot:WasRecentlyDamagedByAnyHero(3.0)
+	then
+		for _, enemy in pairs(nEnemyHeroes) do
+			if J.IsValidHero(enemy)
+			and J.CanCastOnNonMagicImmune(enemy)
+			and J.IsChasingTarget(enemy, bot)
+			and not enemy:IsDisarmed()
+			then
+				if J.GetHP(bot) < 0.5 or (#nEnemyHeroes > #nAllyHeroes) then
+					return BOT_ACTION_DESIRE_HIGH
+				end
+			end
 		end
 	end
 

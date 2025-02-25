@@ -7,6 +7,9 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_skeleton_king'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
 local sUtility = {}
@@ -18,10 +21,16 @@ local HeroBuild = {
             ['talent'] = {
 				[1] = {
 					['t25'] = {0, 10},
-					['t20'] = {10, 0},
+					['t20'] = {0, 10},
 					['t15'] = {10, 0},
-					['t10'] = {10, 0},
-				}
+					['t10'] = {0, 10},
+				},
+				[2] = {
+					['t25'] = {0, 10},
+					['t20'] = {0, 10},
+					['t15'] = {10, 0},
+					['t10'] = {0, 10},
+				},
             },
             ['ability'] = {
                 [1] = {2,1,2,3,2,6,2,3,3,3,6,1,1,1,6},
@@ -32,27 +41,27 @@ local HeroBuild = {
 				"item_double_gauntlets",
 				"item_quelling_blade",
 			
-				"item_phase_boots",
 				"item_magic_wand",
+				"item_phase_boots",
 				"item_armlet",
 				"item_radiance",--
 				"item_blink",
-				"item_aghanims_shard",
+				"item_black_king_bar",--
 				"item_assault",--
-				"item_ultimate_scepter",
-				"item_overwhelming_blink",--
-				"item_ultimate_scepter_2",
 				"item_abyssal_blade",--
 				"item_travel_boots",
-				"item_refresher",--
+				"item_overwhelming_blink",--
 				"item_travel_boots_2",--
 				"item_moon_shard",
+				"item_aghanims_shard",
+				"item_ultimate_scepter_2",
 			},
             ['sell_list'] = {
-				"item_gauntlets",
-				"item_quelling_blade",
-				"item_magic_wand",
-				"item_armlet",
+				"item_gauntlets", "item_radiance",
+				"item_gauntlets", "item_blink",
+				"item_quelling_blade", "item_black_king_bar",
+				"item_magic_wand", "item_assault",
+				"item_armlet", "item_travel_boots",
 			},
         },
     },
@@ -73,7 +82,7 @@ local HeroBuild = {
             ['talent'] = {
 				[1] = {
 					['t25'] = {0, 10},
-					['t20'] = {10, 0},
+					['t20'] = {0, 10},
 					['t15'] = {10, 0},
 					['t10'] = {10, 0},
 				}
@@ -83,30 +92,31 @@ local HeroBuild = {
             },
             ['buy_list'] = {
 				"item_tango",
+				"item_double_branches",
+				"item_double_gauntlets",
 				"item_quelling_blade",
-				"item_gauntlets",
-				"item_magic_stick",
-				"item_branches",
 			
-				"item_bracer",
 				"item_magic_wand",
 				"item_phase_boots",
+				"item_armlet",
 				"item_radiance",--
 				"item_blink",
-				"item_ultimate_scepter",
+				"item_black_king_bar",--
 				"item_assault",--
-				"item_aghanims_shard",
+				"item_abyssal_blade",--
+				"item_travel_boots",
 				"item_overwhelming_blink",--
-				"item_refresher",--
-				"item_ultimate_scepter_2",
-				"item_nullifier",--
 				"item_travel_boots_2",--
 				"item_moon_shard",
+				"item_aghanims_shard",
+				"item_ultimate_scepter_2",
 			},
             ['sell_list'] = {
-				"item_quelling_blade",
-				"item_bracer",
-				"item_magic_wand",
+				"item_gauntlets", "item_radiance",
+				"item_gauntlets", "item_blink",
+				"item_quelling_blade", "item_black_king_bar",
+				"item_magic_wand", "item_assault",
+				"item_armlet", "item_travel_boots",
 			},
         },
     },
@@ -164,6 +174,8 @@ function X.MinionThink( hMinionUnit )
 
 end
 
+end
+
 --[[
 
 npc_dota_hero_skeleton_king
@@ -196,10 +208,11 @@ modifier_skeleton_king_reincarnation_scepter_active
 
 --]]
 
-local abilityQ = bot:GetAbilityByName( sAbilityList[1] )
-local abilityW = bot:GetAbilityByName( sAbilityList[2] )
-local abilityE = bot:GetAbilityByName( sAbilityList[3] )
-local abilityR = bot:GetAbilityByName( sAbilityList[6] )
+local abilityQ = bot:GetAbilityByName('skeleton_king_hellfire_blast')
+local abilityW = bot:GetAbilityByName('skeleton_king_bone_guard')
+local SpectralBlade = bot:GetAbilityByName('skeleton_king_spectral_blade')
+local abilityE = bot:GetAbilityByName('skeleton_king_mortal_strike')
+local abilityR = bot:GetAbilityByName('skeleton_king_reincarnation')
 local talent5 = bot:GetAbilityByName( sTalentList[5] )
 local talent6 = bot:GetAbilityByName( sTalentList[6] )
 
@@ -214,6 +227,9 @@ function X.SkillsComplement()
 
 	if J.CanNotUseAbility( bot ) or bot:IsInvisible() then return end
 
+	abilityQ = bot:GetAbilityByName('skeleton_king_hellfire_blast')
+	-- abilityW = bot:GetAbilityByName('skeleton_king_bone_guard')
+	abilityR = bot:GetAbilityByName('skeleton_king_reincarnation')
 
 	nKeepMana = 160
 	nLV = bot:GetLevel()
@@ -247,7 +263,7 @@ end
 
 function X.ConsiderQ()
 
-	if not abilityQ:IsFullyCastable()
+	if not J.CanCastAbility(abilityQ)
 		or X.ShouldSaveMana( abilityQ )
 	then
 		return BOT_ACTION_DESIRE_NONE, 0
@@ -464,7 +480,7 @@ end
 
 function X.ConsiderW()
 
-	if not abilityW:IsFullyCastable()
+	if not J.CanCastAbility(abilityW)
 		or not bot:HasModifier( "modifier_skeleton_king_vampiric_aura" )
 		or X.ShouldSaveMana( abilityW )
 	then return 0 end
@@ -518,6 +534,8 @@ function X.ShouldSaveMana( nAbility )
 --	if talent5:IsTrained() then return false end
 
 	if nLV >= 6
+	and nAbility ~= nil
+	and abilityR ~= nil
 		and abilityR:GetCooldownTimeRemaining() <= 3.0
 		and ( bot:GetMana() - nAbility:GetManaCost() < abilityR:GetManaCost() )
 	then

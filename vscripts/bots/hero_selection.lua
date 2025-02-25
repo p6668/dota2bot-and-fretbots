@@ -18,6 +18,8 @@ then
 	nDireFirstLaneType = require( 'game/bot_dire_first_lane_type' )
 end
 
+require(GetScriptDirectory()..'/API/api_global')
+
 local MU   = require( GetScriptDirectory()..'/FunLib/aba_matchups' )
 local U    = require( GetScriptDirectory()..'/FunLib/lua_util' )
 local N    = require( GetScriptDirectory()..'/FunLib/bot_names' )
@@ -32,58 +34,59 @@ local sHeroList = {										-- pos  1, 2, 3, 4, 5
 	{name = 'npc_dota_hero_ancient_apparition', 		role = {0, 5, 0, 5, 100}},
 	{name = 'npc_dota_hero_antimage', 					role = {100, 0, 25, 0, 0}},
 	{name = 'npc_dota_hero_arc_warden', 				role = {100, 100, 0, 0, 0}},
-	{name = 'npc_dota_hero_axe',	 					role = {0, 0, 100, 0, 0}},
+	{name = 'npc_dota_hero_axe',	 					role = {0, 50, 100, 0, 0}},
 	{name = 'npc_dota_hero_bane', 						role = {0, 10, 0, 100, 100}},
 	{name = 'npc_dota_hero_batrider', 					role = {0, 25, 5, 100, 100}},
-	{name = 'npc_dota_hero_beastmaster', 				role = {0, 0, 100, 0, 0}},
+	{name = 'npc_dota_hero_beastmaster', 				role = {0, 100, 100, 0, 0}},
 	{name = 'npc_dota_hero_bloodseeker', 				role = {100, 25, 50, 0, 0}},
 	{name = 'npc_dota_hero_bounty_hunter', 				role = {0, 50, 10, 100, 5}},
 	{name = 'npc_dota_hero_brewmaster', 				role = {0, 0, 100, 0, 0}},
 	{name = 'npc_dota_hero_bristleback', 				role = {80, 80, 100, 0, 0}},
 	{name = 'npc_dota_hero_broodmother', 				role = {100, 100, 100, 0, 0}},
-	{name = 'npc_dota_hero_centaur', 					role = {0, 0, 100, 0, 0}},
-	{name = 'npc_dota_hero_chaos_knight', 				role = {100, 0, 50, 0, 0}},
+	{name = 'npc_dota_hero_centaur', 					role = {0, 40, 100, 0, 0}},
+	{name = 'npc_dota_hero_chaos_knight', 				role = {100, 20, 50, 0, 0}},
 	{name = 'npc_dota_hero_chen', 						role = {0, 0, 0, 0, 100}},
 	{name = 'npc_dota_hero_clinkz', 					role = {100, 50, 0, 50, 5}},
 	{name = 'npc_dota_hero_crystal_maiden', 			role = {0, 0, 0, 100, 100}},
 	{name = 'npc_dota_hero_dark_seer', 					role = {0, 0, 100, 0, 0}},
-	{name = 'npc_dota_hero_dark_willow', 				role = {0, 0, 0, 0, 0}},--nil
+	{name = 'npc_dota_hero_dark_willow', 				role = {0, 0, 0, 100, 50}},
 	{name = 'npc_dota_hero_dawnbreaker', 				role = {0, 5, 100, 50, 50}},
 	{name = 'npc_dota_hero_dazzle', 					role = {0, 50, 0, 100, 100}},
 	{name = 'npc_dota_hero_disruptor', 					role = {0, 0, 0, 100, 100}},
 	{name = 'npc_dota_hero_death_prophet', 				role = {0, 100, 100, 0, 0}},
 	{name = 'npc_dota_hero_doom_bringer', 				role = {0, 80, 100, 0, 0}},
 	{name = 'npc_dota_hero_dragon_knight', 				role = {50, 100, 100, 0, 0}},
-	{name = 'npc_dota_hero_drow_ranger', 				role = {100, 0, 0, 0, 0}},
-	{name = 'npc_dota_hero_earth_spirit', 				role = {0, 100, 50, 100, 0}},
+	{name = 'npc_dota_hero_drow_ranger', 				role = {100, 80, 0, 0, 0}},
+	{name = 'npc_dota_hero_earth_spirit', 				role = {0, 100, 50, 100, 5}},
 	{name = 'npc_dota_hero_earthshaker', 				role = {0, 50, 100, 100, 0}},
-	{name = 'npc_dota_hero_elder_titan', 				role = {0, 0, 0, 0, 0}},--nil
+	{name = 'npc_dota_hero_elder_titan', 				role = {0, 0, 50, 40, 80}},
 	{name = 'npc_dota_hero_ember_spirit', 				role = {0, 100, 0, 0, 0}},
 	{name = 'npc_dota_hero_enchantress', 				role = {0, 0, 100, 0, 100}},
 	{name = 'npc_dota_hero_enigma', 					role = {0, 0, 50, 80, 100}},
-	-- {name = 'npc_dota_hero_faceless_void', 				role = {100, 0, 0, 0, 0}},
+	{name = 'npc_dota_hero_faceless_void', 				role = {100, 0, 0, 0, 0}},-- Run Buff vscript to have missing Chronosphere
 	{name = 'npc_dota_hero_furion', 					role = {100, 0, 100, 5, 100}},
 	{name = 'npc_dota_hero_grimstroke', 				role = {0, 0, 0, 100, 100}},
-	{name = 'npc_dota_hero_gyrocopter', 				role = {100, 0, 0, 100, 100}},
-	{name = 'npc_dota_hero_hoodwink', 					role = {0, 0, 0, 0, 0}},--nil
-	{name = 'npc_dota_hero_huskar', 					role = {0, 100, 100, 0, 0}},
+	{name = 'npc_dota_hero_gyrocopter', 				role = {100, 100, 0, 100, 100}},
+	{name = 'npc_dota_hero_hoodwink', 					role = {0, 0, 0, 100, 80}},
+	-- {name = 'npc_dota_hero_huskar', 					role = {0, 100, 100, 0, 0}},
 	{name = 'npc_dota_hero_invoker', 					role = {0, 100, 0, 0, 0}},
-	{name = 'npc_dota_hero_jakiro', 					role = {0, 0, 0, 100, 100}},
+	{name = 'npc_dota_hero_jakiro', 					role = {0, 15, 0, 100, 100}},
 	{name = 'npc_dota_hero_juggernaut', 				role = {100, 0, 0, 0, 0}},
 	{name = 'npc_dota_hero_keeper_of_the_light', 		role = {0, 50, 0, 100, 25}},
+	{name = 'npc_dota_hero_kez', 						role = {100, 100, 0, 0, 0}},
 	{name = 'npc_dota_hero_kunkka', 					role = {0, 100, 100, 0, 0}},
 	{name = 'npc_dota_hero_legion_commander', 			role = {0, 0, 100, 0, 0}},
 	{name = 'npc_dota_hero_leshrac', 					role = {0, 100, 50, 0, 0}},
 	{name = 'npc_dota_hero_lich', 						role = {0, 0, 0, 5, 100}},
-	-- {name = 'npc_dota_hero_life_stealer', 				role = {100, 0, 0, 0, 0}},
+	{name = 'npc_dota_hero_life_stealer', 				role = {100, 0, 0, 0, 0}},-- Run Buff vscript to have missing Rage
 	{name = 'npc_dota_hero_lina', 						role = {100, 100, 0, 100, 5}},
 	{name = 'npc_dota_hero_lion', 						role = {0, 0, 0, 100, 100}},
-	{name = 'npc_dota_hero_lone_druid', 				role = {0, 0, 0, 0, 0}},--nil
+	{name = 'npc_dota_hero_lone_druid', 				role = {100, 100, 0, 0, 0}},
 	{name = 'npc_dota_hero_luna', 						role = {100, 0, 0, 0, 0}},
 	{name = 'npc_dota_hero_lycan', 						role = {50, 100, 100, 0, 0}},
 	{name = 'npc_dota_hero_magnataur', 					role = {0, 0, 100, 0, 0}},
-	{name = 'npc_dota_hero_marci',	 					role = {0, 0, 0, 0, 0}},--nil
-	{name = 'npc_dota_hero_mars', 						role = {0, 0, 100, 0, 0}},
+	{name = 'npc_dota_hero_marci',	 					role = {50, 100, 50, 0, 0}},
+	{name = 'npc_dota_hero_mars', 						role = {0, 100, 100, 0, 0}},
 	{name = 'npc_dota_hero_medusa', 					role = {100, 0, 0, 0, 0}},
 	{name = 'npc_dota_hero_meepo', 						role = {100, 100, 0, 0, 0}},
 	{name = 'npc_dota_hero_mirana', 					role = {0, 0, 0, 50, 100}},
@@ -103,7 +106,7 @@ local sHeroList = {										-- pos  1, 2, 3, 4, 5
 	{name = 'npc_dota_hero_phantom_lancer', 			role = {100, 0, 0, 0, 0}},
 	{name = 'npc_dota_hero_phantom_assassin', 			role = {100, 0, 0, 0, 0}},
 	{name = 'npc_dota_hero_phoenix', 					role = {0, 0, 0, 100, 100}},
-	{name = 'npc_dota_hero_primal_beast', 				role = {0, 0, 0, 0, 0}},--nil
+	{name = 'npc_dota_hero_primal_beast', 				role = {0, 100, 50, 0, 0}},
 	{name = 'npc_dota_hero_puck', 						role = {0, 100, 0, 0, 0}},
 	{name = 'npc_dota_hero_pudge', 						role = {0, 100, 100, 5, 5}},
 	{name = 'npc_dota_hero_pugna', 						role = {0, 50, 0, 100, 100}},
@@ -111,16 +114,17 @@ local sHeroList = {										-- pos  1, 2, 3, 4, 5
 	{name = 'npc_dota_hero_rattletrap', 				role = {0, 0, 0, 100, 100}},
 	{name = 'npc_dota_hero_razor', 						role = {100, 100, 100, 0, 0}},
 	{name = 'npc_dota_hero_riki', 						role = {100, 100, 0, 0, 0}},
-	{name = 'npc_dota_hero_rubick', 					role = {0, 0, 0, 100, 100}},
+	{name = 'npc_dota_hero_ringmaster', 				role = {0, 0, 0, 100, 25}},
+	{name = 'npc_dota_hero_rubick', 					role = {0, 50, 0, 100, 100}},
 	{name = 'npc_dota_hero_sand_king', 					role = {0, 100, 100, 0, 0}},
 	{name = 'npc_dota_hero_shadow_demon', 				role = {0, 0, 0, 100, 100}},
 	{name = 'npc_dota_hero_shadow_shaman', 				role = {0, 0, 0, 100, 100}},
 	{name = 'npc_dota_hero_shredder', 					role = {0, 100, 100, 0, 0}},
-	{name = 'npc_dota_hero_silencer', 					role = {0, 80, 0, 100, 100}},
+	{name = 'npc_dota_hero_silencer', 					role = {80, 80, 0, 100, 100}},
 	{name = 'npc_dota_hero_skeleton_king', 				role = {100, 0, 40, 0, 0}},
 	{name = 'npc_dota_hero_skywrath_mage', 				role = {0, 0, 0, 100, 100}},
 	{name = 'npc_dota_hero_slardar', 					role = {0, 50, 100, 0, 0}},
-	{name = 'npc_dota_hero_slark', 						role = {100, 0, 0, 0, 0}},
+	{name = 'npc_dota_hero_slark', 						role = {100, 0, 50, 0, 0}},
 	{name = "npc_dota_hero_snapfire", 					role = {0, 100, 0, 100, 100}},
 	{name = 'npc_dota_hero_sniper', 					role = {100, 100, 0, 0, 0}},
 	{name = 'npc_dota_hero_spectre', 					role = {100, 0, 0, 0, 0}},
@@ -131,14 +135,14 @@ local sHeroList = {										-- pos  1, 2, 3, 4, 5
 	{name = 'npc_dota_hero_terrorblade', 				role = {100, 0, 0, 0, 0}},
 	{name = 'npc_dota_hero_templar_assassin', 			role = {100, 100, 0, 0, 0}},
 	{name = 'npc_dota_hero_tidehunter', 				role = {0, 0, 100, 0, 0}},
-	{name = 'npc_dota_hero_tinker', 					role = {0, 100, 0, 0, 0}},
+	{name = 'npc_dota_hero_tinker', 					role = {0, 20, 0, 100, 100}},
 	{name = 'npc_dota_hero_tiny', 						role = {100, 100, 50, 100, 5}},
 	{name = 'npc_dota_hero_treant', 					role = {0, 0, 0, 80, 100}},
 	{name = 'npc_dota_hero_troll_warlord', 				role = {100, 0, 0, 0, 0}},
 	{name = 'npc_dota_hero_tusk', 						role = {0, 5, 100, 100, 5}},
 	{name = 'npc_dota_hero_undying', 					role = {0, 0, 0, 0, 100}},
-	{name = 'npc_dota_hero_ursa', 						role = {100, 0, 0, 0, 0}},
-	{name = 'npc_dota_hero_vengefulspirit', 			role = {0, 0, 0, 100, 100}},
+	{name = 'npc_dota_hero_ursa', 						role = {100, 0, 50, 0, 0}},
+	{name = 'npc_dota_hero_vengefulspirit', 			role = {50, 80, 0, 100, 100}},
 	{name = 'npc_dota_hero_venomancer', 				role = {0, 0, 0, 100, 100}},
 	{name = 'npc_dota_hero_viper', 						role = {0, 100, 100, 0, 0}},
 	{name = 'npc_dota_hero_visage', 					role = {0, 50, 100, 0, 0}},
@@ -146,8 +150,8 @@ local sHeroList = {										-- pos  1, 2, 3, 4, 5
 	{name = 'npc_dota_hero_warlock', 					role = {0, 0, 0, 50, 100}},
 	{name = 'npc_dota_hero_weaver', 					role = {100, 0, 0, 100, 100}},
 	{name = 'npc_dota_hero_windrunner', 				role = {80, 100, 5, 70, 5}},
-	{name = 'npc_dota_hero_winter_wyvern', 				role = {0, 5, 25, 100, 100}},
-	{name = 'npc_dota_hero_wisp', 						role = {0, 0, 0, 0, 0}},--nil
+	{name = 'npc_dota_hero_winter_wyvern', 				role = {0, 25, 15, 100, 100}},
+	{name = 'npc_dota_hero_wisp', 						role = {0, 0, 0, 10, 90}},
 	{name = 'npc_dota_hero_witch_doctor', 				role = {0, 0, 0, 100, 100}},
 	{name = 'npc_dota_hero_zuus', 						role = {0, 100, 0, 50, 25}},
 }
@@ -315,7 +319,9 @@ function X.GetNotRepeatHero( nTable )
 		for id = 0, 20
 		do
 			if ( IsTeamPlayer( id ) and GetSelectedHeroName( id ) == sHero )
-				or ( IsCMBannedHero( sHero ) )
+				or ( sHero ~= "npc_dota_hero_ringmaster"
+					and sHero ~= "npc_dota_hero_kez"
+					and IsCMBannedHero( sHero ) )
 				or ( X.IsBanByChat( sHero ) )
 			then
 				bRepeated = true
@@ -334,7 +340,9 @@ function X.IsRepeatHero( sHero )
 	for id = 0, 20
 	do
 		if ( IsTeamPlayer( id ) and GetSelectedHeroName( id ) == sHero )
-			or ( IsCMBannedHero( sHero ) )
+			or ( sHero ~= "npc_dota_hero_ringmaster"
+				and sHero ~= "npc_dota_hero_kez"
+				and IsCMBannedHero( sHero ) )
 			or ( X.IsBanByChat( sHero ) )
 		then
 			return true
@@ -398,75 +406,27 @@ function Think()
 	local nIDs = GetTeamPlayers(GetTeam())
 	if GetTeam() == TEAM_DIRE
 	then
-		local sHuman = {}
-		for _, id in pairs(GetTeamPlayers(GetTeam()))
-		do
-			if not IsPlayerBot(id)
-			then
-				table.insert(sHuman, id)
-			end
-		end
+		-- Update Lane Roles
+		local pRoles = {
+			[nIDs[1]] = LANE_MID,
+			[nIDs[2]] = LANE_BOT,
+			[nIDs[3]] = LANE_TOP,
+			[nIDs[4]] = LANE_TOP,
+			[nIDs[5]] = LANE_BOT,
+		}
 
-		if #sHuman > 0
-		then
-			local nBotIDs = {5, 6, 7, 8, 9}
-			nIDs = {}
+		local temp = {}
+		for i, v in ipairs(nIDs) do temp[i] = v end
 
-			for i = 1, #nBotIDs do table.insert(nIDs, nBotIDs[i]) end
+		table.sort(temp)
 
-			-- Map it directly
-			for i = 1, #sHuman
-			do
-				for j = 1, 5
-				do
-					if sHuman[i] + 5 == nBotIDs[j]
-					then
-						nIDs[j] = sHuman[i]
-					end
-				end
-			end
-
-			-- "Shift" > 4 to the right
-			for i = #nIDs, 1, -1
-			do
-				local hCount = 0
-				if nIDs[i] > 4
-				then
-					for j = 1, #nIDs
-					do
-						if  nIDs[j + i] ~= nil
-						and nIDs[j + i] < 5
-						then
-							hCount = hCount + 1
-						end
-					end
-
-					nIDs[i] = nIDs[i] + hCount
-				end
-			end
-
-			-- Update Lane Roles
-			local pRoles = {
-				[nIDs[1]] = LANE_MID,
-				[nIDs[2]] = LANE_BOT,
-				[nIDs[3]] = LANE_TOP,
-				[nIDs[4]] = LANE_TOP,
-				[nIDs[5]] = LANE_BOT,
-			}
-
-			local temp = {}
-			for i, v in ipairs(nIDs) do temp[i] = v end
-
-			table.sort(temp)
-
-			tLaneAssignList = {
-				[1] = pRoles[temp[1]],
-				[2] = pRoles[temp[2]],
-				[3] = pRoles[temp[3]],
-				[4] = pRoles[temp[4]],
-				[5] = pRoles[temp[5]],
-			}
-		end
+		tLaneAssignList = {
+			[1] = pRoles[temp[1]],
+			[2] = pRoles[temp[2]],
+			[3] = pRoles[temp[3]],
+			[4] = pRoles[temp[4]],
+			[5] = pRoles[temp[5]],
+		}
 	end
 
 	if nDelayTime == nil then nDelayTime = GameTime() fLastRand = RandomInt(12, 34) / 10 end
@@ -479,54 +439,56 @@ function Think()
 	-- So a human must always pick last in Turbo. <^ This isn't the case in All Pick.
 
 	-- Alternate; Cores pick firsts
-	if #nOwnTeam <= #nEnmTeam
-	then
+	-- if #nOwnTeam <= #nEnmTeam -- 7.38 bug with a bot not getting assigned a name, so this fails; will change below later
+	-- then
 		for i, id in pairs(nIDs)
 		do
 			sSelectHero = X.GetNotRepeatHero(tSelectPoolList[i])
 			if IsPlayerBot(id) and GetSelectedHeroName(id) == ""
 			then
-				local forCounter = RandomInt(1, 2) == 1 -- might change
+				if RandomInt(1, 2) == 1 then
+					local forCounter = RandomInt(1, 2) == 1
 
-				if #nOwnTeam == 0 and #nEnmTeam == 0
-				then
-					sSelectHero = X.GetNotRepeatHero(tSelectPoolList[i])
-				else
-					local didCounter = false
-					local didExhaust = false
-
-					if  forCounter
-					and #X.GetCurrEnmCores(nEnmTeam) >= 1
+					if #nOwnTeam == 0 and #nEnmTeam == 0
 					then
-						-- Pick a random core in the current enemy comp to counter
-						local nCurrEnmCores = X.GetCurrEnmCores(nEnmTeam)
-						local nHeroToCounter = nCurrEnmCores[RandomInt(1, #nCurrEnmCores)]
-						local sPoolList = U.deepCopy(tSelectPoolList[i])
-
-						for j = 1, #tSelectPoolList[i], 1
-						do
-							local idx = RandomInt(1, #sPoolList)
-							local heroName = sPoolList[idx]
-							if  MU.IsCounter(heroName, nHeroToCounter) -- so it's not 'samey'; since bots don't really put pressure like a human would
-							and not X.IsRepeatHero(heroName)
-							then
-								print(heroName, nHeroToCounter)
-								didCounter = true
-								sSelectHero = heroName
-								break
-							end
-
-							table.remove(sPoolList, idx)
-							if j == #tSelectPoolList[i] or #sPoolList == 0 then didExhaust = true end
-						end
+						sSelectHero = X.GetNotRepeatHero(tSelectPoolList[i])
 					else
-						if not forCounter
-						or (didExhaust and not didCounter)
+						local didCounter = false
+						local didExhaust = false
+
+						if  forCounter
+						and #X.GetCurrEnmCores(nEnmTeam) >= 1
 						then
-							local heroName = X.GetBestHeroFromPool(i, nOwnTeam)
-							if heroName ~= nil
+							-- Pick a random core in the current enemy comp to counter
+							local nCurrEnmCores = X.GetCurrEnmCores(nEnmTeam)
+							local nHeroToCounter = nCurrEnmCores[RandomInt(1, #nCurrEnmCores)]
+							local sPoolList = U.deepCopy(tSelectPoolList[i])
+
+							for j = 1, #tSelectPoolList[i], 1
+							do
+								local idx = RandomInt(1, #sPoolList)
+								local heroName = sPoolList[idx]
+								if  MU.IsCounter(heroName, nHeroToCounter) -- so it's not 'samey'; since bots don't really put pressure like a human would
+								and not X.IsRepeatHero(heroName)
+								then
+									print(heroName, nHeroToCounter)
+									didCounter = true
+									sSelectHero = heroName
+									break
+								end
+
+								table.remove(sPoolList, idx)
+								if j == #tSelectPoolList[i] or #sPoolList == 0 then didExhaust = true end
+							end
+						else
+							if not forCounter
+							or (didExhaust and not didCounter)
 							then
-								sSelectHero = heroName
+								local heroName = X.GetBestHeroFromPool(i, nOwnTeam)
+								if heroName ~= nil
+								then
+									sSelectHero = heroName
+								end
 							end
 						end
 					end
@@ -539,7 +501,7 @@ function Think()
 				break
 			end
 		end
-	end
+	-- end
 end
 
 function X.GetBestHeroFromPool(i, nTeamList)

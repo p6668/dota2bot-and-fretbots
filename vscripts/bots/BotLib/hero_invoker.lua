@@ -7,6 +7,9 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_invoker'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
 local sUtility = {}
@@ -44,17 +47,18 @@ local HeroBuild = {
                 "item_double_branches",
                 "item_double_circlet",
             
-                "item_bracer",
+                "item_double_wraith_band",
                 "item_urn_of_shadows",
-                "item_boots",
                 "item_magic_wand",
+                "item_boots",
                 "item_spirit_vessel",
                 "item_hand_of_midas",
                 "item_orchid",
                 "item_travel_boots",
-                "item_black_king_bar",--
                 "item_aghanims_shard",
-                "item_octarine_core",--
+                "item_black_king_bar",--
+                "item_dragon_lance",--
+                "item_hurricane_pike",--
                 "item_bloodthorn",--
                 "item_ultimate_scepter",
                 "item_refresher",--
@@ -64,11 +68,11 @@ local HeroBuild = {
                 "item_moon_shard",
             },
             ['sell_list'] = {
-                "item_circlet",
-                "item_bracer",
-                "item_magic_wand",
-                "item_spirit_vessel",
-                "item_hand_of_midas",
+                "item_magic_wand", "item_orchid",
+                "item_wraith_band", "item_black_king_bar",
+                "item_wraith_band", "item_dragon_lance",
+                "item_hand_of_midas", "item_ultimate_scepter",
+                "item_spirit_vessel", "item_sheepstick",
             },
         },
     },
@@ -131,6 +135,8 @@ function X.MinionThink(hMinionUnit)
     Minion.MinionThink(hMinionUnit)
 end
 
+end
+
 local Quas      = bot:GetAbilityByName('invoker_quas')
 local Wex       = bot:GetAbilityByName('invoker_wex')
 local Exort     = bot:GetAbilityByName('invoker_exort')
@@ -186,14 +192,39 @@ local TornadoLiftTime
 local ComboDesire, ComboLocation
 
 local botTarget
+local botName
 
 function X.SkillsComplement()
     if J.CanNotUseAbility(bot) then return end
 
-    botTarget = J.GetProperTarget(bot)
+    Quas      = bot:GetAbilityByName('invoker_quas')
+    Wex       = bot:GetAbilityByName('invoker_wex')
+    Exort     = bot:GetAbilityByName('invoker_exort')
+    Invoke    = bot:GetAbilityByName('invoker_invoke')
 
-    EMPDelay = EMP:GetSpecialValueFloat('delay')
-    TornadoLiftTime = Tornado:GetSpecialValueFloat('lift_duration')
+    ColdSnap          = bot:GetAbilityByName('invoker_cold_snap')
+    GhostWalk         = bot:GetAbilityByName('invoker_ghost_walk')
+    Tornado           = bot:GetAbilityByName('invoker_tornado')
+    EMP               = bot:GetAbilityByName('invoker_emp')
+    Alacrity          = bot:GetAbilityByName('invoker_alacrity')
+    ChaosMeteor       = bot:GetAbilityByName('invoker_chaos_meteor')
+    Sunstrike         = bot:GetAbilityByName('invoker_sun_strike')
+    ForgeSpirit       = bot:GetAbilityByName('invoker_forge_spirit')
+    IceWall           = bot:GetAbilityByName('invoker_ice_wall')
+    DeafeningBlast    = bot:GetAbilityByName('invoker_deafening_blast')
+
+    botTarget = J.GetProperTarget(bot)
+    botName = bot:GetUnitName()
+
+    if EMP ~= nil
+    then
+        EMPDelay = EMP:GetSpecialValueFloat('delay')
+    end
+
+    if Tornado ~= nil
+    then
+        TornadoLiftTime = Tornado:GetSpecialValueFloat('lift_duration')
+    end
 
     CheckForCooldownReductions()
 
@@ -406,13 +437,21 @@ function X.SkillsComplement()
 end
 
 function X.ConsiderColdSnap()
-    if not Quas:IsTrained()
-    or (not ColdSnap:IsFullyCastable()
-        or (not IsAbilityActive(ColdSnap)
-            and DotaTime() < ColdSnapCastedTime + ColdSnapCooldownTime))
-    or not IsAbilityActive(ColdSnap) and not Invoke:IsFullyCastable()
+    if GetBot():GetUnitName() == 'npc_dota_hero_rubick'
     then
-        return BOT_ACTION_DESIRE_NONE, nil
+        if not J.CanCastAbility(ColdSnap)
+        then
+            return BOT_ACTION_DESIRE_NONE
+        end
+    else
+        if not Quas:IsTrained()
+        or (not ColdSnap:IsFullyCastable()
+            or (not IsAbilityActive(ColdSnap)
+                and DotaTime() < ColdSnapCastedTime + ColdSnapCooldownTime))
+        or not IsAbilityActive(ColdSnap) and not Invoke:IsFullyCastable()
+        then
+            return BOT_ACTION_DESIRE_NONE, nil
+        end
     end
 
 	local nCastRange = J.GetProperCastRange(false, bot, ColdSnap:GetCastRange())
@@ -479,14 +518,22 @@ function X.ConsiderColdSnap()
 end
 
 function X.ConsiderGhostWalk()
-    if (not Quas:IsTrained() and not Wex:IsTrained())
-    or (not GhostWalk:IsFullyCastable()
-        or (not IsAbilityActive(GhostWalk)
-            and DotaTime() < GhostWalkCastedTime + GhostWalkCooldownTime))
-    or J.IsRealInvisible(bot)
-    or not IsAbilityActive(GhostWalk) and not Invoke:IsFullyCastable()
+    if GetBot():GetUnitName() == 'npc_dota_hero_rubick'
     then
-        return BOT_ACTION_DESIRE_NONE
+        if not J.CanCastAbility(GhostWalk)
+        then
+            return BOT_ACTION_DESIRE_NONE
+        end
+    else
+        if (not Quas:IsTrained() and not Wex:IsTrained())
+        or (not GhostWalk:IsFullyCastable()
+            or (not IsAbilityActive(GhostWalk)
+                and DotaTime() < GhostWalkCastedTime + GhostWalkCooldownTime))
+        or J.IsRealInvisible(bot)
+        or not IsAbilityActive(GhostWalk) and not Invoke:IsFullyCastable()
+        then
+            return BOT_ACTION_DESIRE_NONE
+        end
     end
 
     local RoshanLocation = J.GetCurrentRoshanLocation()
@@ -557,13 +604,21 @@ function X.ConsiderGhostWalk()
 end
 
 function X.ConsiderTornado()
-    if (not Quas:IsTrained() and not Wex:IsTrained())
-    or (not Tornado:IsFullyCastable()
-        or (not IsAbilityActive(Tornado)
-            and DotaTime() < TornadoCastedTime + TornadoCooldownTime))
-    or not IsAbilityActive(Tornado) and not Invoke:IsFullyCastable()
+    if GetBot():GetUnitName() == 'npc_dota_hero_rubick'
     then
-        return BOT_ACTION_DESIRE_NONE, 0
+        if not J.CanCastAbility(Tornado)
+        then
+            return BOT_ACTION_DESIRE_NONE
+        end
+    else
+        if (not Quas:IsTrained() and not Wex:IsTrained())
+        or (not Tornado:IsFullyCastable()
+            or (not IsAbilityActive(Tornado)
+                and DotaTime() < TornadoCastedTime + TornadoCooldownTime))
+        or not IsAbilityActive(Tornado) and not Invoke:IsFullyCastable()
+        then
+            return BOT_ACTION_DESIRE_NONE, 0
+        end
     end
 
 	local nCastRange = J.GetProperCastRange(false, bot, Tornado:GetCastRange())
@@ -571,7 +626,12 @@ function X.ConsiderTornado()
 	local nRadius = Tornado:GetSpecialValueInt('area_of_effect')
 	local nSpeed = Tornado:GetSpecialValueInt('travel_speed')
     local nBaseDamage = Tornado:GetSpecialValueInt('base_damage')
-    local nDamage = Tornado:GetSpecialValueInt('wex_damage') + (Wex:GetLevel() - 1) * 45 + nBaseDamage
+    local nDamage = Tornado:GetSpecialValueInt('wex_damage') + nBaseDamage
+
+    if string.find(botName, 'invoker')
+    then
+        nDamage = Tornado:GetSpecialValueInt('wex_damage') + (Wex:GetLevel() - 1) * 45 + nBaseDamage
+    end
 
     local nAllyHeroes = J.GetAlliesNearLoc(bot:GetLocation(), 1600)
     local nEnemyHeroes = J.GetEnemiesNearLoc(bot:GetLocation(), 1600)
@@ -745,13 +805,21 @@ function X.ConsiderTornado()
 end
 
 function X.ConsiderEMP()
-    if not Wex:IsTrained()
-    or (not EMP:IsFullyCastable()
-        or (not IsAbilityActive(EMP)
-            and DotaTime() < EMPCastedTime + EMPCooldownTime))
-    or not IsAbilityActive(EMP) and not Invoke:IsFullyCastable()
+    if GetBot():GetUnitName() == 'npc_dota_hero_rubick'
     then
-        return BOT_ACTION_DESIRE_NONE, 0
+        if not J.CanCastAbility(EMP)
+        then
+            return BOT_ACTION_DESIRE_NONE
+        end
+    else
+        if not Wex:IsTrained()
+        or (not EMP:IsFullyCastable()
+            or (not IsAbilityActive(EMP)
+                and DotaTime() < EMPCastedTime + EMPCooldownTime))
+        or not IsAbilityActive(EMP) and not Invoke:IsFullyCastable()
+        then
+            return BOT_ACTION_DESIRE_NONE, 0
+        end
     end
 
 	local nCastRange = J.GetProperCastRange(false, bot, EMP:GetCastRange())
@@ -877,13 +945,21 @@ function X.ConsiderEMP()
 end
 
 function X.ConsiderAlacrity()
-    if (not Wex:IsTrained() and not Exort:IsTrained())
-    or (not Alacrity:IsFullyCastable()
-        or (not IsAbilityActive(Alacrity)
-            and DotaTime() < AlacrityCastedTime + AlacrityCooldownTime))
-    or not IsAbilityActive(Alacrity) and not Invoke:IsFullyCastable()
+    if GetBot():GetUnitName() == 'npc_dota_hero_rubick'
     then
-        return BOT_ACTION_DESIRE_NONE, nil
+        if not J.CanCastAbility(Alacrity)
+        then
+            return BOT_ACTION_DESIRE_NONE
+        end
+    else
+        if (not Wex:IsTrained() and not Exort:IsTrained())
+        or (not Alacrity:IsFullyCastable()
+            or (not IsAbilityActive(Alacrity)
+                and DotaTime() < AlacrityCastedTime + AlacrityCooldownTime))
+        or not IsAbilityActive(Alacrity) and not Invoke:IsFullyCastable()
+        then
+            return BOT_ACTION_DESIRE_NONE, nil
+        end
     end
 
 	local nCastRange = J.GetProperCastRange(false, bot, Alacrity:GetCastRange())
@@ -1020,20 +1096,33 @@ function X.ConsiderAlacrity()
 end
 
 function X.ConsiderChaosMeteor()
-    if (not Wex:IsTrained() and not Exort:IsTrained())
-    or (not ChaosMeteor:IsFullyCastable()
-        or (not IsAbilityActive(ChaosMeteor)
-            and DotaTime() < ChaosMeteorCastedTime + ChaosMeteorCooldownTime))
-    or not IsAbilityActive(ChaosMeteor) and not Invoke:IsFullyCastable()
+    if GetBot():GetUnitName() == 'npc_dota_hero_rubick'
     then
-        return BOT_ACTION_DESIRE_NONE, 0
+        if not J.CanCastAbility(ChaosMeteor)
+        then
+            return BOT_ACTION_DESIRE_NONE
+        end
+    else
+        if (not Wex:IsTrained() and not Exort:IsTrained())
+        or (not ChaosMeteor:IsFullyCastable()
+            or (not IsAbilityActive(ChaosMeteor)
+                and DotaTime() < ChaosMeteorCastedTime + ChaosMeteorCooldownTime))
+        or not IsAbilityActive(ChaosMeteor) and not Invoke:IsFullyCastable()
+        then
+            return BOT_ACTION_DESIRE_NONE, 0
+        end
     end
 
 	local nCastRange = J.GetProperCastRange(false, bot, ChaosMeteor:GetCastRange())
     local nCastPoint = ChaosMeteor:GetCastPoint()
     local nRadius = ChaosMeteor:GetSpecialValueInt('area_of_effect')
     local nLandTime = ChaosMeteor:GetSpecialValueFloat('land_time')
-    local nDamage = ChaosMeteor:GetSpecialValueInt('main_damage') + (Exort:GetLevel() - 1) * 45
+    local nDamage = ChaosMeteor:GetSpecialValueInt('main_damage')
+
+    if string.find(botName, 'invoker')
+    then
+        nDamage = ChaosMeteor:GetSpecialValueInt('main_damage') + (Exort:GetLevel() - 1) * 45
+    end
 
     if J.IsInTeamFight(bot, 1200)
     then
@@ -1129,19 +1218,32 @@ function X.ConsiderChaosMeteor()
 end
 
 function X.ConsiderSunstrike()
-    if not Exort:IsTrained()
-    or (not Sunstrike:IsFullyCastable()
-        or (not IsAbilityActive(Sunstrike)
-            and DotaTime() < SunstrikeCastedTime + SunstrikeCooldownTime))
-    or not IsAbilityActive(Sunstrike) and not Invoke:IsFullyCastable()
+    if GetBot():GetUnitName() == 'npc_dota_hero_rubick'
     then
-        return BOT_ACTION_DESIRE_NONE, 0
+        if not J.CanCastAbility(Sunstrike)
+        then
+            return BOT_ACTION_DESIRE_NONE
+        end
+    else
+        if not Exort:IsTrained()
+        or (not Sunstrike:IsFullyCastable()
+            or (not IsAbilityActive(Sunstrike)
+                and DotaTime() < SunstrikeCastedTime + SunstrikeCooldownTime))
+        or not IsAbilityActive(Sunstrike) and not Invoke:IsFullyCastable()
+        then
+            return BOT_ACTION_DESIRE_NONE, 0
+        end
     end
 
     local nDelay = Sunstrike:GetSpecialValueFloat('delay')
     local nRadius = Sunstrike:GetSpecialValueFloat('area_of_effect')
     local nCastPoint = Sunstrike:GetCastPoint()
-    local nDamage = Sunstrike:GetSpecialValueInt('damage') + (Exort:GetLevel() - 1) * 50
+    local nDamage = Sunstrike:GetSpecialValueInt('damage')
+
+    if string.find(botName, 'invoker')
+    then
+        nDamage = Sunstrike:GetSpecialValueInt('damage') + (Exort:GetLevel() - 1) * 50
+    end
 
     if bot:HasScepter()
     then
@@ -1231,13 +1333,21 @@ function X.ConsiderSunstrike()
 end
 
 function X.ConsiderForgeSpirit()
-    if (not Quas:IsTrained() and not Exort:IsTrained())
-    or (not ForgeSpirit:IsFullyCastable()
-        or (not IsAbilityActive(ForgeSpirit)
-            and DotaTime() < ForgeSpiritCastedTime + ForgeSpiritCooldownTime))
-    or not IsAbilityActive(ForgeSpirit) and not Invoke:IsFullyCastable()
+    if GetBot():GetUnitName() == 'npc_dota_hero_rubick'
     then
-        return BOT_ACTION_DESIRE_NONE
+        if not J.CanCastAbility(ForgeSpirit)
+        then
+            return BOT_ACTION_DESIRE_NONE
+        end
+    else
+        if (not Quas:IsTrained() and not Exort:IsTrained())
+        or (not ForgeSpirit:IsFullyCastable()
+            or (not IsAbilityActive(ForgeSpirit)
+                and DotaTime() < ForgeSpiritCastedTime + ForgeSpiritCooldownTime))
+        or not IsAbilityActive(ForgeSpirit) and not Invoke:IsFullyCastable()
+        then
+            return BOT_ACTION_DESIRE_NONE
+        end
     end
 
 	local nAttackRange = bot:GetAttackRange()
@@ -1262,7 +1372,7 @@ function X.ConsiderForgeSpirit()
 
             if J.IsInLaningPhase()
             then
-                if botTarget:GetHealth() <= J.GetTotalEstimatedDamageToTarget(nInRangeAlly, botTarget)
+                if botTarget:GetHealth() <= J.GetTotalEstimatedDamageToTarget(nInRangeAlly, botTarget, 7.0)
                 then
                     return BOT_ACTION_DESIRE_HIGH
                 end
@@ -1335,13 +1445,21 @@ function X.ConsiderForgeSpirit()
 end
 
 function X.ConsiderIceWall()
-    if (not Quas:IsTrained() and not Exort:IsTrained())
-    or (not IceWall:IsFullyCastable()
-        or (not IsAbilityActive(IceWall)
-            and DotaTime() < IceWallCastedTime + IceWallCooldownTime))
-    or not IsAbilityActive(IceWall) and not Invoke:IsFullyCastable()
+    if GetBot():GetUnitName() == 'npc_dota_hero_rubick'
     then
-        return BOT_ACTION_DESIRE_NONE
+        if not J.CanCastAbility(IceWall)
+        then
+            return BOT_ACTION_DESIRE_NONE
+        end
+    else
+        if (not Quas:IsTrained() and not Exort:IsTrained())
+        or (not IceWall:IsFullyCastable()
+            or (not IsAbilityActive(IceWall)
+                and DotaTime() < IceWallCastedTime + IceWallCooldownTime))
+        or not IsAbilityActive(IceWall) and not Invoke:IsFullyCastable()
+        then
+            return BOT_ACTION_DESIRE_NONE
+        end
     end
 
     local nSpawnDistance = IceWall:GetSpecialValueInt('wall_place_distance')
@@ -1383,19 +1501,32 @@ function X.ConsiderIceWall()
 end
 
 function X.ConsiderDeafeningBlast()
-    if (not Quas:IsTrained() and not Wex:IsTrained() and not Exort:IsTrained())
-    or (not DeafeningBlast:IsFullyCastable()
-        or (not IsAbilityActive(DeafeningBlast)
-            and DotaTime() < DeafeningBlastCastedTime + DeafeningBlastCooldownTime))
-    or not IsAbilityActive(DeafeningBlast) and not Invoke:IsFullyCastable()
+    if GetBot():GetUnitName() == 'npc_dota_hero_rubick'
     then
-        return BOT_ACTION_DESIRE_NONE, 0
+        if not J.CanCastAbility(DeafeningBlast)
+        then
+            return BOT_ACTION_DESIRE_NONE
+        end
+    else
+        if (not Quas:IsTrained() and not Wex:IsTrained() and not Exort:IsTrained())
+        or (not DeafeningBlast:IsFullyCastable()
+            or (not IsAbilityActive(DeafeningBlast)
+                and DotaTime() < DeafeningBlastCastedTime + DeafeningBlastCooldownTime))
+        or not IsAbilityActive(DeafeningBlast) and not Invoke:IsFullyCastable()
+        then
+            return BOT_ACTION_DESIRE_NONE, 0
+        end
     end
 
 	local nCastRange = J.GetProperCastRange(false, bot, DeafeningBlast:GetCastRange())
     local nCastPoint = DeafeningBlast:GetCastPoint()
-    local nDamage = DeafeningBlast:GetSpecialValueInt('damage') + (Exort:GetLevel() - 1) * 40
+    local nDamage = DeafeningBlast:GetSpecialValueInt('damage')
 	local nRadius = DeafeningBlast:GetSpecialValueInt('radius_end')
+
+    if string.find(botName, 'invoker')
+    then
+        nDamage = DeafeningBlast:GetSpecialValueInt('damage') + (Exort:GetLevel() - 1) * 40
+    end
 
     if J.IsInTeamFight(bot, 1200)
 	then
@@ -1479,7 +1610,8 @@ function X.ConsiderDeafeningBlast()
 end
 
 function X.ConsiderCombo()
-    if CanDoCombo()
+    if GetBot():GetUnitName() == 'npc_dota_hero_invoker'
+    and X.CanDoCombo()
     then
         local nCastRange = J.GetProperCastRange(false, bot, ChaosMeteor:GetCastRange())
         local nRadius = EMP:GetSpecialValueInt('area_of_effect')
@@ -1501,7 +1633,7 @@ function X.ConsiderCombo()
     return BOT_ACTION_DESIRE_NONE, 0
 end
 
-function CanDoCombo()
+function X.CanDoCombo()
     if  Quas:IsTrained()
     and Wex:IsTrained()
     and Exort:IsTrained()
@@ -1558,6 +1690,11 @@ function InvokeSpell(Orb1, Orb2, Orb3)
 end
 
 function IsAbilityActive(ability)
+    if GetBot():GetUnitName() == 'npc_dota_hero_rubick'
+    then
+        return true
+    end
+
     if ability:IsHidden()
     or not ability:IsTrained()
     then

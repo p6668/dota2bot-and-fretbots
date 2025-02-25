@@ -7,9 +7,12 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_night_stalker'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
-local sUtility = {"item_crimson_guard", "item_pipe", "item_lotus_orb", "item_heavens_halberd"}
+local sUtility = {"item_pipe", "item_lotus_orb", "item_heavens_halberd", "item_assault"}
 local sUtilityItem = RI.GetBestUtilityItem(sUtility)
 
 local HeroBuild = {
@@ -48,7 +51,7 @@ local HeroBuild = {
                 }
             },
             ['ability'] = {
-                [1] = {1,2,1,3,1,6,1,3,3,3,6,2,2,2,6},
+                [1] = {1,2,1,3,1,6,1,3,3,1,6,3,2,2,2,6},
             },
             ['buy_list'] = {
                 "item_tango",
@@ -56,28 +59,27 @@ local HeroBuild = {
                 "item_quelling_blade",
                 "item_double_gauntlets",
             
+                "item_magic_wand",
                 "item_double_bracer",
                 "item_phase_boots",
-                "item_magic_wand",
-                "item_echo_sabre",
+                "item_phylactery",
+                "item_crimson_guard",--
                 "item_blink",
                 "item_aghanims_shard",
                 "item_black_king_bar",--
-                sUtilityItem,--
+                "item_angels_demise",--
                 "item_basher",
-                "item_assault",--
-                "item_abyssal_blade",--
-                "item_travel_boots",
                 "item_overwhelming_blink",--
+                "item_abyssal_blade",--
                 "item_travel_boots_2",--
                 "item_moon_shard",
                 "item_ultimate_scepter_2",
             },
             ['sell_list'] = {
-                "item_quelling_blade",
-                "item_bracer",
-                "item_magic_wand",
-                "item_echo_sabre",
+                "item_quelling_blade", "item_crimson_guard",
+                "item_magic_wand", "item_blink",
+                "item_bracer", "item_black_king_bar",
+                "item_bracer", "item_basher",
             },
         },
     },
@@ -128,6 +130,8 @@ function X.MinionThink(hMinionUnit)
     Minion.MinionThink(hMinionUnit)
 end
 
+end
+
 local Void              = bot:GetAbilityByName('night_stalker_void')
 local CripplingFear     = bot:GetAbilityByName('night_stalker_crippling_fear')
 local HunterInTheNight  = bot:GetAbilityByName('night_stalker_hunter_in_the_night')
@@ -140,6 +144,11 @@ local DarkAscensionDesire
 
 function X.SkillsComplement()
     if J.CanNotUseAbility(bot) then return end
+
+    Void              = bot:GetAbilityByName('night_stalker_void')
+    CripplingFear     = bot:GetAbilityByName('night_stalker_crippling_fear')
+    HunterInTheNight  = bot:GetAbilityByName('night_stalker_hunter_in_the_night')
+    DarkAscension     = bot:GetAbilityByName('night_stalker_darkness')
 
     DarkAscensionDesire = X.ConsiderDarkAscension()
     if DarkAscensionDesire > 0
@@ -177,7 +186,7 @@ function X.SkillsComplement()
 end
 
 function X.ConsiderVoid()
-    if not Void:IsFullyCastable()
+    if not J.CanCastAbility(Void)
     then
         return BOT_ACTION_DESIRE_NONE, nil
     end
@@ -413,7 +422,7 @@ function X.ConsiderVoid()
 end
 
 function X.ConsiderCripplingFear()
-    if not CripplingFear:IsFullyCastable()
+    if not J.CanCastAbility(CripplingFear)
     then
         return BOT_ACTION_DESIRE_NONE
     end
@@ -509,8 +518,7 @@ function X.ConsiderCripplingFear()
 end
 
 function X.ConsiderHunterInTheNight()
-    if HunterInTheNight:IsPassive()
-    or not HunterInTheNight:IsFullyCastable()
+    if not J.CanCastAbility(HunterInTheNight)
     then
         return BOT_ACTION_DESIRE_NONE, nil
     end
@@ -537,7 +545,7 @@ function X.ConsiderHunterInTheNight()
 end
 
 function X.ConsiderDarkAscension()
-    if not DarkAscension:IsFullyCastable()
+    if not J.CanCastAbility(DarkAscension)
     then
         return BOT_ACTION_DESIRE_NONE
     end

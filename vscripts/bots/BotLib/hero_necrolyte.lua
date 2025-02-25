@@ -7,9 +7,12 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_necrolyte'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
-local sUtility = {"item_pipe", "item_heavens_halberd"}
+local sUtility = {"item_lotus_orb", "item_heavens_halberd"}
 local sUtilityItem = RI.GetBestUtilityItem(sUtility)
 
 local HeroBuild = {
@@ -32,7 +35,7 @@ local HeroBuild = {
 					['t25'] = {0, 10},
 					['t20'] = {10, 0},
 					['t15'] = {0, 10},
-					['t10'] = {0, 10},
+					['t10'] = {10, 0},
 				}
             },
             ['ability'] = {
@@ -44,26 +47,26 @@ local HeroBuild = {
 				"item_faerie_fire",
 				"item_double_circlet",
 			
+				"item_magic_wand",
 				"item_null_talisman",
 				"item_bracer",
 				"item_boots",
-				"item_magic_wand",
-				"item_travel_boots",
 				"item_radiance",--
-				"item_eternal_shroud",--
+				"item_travel_boots",
 				"item_aghanims_shard",
+				"item_eternal_shroud",--
+				"item_shivas_guard",--
 				"item_heart",--
 				"item_ultimate_scepter",
-				"item_kaya_and_sange",--
-				"item_shivas_guard",--
-				"item_travel_boots_2",--
+				"item_wind_waker",--
 				"item_ultimate_scepter_2",
+				"item_travel_boots_2",--
 				"item_moon_shard",
 			},
             ['sell_list'] = {
-				"item_null_talisman",
-				"item_bracer",
-				"item_magic_wand",
+				"item_magic_wand", "item_shivas_guard",
+				"item_null_talisman", "item_heart",
+				"item_bracer", "item_ultimate_scepter",
 			},
         },
     },
@@ -74,7 +77,7 @@ local HeroBuild = {
 					['t25'] = {0, 10},
 					['t20'] = {10, 0},
 					['t15'] = {0, 10},
-					['t10'] = {0, 10},
+					['t10'] = {10, 0},
 				}
             },
             ['ability'] = {
@@ -86,10 +89,10 @@ local HeroBuild = {
 				"item_faerie_fire",
 				"item_double_circlet",
 			
+				"item_magic_wand",
 				"item_null_talisman",
 				"item_bracer",
 				"item_boots",
-				"item_magic_wand",
 				"item_radiance",--
 				sUtilityItem,--
 				"item_travel_boots",
@@ -98,15 +101,15 @@ local HeroBuild = {
 				"item_ultimate_scepter",
 				"item_shivas_guard",--
 				"item_cyclone",
-				"item_travel_boots_2",--
 				"item_ultimate_scepter_2",
 				"item_wind_waker",--
+				"item_travel_boots_2",--
 				"item_moon_shard",
 			},
             ['sell_list'] = {
-				"item_null_talisman",
-				"item_bracer",
-				"item_magic_wand",
+				"item_magic_wand", "item_heart",
+				"item_null_talisman", "item_ultimate_scepter",
+				"item_bracer", "item_shivas_guard",
 			},
         },
     },
@@ -163,6 +166,8 @@ function X.MinionThink( hMinionUnit )
 
 end
 
+end
+
 --[[
 
 npc_dota_hero_necrolyte
@@ -193,10 +198,11 @@ modifier_necrolyte_reapers_scythe_respawn_time
 
 --]]
 
-local abilityQ = bot:GetAbilityByName( sAbilityList[1] )
-local abilityW = bot:GetAbilityByName( sAbilityList[2] )
-local abilityAS = bot:GetAbilityByName( sAbilityList[4] )
-local abilityR = bot:GetAbilityByName( sAbilityList[6] )
+local abilityQ = bot:GetAbilityByName('necrolyte_death_pulse')
+local abilityW = bot:GetAbilityByName('necrolyte_ghost_shroud')
+local abilityE = bot:GetAbilityByName('necrolyte_heartstopper_aura')
+local abilityAS = bot:GetAbilityByName('necrolyte_death_seeker')
+local abilityR = bot:GetAbilityByName('necrolyte_reapers_scythe')
 
 
 local castQDesire
@@ -211,6 +217,11 @@ function X.SkillsComplement()
 
 
 	if J.CanNotUseAbility( bot ) then return end
+
+	abilityQ = bot:GetAbilityByName('necrolyte_death_pulse')
+	abilityW = bot:GetAbilityByName('necrolyte_ghost_shroud')
+	abilityAS = bot:GetAbilityByName('necrolyte_death_seeker')
+	abilityR = bot:GetAbilityByName('necrolyte_reapers_scythe')
 
 
 	nKeepMana = 400
@@ -268,7 +279,7 @@ end
 
 function X.ConsiderW()
 
-	if ( not abilityW:IsFullyCastable() ) then
+	if ( not J.CanCastAbility(abilityW) ) then
 		return BOT_ACTION_DESIRE_NONE
 	end
 
@@ -335,9 +346,9 @@ end
 
 function X.ConsiderQ()
 
-	if not abilityQ:IsFullyCastable()
+	if not J.CanCastAbility(abilityQ)
 		or bot:IsInvisible()
-		or ( J.GetHP( bot ) > 0.62 and abilityR:GetCooldownTimeRemaining() < 6 and bot:GetMana() < abilityR:GetManaCost() )
+		or ( J.GetHP( bot ) > 0.62 and abilityR ~= nil and abilityR:GetCooldownTimeRemaining() < 6 and bot:GetMana() < abilityR:GetManaCost() )
 	then
 		return BOT_ACTION_DESIRE_NONE
 	end
@@ -454,6 +465,27 @@ function X.ConsiderQ()
 		end
 	end
 
+	local botTarget = J.GetProperTarget( bot )
+	if J.IsDoingRoshan(bot)
+	then
+		if J.IsRoshan( botTarget )
+		and J.IsInRange( botTarget, bot, nRadius )
+		and J.CanBeAttacked(botTarget)
+		and J.IsAttacking(bot)
+		then
+			return BOT_ACTION_DESIRE_HIGH
+		end
+	end
+
+    if J.IsDoingTormentor(bot)
+	then
+		if J.IsTormentor(botTarget)
+        and J.IsInRange( botTarget, bot, nRadius )
+        and J.IsAttacking(bot)
+		then
+			return BOT_ACTION_DESIRE_HIGH
+		end
+	end
 
 	return BOT_ACTION_DESIRE_NONE
 
@@ -462,7 +494,7 @@ end
 
 function X.ConsiderR()
 
-	if not abilityR:IsFullyCastable() then
+	if not J.CanCastAbility(abilityR) then
 		return BOT_ACTION_DESIRE_NONE, 0
 	end
 
@@ -596,8 +628,7 @@ end
 
 function X.ConsiderAS()
 
-	if not abilityAS:IsTrained()
-		or not abilityAS:IsFullyCastable() 
+	if not J.CanCastAbility(abilityAS)
 	then
 		return BOT_ACTION_DESIRE_NONE, 0
 	end
@@ -663,4 +694,3 @@ function X.ConsiderAS()
 end
 
 return X
--- dota2jmz@163.com QQ:2462331592..

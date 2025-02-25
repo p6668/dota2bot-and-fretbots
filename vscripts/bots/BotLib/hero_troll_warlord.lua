@@ -7,6 +7,9 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_troll_warlord'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
 local sUtility = {}
@@ -30,15 +33,16 @@ local HeroBuild = {
                 "item_tango",
                 "item_double_branches",
                 "item_quelling_blade",
-
+            
                 "item_wraith_band",
-                "item_phase_boots",
                 "item_magic_wand",
+                "item_phase_boots",
                 "item_bfury",--
                 "item_yasha",
                 "item_black_king_bar",--
                 "item_sange_and_yasha",--
                 "item_aghanims_shard",
+                "item_basher",
                 "item_satanic",--
                 "item_abyssal_blade",--
                 "item_travel_boots_2",--
@@ -46,8 +50,8 @@ local HeroBuild = {
                 "item_ultimate_scepter_2",
             },
             ['sell_list'] = {
-                "item_wraith_band",
-                "item_magic_wand",
+                "item_wraith_band", "item_satanic",
+                "item_magic_wand", "item_basher",
             },
         },
     },
@@ -122,6 +126,8 @@ function X.MinionThink(hMinionUnit)
     Minion.MinionThink(hMinionUnit)
 end
 
+end
+
 local BattleStance          = bot:GetAbilityByName('troll_warlord_switch_stance')
 local WhirlingAxesRanged    = bot:GetAbilityByName('troll_warlord_whirling_axes_ranged')
 local WhirlingAxesMelee     = bot:GetAbilityByName('troll_warlord_whirling_axes_melee')
@@ -139,6 +145,11 @@ local botTarget
 
 function X.SkillsComplement()
     if J.CanNotUseAbility(bot) then return end
+
+    BattleStance          = bot:GetAbilityByName('troll_warlord_switch_stance')
+    WhirlingAxesRanged    = bot:GetAbilityByName('troll_warlord_whirling_axes_ranged')
+    WhirlingAxesMelee     = bot:GetAbilityByName('troll_warlord_whirling_axes_melee')
+    BattleTrance          = bot:GetAbilityByName('troll_warlord_battle_trance')
 
     botTarget = J.GetProperTarget(bot)
 
@@ -172,7 +183,7 @@ function X.SkillsComplement()
 end
 
 function X.ConsiderBattleStance()
-    if not BattleStance:IsFullyCastable()
+    if not J.CanCastAbility(BattleStance)
     then
         return BOT_ACTION_DESIRE_NONE
     end
@@ -318,7 +329,7 @@ function X.ConsiderBattleStance()
 end
 
 function X.ConsiderWhirlingAxesRanged()
-    if not WhirlingAxesRanged:IsFullyCastable()
+    if not J.CanCastAbility(WhirlingAxesRanged)
     then
         return BOT_ACTION_DESIRE_NONE, 0
     end
@@ -536,7 +547,7 @@ function X.ConsiderWhirlingAxesRanged()
 end
 
 function X.ConsiderWhirlingAxesMelee()
-    if not WhirlingAxesMelee:IsFullyCastable()
+    if not J.CanCastAbility(WhirlingAxesMelee)
     then
         return BOT_ACTION_DESIRE_NONE
     end
@@ -720,7 +731,7 @@ function X.ConsiderWhirlingAxesMelee()
 end
 
 function X.ConsiderBattleTrance()
-    if not BattleTrance:IsFullyCastable()
+    if not J.CanCastAbility(BattleTrance)
     then
         return BOT_ACTION_DESIRE_NONE
     end

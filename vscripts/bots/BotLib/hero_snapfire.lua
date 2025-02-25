@@ -7,6 +7,9 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_snapfire'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
 local sUtility = {}
@@ -45,16 +48,18 @@ local HeroBuild = {
                 "item_tango",
             
                 "item_bottle",
+                "item_magic_wand",
                 "item_bracer",
                 "item_boots",
-                "item_magic_wand",
                 "item_maelstrom",
-                "item_dragon_lance",
-                "item_gungir",--
+                "item_rod_of_atos",
                 "item_travel_boots",
+                "item_lesser_crit",
+                "item_mjollnir",--
+                "item_black_king_bar",--
+                "item_force_staff",
                 "item_greater_crit",--
                 "item_aghanims_shard",
-                "item_black_king_bar",--
                 "item_hurricane_pike",--
                 "item_sheepstick",--
                 "item_travel_boots_2",--
@@ -62,9 +67,9 @@ local HeroBuild = {
                 "item_ultimate_scepter_2",
             },
             ['sell_list'] = {
-                "item_bottle",
-                "item_bracer",
-                "item_magic_wand",
+                "item_magic_wand", "item_lesser_crit",
+                "item_bottle", "item_force_staff",
+                "item_bracer", "item_sheepstick",
             },
         },
     },
@@ -94,26 +99,29 @@ local HeroBuild = {
                 [1] = {1,2,1,2,1,6,1,2,2,3,6,3,3,3,6},
             },
             ['buy_list'] = {
-                "item_tango",
+                "item_double_tango",
                 "item_double_branches",
-                "item_enchanted_mango",
+                "item_circlet",
                 "item_blood_grenade",
             
                 "item_tranquil_boots",
                 "item_magic_wand",
+                "item_ancient_janggo",
+                "item_force_staff",--
                 "item_boots_of_bearing",--
                 "item_aghanims_shard",
-                "item_force_staff",--
                 "item_rod_of_atos",
                 "item_heavens_halberd",--
                 "item_shivas_guard",--
-                "item_gungir",--
                 "item_wind_waker",--
+                "item_gungir",--
+                "item_hurricane_pike",
                 "item_ultimate_scepter_2",
                 "item_moon_shard",
             },
             ['sell_list'] = {
-                "item_magic_wand",
+                "item_circlet", "item_boots_of_bearing",
+                "item_magic_wand", "item_rod_of_atos",
             },
         },
     },
@@ -131,26 +139,29 @@ local HeroBuild = {
                 [1] = {1,2,1,2,1,6,1,2,2,3,6,3,3,3,6},
             },
             ['buy_list'] = {
-                "item_tango",
+                "item_double_tango",
                 "item_double_branches",
-                "item_enchanted_mango",
+                "item_circlet",
                 "item_blood_grenade",
             
                 "item_arcane_boots",
                 "item_magic_wand",
+                "item_mekansm",
+                "item_force_staff",--
                 "item_guardian_greaves",--
                 "item_aghanims_shard",
-                "item_force_staff",--
                 "item_rod_of_atos",
                 "item_heavens_halberd",--
                 "item_shivas_guard",--
-                "item_gungir",--
                 "item_wind_waker",--
+                "item_gungir",--
+                "item_hurricane_pike",
                 "item_ultimate_scepter_2",
                 "item_moon_shard",
             },
             ['sell_list'] = {
-                "item_magic_wand",
+                "item_circlet", "item_guardian_greaves",
+                "item_magic_wand", "item_rod_of_atos",
             },
         },
     },
@@ -177,6 +188,8 @@ function X.MinionThink(hMinionUnit)
     Minion.MinionThink(hMinionUnit)
 end
 
+end
+
 local ScatterBlast      = bot:GetAbilityByName('snapfire_scatterblast')
 local FiresnapCookie    = bot:GetAbilityByName('snapfire_firesnap_cookie')
 local LilShredder       = bot:GetAbilityByName('snapfire_lil_shredder')
@@ -193,6 +206,13 @@ local MortimerKissesDesire, MortimerKissesLocation
 
 function X.SkillsComplement()
 	if J.CanNotUseAbility(bot) then return end
+
+    ScatterBlast      = bot:GetAbilityByName('snapfire_scatterblast')
+    FiresnapCookie    = bot:GetAbilityByName('snapfire_firesnap_cookie')
+    LilShredder       = bot:GetAbilityByName('snapfire_lil_shredder')
+    GobbleUp          = bot:GetAbilityByName('snapfire_gobble_up')
+    SpitOut           = bot:GetAbilityByName('snapfire_spit_creep')
+    MortimerKisses    = bot:GetAbilityByName('snapfire_mortimer_kisses')
 
     MortimerKissesDesire, MortimerKissesLocation = X.ConsiderMortimerKisses()
     if MortimerKissesDesire > 0
@@ -238,7 +258,7 @@ function X.SkillsComplement()
 end
 
 function X.ConsiderScatterBlast()
-    if not ScatterBlast:IsFullyCastable()
+    if not J.CanCastAbility(ScatterBlast)
     or bot:HasModifier('modifier_snapfire_mortimer_kisses')
     then
         return BOT_ACTION_DESIRE_NONE, 0
@@ -442,7 +462,7 @@ function X.ConsiderScatterBlast()
 end
 
 function X.ConsiderFiresnapCookie()
-    if not FiresnapCookie:IsFullyCastable()
+    if not J.CanCastAbility(FiresnapCookie)
     then
         return BOT_ACTION_DESIRE_NONE, nil
     end
@@ -511,8 +531,8 @@ function X.ConsiderFiresnapCookie()
             and not J.IsLocationInChrono(enemyHero:GetLocation())
             and not J.IsLocationInBlackHole(enemyHero:GetLocation())
             then
-                local nInRangeAlly = botTarget:GetNearbyHeroes(1200, true, BOT_MODE_NONE)
-                local nTargetInRangeAlly = botTarget:GetNearbyHeroes(1200, false, BOT_MODE_NONE)
+                local nInRangeAlly = enemyHero:GetNearbyHeroes(1200, true, BOT_MODE_NONE)
+                local nTargetInRangeAlly = enemyHero:GetNearbyHeroes(1200, false, BOT_MODE_NONE)
 
                 if  nInRangeAlly ~= nil and nTargetInRangeAlly ~= nil
                 and #nInRangeAlly >= #nTargetInRangeAlly
@@ -612,7 +632,7 @@ function X.ConsiderFiresnapCookie()
 end
 
 function X.ConsiderLilShredder()
-    if not LilShredder:IsFullyCastable()
+    if not J.CanCastAbility(LilShredder)
     or bot:HasModifier('modifier_snapfire_mortimer_kisses')
     then
         return BOT_ACTION_DESIRE_NONE
@@ -709,7 +729,7 @@ function X.ConsiderLilShredder()
 end
 
 function X.ConsiderMortimerKisses()
-    if not MortimerKisses:IsFullyCastable()
+    if not J.CanCastAbility(MortimerKisses)
     then
         return BOT_ACTION_DESIRE_NONE, 0
     end
@@ -764,7 +784,7 @@ end
 
 function X.ConsiderGobbleUp()
     if not bot:HasScepter()
-    or not GobbleUp:IsFullyCastable()
+    or not J.CanCastAbility(GobbleUp)
     or bot:HasModifier('modifier_snapfire_mortimer_kisses')
     then
         return BOT_ACTION_DESIRE_NONE, nil
@@ -828,7 +848,7 @@ function X.ConsiderGobbleUp()
 end
 
 function X.ConsiderSpitOut()
-    if not SpitOut:IsFullyCastable()
+    if not J.CanCastAbility(SpitOut)
     or not bot:HasModifier('modifier_snapfire_gobble_up_belly_has_unit')
     then
         return BOT_ACTION_DESIRE_NONE, 0

@@ -7,9 +7,12 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_tidehunter'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
-local sUtility = {"item_lotus_orb", "item_heavens_halberd", "item_crimson_guard"}
+local sUtility = {"item_crimson_guard", "item_lotus_orb", "item_heavens_halberd"}
 local sUtilityItem = RI.GetBestUtilityItem(sUtility)
 
 local HeroBuild = {
@@ -55,29 +58,30 @@ local HeroBuild = {
 				"item_double_branches",
 				"item_quelling_blade",
 				"item_double_gauntlets",
-				"item_gauntlets",
-			
-				"item_boots",
-				"item_soul_ring",
+		
 				"item_magic_wand",
+				"item_double_bracer",
 				"item_phase_boots",
-				"item_vladmir",--
+				"item_soul_ring",
+				"item_pipe",--
 				"item_blink",
 				"item_aghanims_shard",
-				"item_pipe",--
-				"item_shivas_guard",--
 				sUtilityItem,--
+				"item_shivas_guard",--
 				"item_ultimate_scepter",
 				"item_refresher",--
-				"item_overwhelming_blink",--
 				"item_ultimate_scepter_2",
+				"item_overwhelming_blink",--
+				"item_sheepstick",--
 				"item_moon_shard",
 			},
             ['sell_list'] = {
-				"item_quelling_blade",
-				"item_phase_boots",
-				"item_soul_ring",
-				"item_magic_wand",
+				"item_quelling_blade", "item_pipe",
+				"item_magic_wand", "item_blink",
+				"item_soul_ring", sUtilityItem,
+				"item_bracer", "item_shivas_guard",
+				"item_bracer", "item_ultimate_scepter",
+				"item_phase_boots", "item_sheepstick",
 			},
         },
     },
@@ -133,6 +137,8 @@ function X.MinionThink( hMinionUnit )
 
 end
 
+end
+
 --[[
 
 npc_dota_hero_tidehunter
@@ -161,11 +167,11 @@ modifier_tidehunter_ravage
 
 --]]
 
-local abilityQ = bot:GetAbilityByName( sAbilityList[1] )
-local abilityW = bot:GetAbilityByName( sAbilityList[2] )
-local abilityE = bot:GetAbilityByName( sAbilityList[3] )
-local abilityR = bot:GetAbilityByName( sAbilityList[6] )
+local abilityQ = bot:GetAbilityByName('tidehunter_gush')
+local abilityW = bot:GetAbilityByName('tidehunter_kraken_shell')
+local abilityE = bot:GetAbilityByName('tidehunter_anchor_smash')
 local DeadInTheWater = bot:GetAbilityByName( 'tidehunter_dead_in_the_water' )
+local abilityR = bot:GetAbilityByName('tidehunter_ravage')
 local talent3 = bot:GetAbilityByName( sTalentList[3] )
 
 
@@ -175,13 +181,19 @@ local castEDesire, castETarget
 local castRDesire, castRTarget
 local DeadInTheWaterDesire, AnchorTarget
 
-local nKeepMana, nMP, nHP, nLV, hEnemyList, hAllyList, botTarget, sMotive
+local nKeepMana, nMP, nHP, nLV, hEnemyList, hAllyList, botTarget, sMotive, botName
 local aetherRange = 0
 
 
 function X.SkillsComplement()
 
 	if J.CanNotUseAbility( bot ) or bot:IsInvisible() then return end
+
+	abilityQ = bot:GetAbilityByName('tidehunter_gush')
+	abilityW = bot:GetAbilityByName('tidehunter_kraken_shell')
+	abilityE = bot:GetAbilityByName('tidehunter_anchor_smash')
+	DeadInTheWater = bot:GetAbilityByName( 'tidehunter_dead_in_the_water' )
+	abilityR = bot:GetAbilityByName('tidehunter_ravage')
 
 	nKeepMana = 400
 	aetherRange = 0
@@ -191,6 +203,7 @@ function X.SkillsComplement()
 	botTarget = J.GetProperTarget( bot )
 	hEnemyList = bot:GetNearbyHeroes( 1600, true, BOT_MODE_NONE )
 	hAllyList = J.GetAlliesNearLoc( bot:GetLocation(), 1600 )
+	botName = GetBot():GetUnitName()
 
 
 	--计算天赋可能带来的通用变化
@@ -218,6 +231,7 @@ function X.SkillsComplement()
 		J.SetQueuePtToINT( bot, true )
 		
 		if bot:HasScepter()
+		and string.find(botName, 'tidehunter')
 		and castQTarget ~= nil
 		then
 			bot:ActionQueue_UseAbilityOnLocation( abilityQ, castQTarget:GetLocation() )
@@ -248,6 +262,12 @@ function X.SkillsComplement()
 		return
 	end
 
+	castWDesire = X.ConsiderW()
+	if castWDesire > 0 then
+		bot:Action_UseAbility(abilityW)
+		return
+	end
+
 end
 
 
@@ -255,7 +275,7 @@ end
 function X.ConsiderQ()
 
 
-	if not abilityQ:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityQ) then return 0 end
 
 	local nSkillLV = abilityQ:GetLevel()
 	local nCastRange = abilityQ:GetCastRange() + aetherRange
@@ -267,7 +287,10 @@ function X.ConsiderQ()
 	local nManaCost = abilityQ:GetManaCost()
 	
 	local nDamage = abilityQ:GetSpecialValueInt( 'gush_damage' )
-	if talent3:IsTrained() then nDamage = nDamage + talent3:GetSpecialValueInt( 'value' ) end
+	if string.find(botName, 'tidehunter')
+	then
+		if talent3:IsTrained() then nDamage = nDamage + talent3:GetSpecialValueInt( 'value' ) end
+	end
 	
 	local nDamageType = DAMAGE_TYPE_MAGICAL 
 	local nInRangeEnemyList = J.GetAroundEnemyHeroList( nCastRange )
@@ -415,11 +438,23 @@ function X.ConsiderQ()
 	then
 		if J.IsRoshan( botTarget )
 			and J.IsInRange( botTarget, bot, nCastRange )
+			and J.CanBeAttacked(botTarget)
+			and J.IsAttacking(bot)
 		then
 			hCastTarget = botTarget
 			sCastMotive = 'Q-肉山'
 			return BOT_ACTION_DESIRE_HIGH, hCastTarget, sCastMotive
 		end	
+	end
+
+	if J.IsDoingTormentor(bot)
+	then
+		if J.IsTormentor(botTarget)
+        and J.IsInRange( botTarget, bot, nCastRange )
+        and J.IsAttacking(bot)
+		then
+			return BOT_ACTION_DESIRE_HIGH, botTarget, ''
+		end
 	end
 
 
@@ -428,12 +463,61 @@ function X.ConsiderQ()
 
 end
 
+function X.ConsiderW()
+	if not J.CanCastAbility(abilityW) then
+		return BOT_ACTION_DESIRE_NONE
+	end
+
+	local nAllyHeroes = bot:GetNearbyHeroes(1200, false, BOT_MODE_NONE)
+	local nEnemyHeroes = bot:GetNearbyHeroes(800, true, BOT_MODE_NONE)
+
+	if J.IsRetreating( bot ) and not J.IsRealInvisible(bot) and (J.GetHP(bot) < 0.4 or #nEnemyHeroes > #nAllyHeroes + 2)
+	then
+		for _, npcEnemy in pairs( nEnemyHeroes )
+		do
+			if J.IsValidHero( npcEnemy )
+				and bot:WasRecentlyDamagedByHero( npcEnemy, 5.0 )
+				and J.CanCastOnNonMagicImmune( npcEnemy )
+				and not J.IsDisabled( npcEnemy )
+				and not npcEnemy:IsDisarmed()
+				and J.IsChasingTarget(npcEnemy, bot)
+			then
+
+				return BOT_ACTION_DESIRE_HIGH
+			end
+		end
+	end
+
+	if J.IsDoingRoshan(bot)
+	then
+		if J.IsRoshan( botTarget )
+		and J.IsInRange( botTarget, bot, 600)
+		and J.IsAttacking(bot)
+		and J.GetHP(bot) < 0.25
+		then
+			return BOT_ACTION_DESIRE_HIGH
+		end
+	end
+
+    if J.IsDoingTormentor(bot)
+	then
+		if J.IsTormentor(botTarget)
+        and J.IsInRange( botTarget, bot, 600 )
+        and J.IsAttacking(bot)
+		and J.GetHP(bot) < 0.25
+		then
+			return BOT_ACTION_DESIRE_HIGH
+		end
+	end
+
+	return BOT_ACTION_DESIRE_NONE
+end
 
 
 function X.ConsiderE()
 
 
-	if not abilityE:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityE) then return 0 end
 
 	local nSkillLV = abilityE:GetLevel()
 	local nRadius = abilityE:GetSpecialValueInt( 'radius' )
@@ -602,6 +686,27 @@ function X.ConsiderE()
 	    end
 	end
 
+	if J.IsDoingRoshan(bot)
+	then
+		if J.IsRoshan( botTarget )
+		and J.IsInRange( botTarget, bot, nRadius )
+		and J.CanBeAttacked(botTarget)
+		and J.IsAttacking(bot)
+		then
+			return BOT_ACTION_DESIRE_HIGH, ''
+		end
+	end
+
+    if J.IsDoingTormentor(bot)
+	then
+		if J.IsTormentor(botTarget)
+        and J.IsInRange( botTarget, bot, nRadius )
+        and J.IsAttacking(bot)
+		then
+			return BOT_ACTION_DESIRE_HIGH, ''
+		end
+	end
+
 
 	return BOT_ACTION_DESIRE_NONE
 
@@ -613,7 +718,7 @@ end
 function X.ConsiderR()
 
 
-	if not abilityR:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityR) then return 0 end
 
 	local nSkillLV = abilityR:GetLevel()
 	local nCastRange = abilityR:GetSpecialValueInt( 'radius' )
@@ -713,8 +818,7 @@ function X.ConsiderR()
 end
 
 function X.ConsiderDeadInTheWater()
-	if not DeadInTheWater:IsTrained()
-	or not DeadInTheWater:IsFullyCastable()
+	if not J.CanCastAbility(DeadInTheWater)
 	then
 		return BOT_ACTION_DESIRE_NONE, nil
 	end

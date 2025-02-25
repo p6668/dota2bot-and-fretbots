@@ -7,6 +7,9 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_templar_assassin'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
 local sUtility = {}
@@ -20,7 +23,7 @@ local HeroBuild = {
 					['t25'] = {10, 0},
 					['t20'] = {0, 10},
 					['t15'] = {10, 0},
-					['t10'] = {10, 0},
+					['t10'] = {0, 10},
 				}
             },
             ['ability'] = {
@@ -33,8 +36,8 @@ local HeroBuild = {
 				"item_quelling_blade",
 			
 				"item_power_treads",
-				"item_null_talisman",
 				"item_magic_wand",
+				"item_null_talisman",
 				"item_dragon_lance",
 				"item_desolator",--
 				"item_blink",
@@ -48,10 +51,10 @@ local HeroBuild = {
 				"item_ultimate_scepter_2",
 			},
             ['sell_list'] = {
-				"item_quelling_blade",
-				"item_power_treads",
-				"item_null_talisman",
-				"item_magic_wand",
+				"item_quelling_blade", "item_blink",
+				"item_magic_wand", "item_black_king_bar",
+				"item_null_talisman", "item_greater_crit",
+				"item_power_treads", "item_sheepstick",
 			},
         },
     },
@@ -62,7 +65,7 @@ local HeroBuild = {
 					['t25'] = {10, 0},
 					['t20'] = {0, 10},
 					['t15'] = {10, 0},
-					['t10'] = {10, 0},
+					['t10'] = {0, 10},
 				}
             },
             ['ability'] = {
@@ -75,9 +78,9 @@ local HeroBuild = {
 				"item_quelling_blade",
 			
 				"item_bottle",
+				"item_magic_wand",
 				"item_power_treads",
 				"item_null_talisman",
-				"item_magic_wand",
 				"item_dragon_lance",
 				"item_desolator",--
 				"item_blink",
@@ -91,11 +94,11 @@ local HeroBuild = {
 				"item_ultimate_scepter_2",
 			},
             ['sell_list'] = {
-				"item_quelling_blade",
-				"item_bottle",
-				"item_power_treads",
-				"item_null_talisman",
-				"item_magic_wand",
+				"item_quelling_blade", "item_desolator",
+				"item_magic_wand", "item_blink",
+				"item_bottle", "item_black_king_bar",
+				"item_null_talisman", "item_greater_crit",
+				"item_power_treads", "item_sheepstick",
 			},
         },
     },
@@ -222,6 +225,8 @@ function X.MinionThink( hMinionUnit )
 
 end
 
+end
+
 function X.IsEnemyRegenning( nEnemies )
 
 	for _, enemy in pairs( nEnemies )
@@ -275,9 +280,12 @@ modifier_templar_assassin_refraction_holdout
 
 --]]
 
-local abilityQ = bot:GetAbilityByName( sAbilityList[1] )
-local abilityW = bot:GetAbilityByName( sAbilityList[2] )
-local abilityR = bot:GetAbilityByName( sAbilityList[6] )
+local abilityQ = bot:GetAbilityByName('templar_assassin_refraction')
+local abilityW = bot:GetAbilityByName('templar_assassin_meld')
+local abilityE = bot:GetAbilityByName('templar_assassin_psi_blades')
+local abilityD = bot:GetAbilityByName('templar_assassin_trap')
+local abilityAS = bot:GetAbilityByName('templar_assassin_trap_teleport')--todo
+local abilityR = bot:GetAbilityByName('templar_assassin_psionic_trap')
 
 local castQDesire
 local castWDesire
@@ -306,6 +314,12 @@ function X.SkillsComplement()
 	X.TAConsiderTarget()
 
 	if J.CanNotUseAbility( bot ) or bot:HasModifier( 'modifier_templar_assassin_meld' ) then return end
+
+	abilityQ = bot:GetAbilityByName('templar_assassin_refraction')
+	abilityW = bot:GetAbilityByName('templar_assassin_meld')
+	abilityD = bot:GetAbilityByName('templar_assassin_trap')--todo for rubick later
+	abilityAS = bot:GetAbilityByName('templar_assassin_trap_teleport')--todo
+	abilityR = bot:GetAbilityByName('templar_assassin_psionic_trap')
 
 	nKeepMana = 300
 	nLV = bot:GetLevel()
@@ -357,7 +371,7 @@ end
 
 function X.ConsiderQ()
 
-	if ( not abilityQ:IsFullyCastable() ) then
+	if ( not J.CanCastAbility(abilityQ) ) then
 		return BOT_ACTION_DESIRE_NONE
 	end
 
@@ -374,7 +388,8 @@ function X.ConsiderQ()
 	then
 		for _, npcEnemy in pairs( tableNearbyEnemyHeroes )
 		do
-			if bot:WasRecentlyDamagedByHero( npcEnemy, 1.0 )
+			if J.IsValidHero(npcEnemy)
+			and bot:WasRecentlyDamagedByHero( npcEnemy, 1.0 )
 				and npcEnemy:GetAttackTarget() == bot
 			then
 				return BOT_ACTION_DESIRE_MODERATE
@@ -413,7 +428,8 @@ function X.ConsiderQ()
 	then
 		for _, npcEnemy in pairs( tableNearbyEnemyHeroes )
 		do
-			if ( bot:WasRecentlyDamagedByHero( npcEnemy, 2.0 ) or nHP < 0.25 )
+			if J.IsValidHero(npcEnemy)
+			and ( bot:WasRecentlyDamagedByHero( npcEnemy, 2.0 ) or nHP < 0.25 )
 			then
 				return BOT_ACTION_DESIRE_MODERATE
 			end
@@ -480,8 +496,21 @@ function X.ConsiderQ()
 	then
 		local npcTarget = bot:GetAttackTarget()
 		if ( J.IsRoshan( npcTarget ) and J.GetHP( npcTarget ) > 0.3 and J.IsInRange( npcTarget, bot, nRange ) )
+		and J.CanBeAttacked(npcTarget)
+		and J.IsAttacking(bot)
 		then
 			return BOT_ACTION_DESIRE_LOW
+		end
+	end
+
+	local botTarget = J.GetProperTarget(bot)
+	if J.IsDoingTormentor(bot)
+	then
+		if J.IsTormentor(botTarget)
+        and J.IsInRange( botTarget, bot, 800 )
+        and J.IsAttacking(bot)
+		then
+			return BOT_ACTION_DESIRE_HIGH
 		end
 	end
 
@@ -515,7 +544,7 @@ end
 function X.ConsiderW()
 
 	local nEnemyTowers = bot:GetNearbyTowers( 888, true )
-	if not abilityW:IsFullyCastable()
+	if not J.CanCastAbility(abilityW)
 		or #nEnemyTowers > 0
 		or bot:HasModifier( "modifier_item_dustofappearance" )
 	then
@@ -550,8 +579,21 @@ function X.ConsiderW()
 	then
 		local npcTarget = bot:GetAttackTarget()
 		if ( J.IsRoshan( npcTarget ) and J.IsInRange( npcTarget, bot, nCastRange + 40 ) )
+		and J.CanBeAttacked(npcTarget)
+		and J.IsAttacking(bot)
 		then
 			return BOT_ACTION_DESIRE_LOW
+		end
+	end
+
+	local botTarget = J.GetProperTarget(bot)
+	if J.IsDoingTormentor(bot)
+	then
+		if J.IsTormentor(botTarget)
+        and J.IsInRange( botTarget, bot, nCastRange )
+        and J.IsAttacking(bot)
+		then
+			return BOT_ACTION_DESIRE_HIGH
 		end
 	end
 
@@ -645,7 +687,7 @@ end
 function X.ConsiderR()
 
 
-	if ( not abilityR:IsFullyCastable() )
+	if ( not J.CanCastAbility(abilityR) )
 	then
 		return BOT_ACTION_DESIRE_NONE, 0
 	end
@@ -842,11 +884,11 @@ function X.TAConsiderTarget()
 
 	local nInAttackRangeNearestEnemyHero = nEnemyHeroInRange[1]
 
-	if J.IsValidHero( nInAttackRangeWeakestEnemyHero )
-		and J.CanBeAttacked( nInAttackRangeWeakestEnemyHero )
+	if J.IsValidHero( nInAttackRangeNearestEnemyHero )
+		and J.CanBeAttacked( nInAttackRangeNearestEnemyHero )
 		and ( GetUnitToUnitDistance( npcTarget, bot ) > nAttackRange or J.HasForbiddenModifier( npcTarget ) )
 	then
-		bot:SetTarget( nInAttackRangeWeakestEnemyHero )
+		bot:SetTarget( nInAttackRangeNearestEnemyHero )
 		return
 	end
 
@@ -854,4 +896,3 @@ end
 
 
 return X
--- dota2jmz@163.com QQ:2462331592..

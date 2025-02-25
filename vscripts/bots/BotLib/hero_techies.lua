@@ -8,9 +8,12 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_techies'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
-local sUtility = {"item_lotus_orb", "item_pipe"}
+local sUtility = {}
 local sUtilityItem = RI.GetBestUtilityItem(sUtility)
 
 local HeroBuild = {
@@ -57,8 +60,14 @@ local HeroBuild = {
                     ['t25'] = {10, 0},
                     ['t20'] = {10, 0},
                     ['t15'] = {0, 10},
-                    ['t10'] = {10, 0},
-                }
+                    ['t10'] = {0, 10},
+                },
+                [2] = {
+                    ['t25'] = {0, 10},
+                    ['t20'] = {10, 0},
+                    ['t15'] = {0, 10},
+                    ['t10'] = {0, 10},
+                },
             },
             ['ability'] = {
                 [1] = {1,3,1,2,1,6,1,3,3,3,6,2,2,2,6},
@@ -74,17 +83,17 @@ local HeroBuild = {
                 "item_tranquil_boots",
                 "item_glimmer_cape",--
                 "item_boots_of_bearing",--
-                "item_force_staff",--
-                sUtilityItem,--
-                "item_octarine_core",--
+                "item_solar_crest",--
+                "item_lotus_orb",--
+                "item_shivas_guard",--
                 "item_sheepstick",--
                 "item_aghanims_shard",
                 "item_moon_shard",
                 "item_ultimate_scepter_2",
             },
             ['sell_list'] = {
-                "item_circlet",
-                "item_magic_wand",
+                "item_circlet", "item_solar_crest",
+                "item_magic_wand", "item_lotus_orb",
             },
         },
     },
@@ -95,8 +104,14 @@ local HeroBuild = {
                     ['t25'] = {10, 0},
                     ['t20'] = {10, 0},
                     ['t15'] = {0, 10},
-                    ['t10'] = {10, 0},
-                }
+                    ['t10'] = {0, 10},
+                },
+                [2] = {
+                    ['t25'] = {0, 10},
+                    ['t20'] = {10, 0},
+                    ['t15'] = {0, 10},
+                    ['t10'] = {0, 10},
+                },
             },
             ['ability'] = {
                 [1] = {1,3,1,2,1,6,1,3,3,3,6,2,2,2,6},
@@ -112,17 +127,17 @@ local HeroBuild = {
                 "item_arcane_boots",
                 "item_glimmer_cape",--
                 "item_guardian_greaves",--
-                "item_force_staff",--
-                sUtilityItem,--
-                "item_octarine_core",--
+                "item_solar_crest",--
+                "item_lotus_orb",--
+                "item_shivas_guard",--
                 "item_sheepstick",--
                 "item_aghanims_shard",
                 "item_moon_shard",
                 "item_ultimate_scepter_2",
             },
             ['sell_list'] = {
-                "item_circlet",
-                "item_magic_wand",
+                "item_circlet", "item_solar_crest",
+                "item_magic_wand", "item_lotus_orb",
             },
         },
     },
@@ -149,6 +164,8 @@ function X.MinionThink(hMinionUnit)
     Minion.MinionThink(hMinionUnit)
 end
 
+end
+
 local StickyBomb        = bot:GetAbilityByName('techies_sticky_bomb')
 local ReactiveTazer     = bot:GetAbilityByName('techies_reactive_tazer')
 local ReactiveTazerStop = bot:GetAbilityByName('techies_reactive_tazer_stop')
@@ -171,6 +188,13 @@ local botTarget
 
 function X.SkillsComplement()
 	if J.CanNotUseAbility(bot) then return end
+
+    StickyBomb        = bot:GetAbilityByName('techies_sticky_bomb')
+    ReactiveTazer     = bot:GetAbilityByName('techies_reactive_tazer')
+    ReactiveTazerStop = bot:GetAbilityByName('techies_reactive_tazer_stop')
+    BlastOff          = bot:GetAbilityByName('techies_suicide')
+    MineFieldSign     = bot:GetAbilityByName('techies_minefield_sign')
+    ProximityMines    = bot:GetAbilityByName('techies_land_mines')
 
     botTarget = J.GetProperTarget(bot)
 
@@ -246,7 +270,7 @@ function X.SkillsComplement()
 end
 
 function X.ConsiderStickyBomb()
-    if not StickyBomb:IsFullyCastable()
+    if not J.CanCastAbility(StickyBomb)
     then
         return BOT_ACTION_DESIRE_NONE
     end
@@ -458,7 +482,7 @@ function X.ConsiderStickyBomb()
 end
 
 function X.ConsiderReactiveTazer()
-    if not ReactiveTazer:IsFullyCastable()
+    if not J.CanCastAbility(ReactiveTazer)
     then
         return BOT_ACTION_DESIRE_NONE
     end
@@ -466,7 +490,6 @@ function X.ConsiderReactiveTazer()
     local nRadius = ReactiveTazer:GetSpecialValueInt('stun_radius')
 
     if  J.IsGoingOnSomeone(bot)
-    and not CanDoCombo1()
 	then
 		if  J.IsValidTarget(botTarget)
         and J.IsInRange(bot, botTarget, nRadius)
@@ -513,7 +536,7 @@ function X.ConsiderReactiveTazer()
 end
 
 function X.ConsiderBlastOff()
-    if not BlastOff:IsFullyCastable()
+    if not J.CanCastAbility(BlastOff)
     then
         return BOT_ACTION_DESIRE_NONE, 0
     end
@@ -551,7 +574,6 @@ function X.ConsiderBlastOff()
     end
 
 	if  J.IsInTeamFight(bot, 1200)
-    and not CanDoCombo1()
 	then
 		local nLocationAoE = bot:FindAoELocation(true, true, bot:GetLocation(), nCastRange, nRadius, 0, 0 )
         local nInRangeEnemy = J.GetEnemiesNearLoc(nLocationAoE.targetloc, nRadius * 0.8)
@@ -564,7 +586,6 @@ function X.ConsiderBlastOff()
 	end
 
 	if  J.IsGoingOnSomeone(bot)
-    and not CanDoCombo1()
 	then
 		if  J.IsValidTarget(botTarget)
         and J.CanCastOnNonMagicImmune(botTarget)
@@ -639,7 +660,7 @@ function X.ConsiderBlastOff()
                 then
                     if  J.GetHP(bot) < 0.5
                     and J.CanCastOnNonMagicImmune(enemyHero)
-                    and bot:GetHealth() < J.GetTotalEstimatedDamageToTarget(nInRangeEnemy, bot)
+                    and bot:GetHealth() < J.GetTotalEstimatedDamageToTarget(nInRangeEnemy, bot, 5.5)
                     then
                         return BOT_ACTION_DESIRE_HIGH, enemyHero:GetLocation()
                     else
@@ -654,8 +675,8 @@ function X.ConsiderBlastOff()
 end
 
 function X.ConsiderMineFieldSign()
-    if not ProximityMines:IsTrained()
-    or not MineFieldSign:IsFullyCastable()
+    if ProximityMines ~= nil and not ProximityMines:IsTrained()
+    or not J.CanCastAbility(MineFieldSign)
     then
         return BOT_ACTION_DESIRE_NONE, 0
     end
@@ -689,7 +710,7 @@ function X.ConsiderMineFieldSign()
 end
 
 function X.ConsiderProximityMines()
-    if not ProximityMines:IsFullyCastable()
+    if not J.CanCastAbility(ProximityMines)
     then
         return BOT_ACTION_DESIRE_NONE, 0
     end
@@ -973,8 +994,8 @@ function X.ConsiderCombo()
 end
 
 function CanDoCombo1()
-    if  ReactiveTazer:IsFullyCastable()
-    and BlastOff:IsFullyCastable()
+    if  J.CanCastAbility(ReactiveTazer)
+    and J.CanCastAbility(BlastOff)
     then
         local nManaCost = ReactiveTazer:GetManaCost()
                         + BlastOff:GetManaCost()

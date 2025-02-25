@@ -7,6 +7,9 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_obsidian_destroyer'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
 local sUtility = {}
@@ -28,10 +31,16 @@ local HeroBuild = {
             ['talent'] = {
                 [1] = {
                     ['t25'] = {0, 10},
-                    ['t20'] = {0, 10},
+                    ['t20'] = {10, 0},
                     ['t15'] = {10, 0},
                     ['t10'] = {10, 0},
-                }
+                },
+                [2] = {
+                    ['t25'] = {10, 0},
+                    ['t20'] = {10, 0},
+                    ['t15'] = {10, 0},
+                    ['t10'] = {10, 0},
+                },
             },
             ['ability'] = {
                 [1] = {2,1,3,2,2,6,2,1,1,1,6,3,3,3,6},
@@ -42,25 +51,25 @@ local HeroBuild = {
                 "item_faerie_fire",
             
                 "item_double_null_talisman",
-                "item_power_treads",
                 "item_magic_wand",
+                "item_power_treads",
                 "item_witch_blade",
-                "item_blink",
-                "item_dragon_lance",
+                "item_force_staff",
                 "item_black_king_bar",--
                 "item_hurricane_pike",--
                 "item_aghanims_shard",
                 "item_devastator",--
-                "item_travel_boots",
                 "item_sheepstick",--
-                "item_arcane_blink",--
+                "item_shivas_guard",--
+                "item_travel_boots",
                 "item_travel_boots_2",--
                 "item_ultimate_scepter_2",
                 "item_moon_shard",
             },
             ['sell_list'] = {
-                "item_null_talisman",
-                "item_magic_wand",
+                "item_magic_wand", "item_black_king_bar",
+                "item_null_talisman", "item_sheepstick",
+                "item_null_talisman", "item_shivas_guard",
             },
         },
     },
@@ -127,6 +136,8 @@ function X.MinionThink( hMinionUnit )
 	end
 end
 
+end
+
 local ArcaneOrb             = bot:GetAbilityByName('obsidian_destroyer_arcane_orb')
 local AstralImprisonment    = bot:GetAbilityByName('obsidian_destroyer_astral_imprisonment')
 local EssenceFlux           = bot:GetAbilityByName('obsidian_destroyer_equilibrium')
@@ -139,9 +150,13 @@ local SanitysEclipseDesire, SanitysEclipseLocation
 function X.SkillsComplement()
     if J.CanNotUseAbility(bot) then return end
 
-	if  ArcaneOrb:IsTrained()
-	and ArcaneOrb:GetAutoCastState( ) == false
-	and EssenceFlux:GetLevel() >= 3
+    ArcaneOrb             = bot:GetAbilityByName('obsidian_destroyer_arcane_orb')
+    AstralImprisonment    = bot:GetAbilityByName('obsidian_destroyer_astral_imprisonment')
+    EssenceFlux           = bot:GetAbilityByName('obsidian_destroyer_equilibrium')
+    SanitysEclipse        = bot:GetAbilityByName('obsidian_destroyer_sanity_eclipse')
+
+	if ArcaneOrb ~= nil and ArcaneOrb:IsTrained() and ArcaneOrb:GetLevel() == 4 and ArcaneOrb:GetAutoCastState() == false
+	and EssenceFlux ~= nil and EssenceFlux:GetLevel() >= 2
 	then
 		ArcaneOrb:ToggleAutoCast()
 	end
@@ -169,7 +184,7 @@ function X.SkillsComplement()
 end
 
 function X.ConsiderArcaneOrb()
-    if not ArcaneOrb:IsFullyCastable()
+    if not J.CanCastAbility(ArcaneOrb)
     or ArcaneOrb:GetAutoCastState()
     then
         return BOT_ACTION_DESIRE_NONE, nil
@@ -248,7 +263,7 @@ function X.ConsiderArcaneOrb()
 end
 
 function X.ConsiderAstralImprisonment()
-    if not AstralImprisonment:IsFullyCastable()
+    if not J.CanCastAbility(AstralImprisonment)
     then
         return BOT_ACTION_DESIRE_NONE, nil
     end
@@ -464,7 +479,7 @@ function X.ConsiderAstralImprisonment()
 end
 
 function X.ConsiderSanitysEclipse()
-    if not SanitysEclipse:IsFullyCastable()
+    if not J.CanCastAbility(SanitysEclipse)
     then
         return BOT_ACTION_DESIRE_NONE, 0
     end

@@ -7,6 +7,9 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_zuus'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
 local sUtility = {}
@@ -44,25 +47,25 @@ local HeroBuild = {
 				"item_faerie_fire",
 			
 				"item_bottle",
+				"item_magic_wand",
 				"item_arcane_boots",
 				"item_phylactery",
-				"item_magic_wand",
 				"item_kaya",
 				"item_ultimate_scepter",
-				"item_kaya_and_sange",--
-				"item_black_king_bar",--
 				"item_octarine_core",--
-				"item_aghanims_shard",
-				"item_travel_boots",
+				"item_black_king_bar",--
+				"item_kaya_and_sange",--
 				"item_angels_demise",--
-				"item_travel_boots_2",--
+				"item_travel_boots",
+				"item_aghanims_shard",
 				"item_wind_waker",--
 				"item_ultimate_scepter_2",
+				"item_travel_boots_2",--
 				"item_moon_shard",
 			},
             ['sell_list'] = {
-				"item_bottle",
-				"item_magic_wand",
+				"item_magic_wand", "item_octarine_core",
+				"item_bottle", "item_black_king_bar",
 			},
         },
     },
@@ -87,12 +90,6 @@ local HeroBuild = {
 					['t15'] = {0, 10},
 					['t10'] = {10, 0},
 				},
-				[2] = {
-					['t25'] = {0, 10},
-					['t20'] = {10, 0},
-					['t15'] = {0, 10},
-					['t10'] = {0, 10},
-				}
             },
             ['ability'] = {
                 [1] = {1,3,1,2,1,6,1,2,2,2,6,3,3,3,6},
@@ -101,27 +98,27 @@ local HeroBuild = {
 				"item_tango",
 				"item_magic_stick",
 				"item_double_branches",
-				"item_enchanted_mango",
 				"item_blood_grenade",
+				"item_enchanted_mango",
 			
-				"item_tranquil_boots",
-				"item_wind_lace",
-				"item_phylactery",
 				"item_magic_wand",
+				"item_tranquil_boots",
+				"item_phylactery",
 				"item_aether_lens",
-				"item_force_staff",--
+				"item_force_staff",
 				"item_boots_of_bearing",--
 				"item_octarine_core",--
-				"item_aghanims_shard",
-				"item_ultimate_scepter",
-				"item_ethereal_blade",--
 				"item_sheepstick",--
+				"item_ultimate_scepter",
 				"item_angels_demise",--
 				"item_ultimate_scepter_2",
+				"item_ethereal_blade",--
+				"item_hurricane_pike",--
+				"item_aghanims_shard",
 				"item_moon_shard",
 			},
             ['sell_list'] = {
-				"item_magic_wand",
+				"item_magic_wand", "item_boots_of_bearing",
 			},
         },
     },
@@ -133,12 +130,6 @@ local HeroBuild = {
 					['t20'] = {0, 10},
 					['t15'] = {0, 10},
 					['t10'] = {10, 0},
-				},
-				[2] = {
-					['t25'] = {0, 10},
-					['t20'] = {10, 0},
-					['t15'] = {0, 10},
-					['t10'] = {0, 10},
 				}
             },
             ['ability'] = {
@@ -148,27 +139,27 @@ local HeroBuild = {
 				"item_tango",
 				"item_magic_stick",
 				"item_double_branches",
-				"item_enchanted_mango",
 				"item_blood_grenade",
+				"item_enchanted_mango",
 			
-				"item_arcane_boots",
-				"item_wind_lace",
-				"item_phylactery",
 				"item_magic_wand",
+				"item_arcane_boots",
+				"item_phylactery",
 				"item_aether_lens",
-				"item_force_staff",--
+				"item_force_staff",
 				"item_guardian_greaves",--
 				"item_octarine_core",--
-				"item_aghanims_shard",
-				"item_ultimate_scepter",
-				"item_ethereal_blade",--
 				"item_sheepstick",--
+				"item_ultimate_scepter",
 				"item_angels_demise",--
 				"item_ultimate_scepter_2",
+				"item_ethereal_blade",--
+				"item_hurricane_pike",--
+				"item_aghanims_shard",
 				"item_moon_shard",
 			},
             ['sell_list'] = {
-				"item_magic_wand",
+				"item_magic_wand", "item_guardian_greaves",
 			},
         },
     },
@@ -201,12 +192,14 @@ function X.MinionThink( hMinionUnit )
 
 end
 
-local abilityQ = bot:GetAbilityByName( sAbilityList[1] )
-local abilityW = bot:GetAbilityByName( sAbilityList[2] )
-local abilityE = bot:GetAbilityByName( sAbilityList[3] )
-local abilityD = bot:GetAbilityByName( sAbilityList[4] )
-local abilityAS = bot:GetAbilityByName( sAbilityList[5] )
-local abilityR = bot:GetAbilityByName( sAbilityList[6] )
+end
+
+local abilityQ = bot:GetAbilityByName('zuus_arc_lightning')
+local abilityW = bot:GetAbilityByName('zuus_lightning_bolt')
+local abilityE = bot:GetAbilityByName('zuus_heavenly_jump')
+local abilityD = bot:GetAbilityByName('zuus_cloud')
+local abilityAS = bot:GetAbilityByName('zuus_lightning_hands')
+local abilityR = bot:GetAbilityByName('zuus_thundergods_wrath')
 
 local talent5 = bot:GetAbilityByName( sTalentList[5] )
 local talent7 = bot:GetAbilityByName( sTalentList[7] )
@@ -220,7 +213,7 @@ local castRDesire
 local castEDesire, castETarget
 
 
-local nKeepMana, nMP, nHP, nLV, hEnemyHeroList
+local nKeepMana, nMP, nHP, nLV, hEnemyHeroList, botName
 local aetherRange = 0
 local talentDamage = 0
 
@@ -233,6 +226,12 @@ function X.SkillsComplement()
 
 	if J.CanNotUseAbility( bot ) or bot:IsInvisible() then return end
 
+	abilityQ = bot:GetAbilityByName('zuus_arc_lightning')
+	abilityW = bot:GetAbilityByName('zuus_lightning_bolt')
+	abilityE = bot:GetAbilityByName('zuus_heavenly_jump')
+	abilityD = bot:GetAbilityByName('zuus_cloud')
+	abilityR = bot:GetAbilityByName('zuus_thundergods_wrath')
+
 	nKeepMana = 400
 	aetherRange = 0
 	talentDamage = 0
@@ -243,11 +242,16 @@ function X.SkillsComplement()
 	nManaPercentage = bot:GetMana()/bot:GetMaxMana()
 	nHealthPercentage = bot:GetHealth()/bot:GetMaxHealth()
 	hEnemyHeroList = bot:GetNearbyHeroes( 1600, true, BOT_MODE_NONE )
+	botName = GetBot():GetUnitName()
 
 	local aether = J.IsItemAvailable( "item_aether_lens" )
 	if aether ~= nil then aetherRange = 250 end
-	if abilityAS:IsTrained() then abilityASBonus = 0.09 end
-	if talent8:IsTrained() then talentDamage = talentDamage + talent8:GetSpecialValueInt( "value" ) end
+	if abilityAS ~= nil and abilityAS:IsTrained() then abilityASBonus = 0.09 end
+
+	if string.find(botName, 'zuus')
+	then
+		if talent8:IsTrained() then talentDamage = talentDamage + talent8:GetSpecialValueInt( "value" ) end
+	end
 
 	castRDesire = X.ConsiderR()
 	if ( castRDesire > 0 )
@@ -322,7 +326,7 @@ end
 
 function X.ConsiderQ()
 
-	if not abilityQ:IsFullyCastable() then	return BOT_ACTION_DESIRE_NONE, nil	end
+	if not J.CanCastAbility(abilityQ) then	return BOT_ACTION_DESIRE_NONE, nil	end
 
 	local nCastRange = abilityQ:GetCastRange()
 	local nCastPoint = abilityQ:GetCastPoint()
@@ -406,12 +410,34 @@ function X.ConsiderQ()
 		end
 	end
 
+	local botTarget = J.GetProperTarget(bot)
+	if J.IsDoingRoshan(bot)
+	then
+		if J.IsRoshan( botTarget )
+		and J.IsInRange( botTarget, bot, nCastRange)
+		and J.CanBeAttacked(botTarget)
+		and J.IsAttacking(bot)
+		then
+			return BOT_ACTION_DESIRE_HIGH, botTarget
+		end
+	end
+
+    if J.IsDoingTormentor(bot)
+	then
+		if J.IsTormentor(botTarget)
+        and J.IsInRange( botTarget, bot, nCastRange)
+        and J.IsAttacking(bot)
+		then
+			return BOT_ACTION_DESIRE_HIGH, botTarget
+		end
+	end
+
 	return BOT_ACTION_DESIRE_NONE, nil
 end
 
 function X.ConsiderW()
 
-	if not abilityW:IsFullyCastable() then return BOT_ACTION_DESIRE_NONE, nil end
+	if not J.CanCastAbility(abilityW) then return BOT_ACTION_DESIRE_NONE, nil end
 
 	local nCastRange = abilityW:GetCastRange()
 	local nCastPoint = abilityW:GetCastPoint()
@@ -445,12 +471,34 @@ function X.ConsiderW()
 		return BOT_ACTION_DESIRE_HIGH, targetRanged
 	end
 
+	local botTarget = J.GetProperTarget(bot)
+	if J.IsDoingRoshan(bot)
+	then
+		if J.IsRoshan( botTarget )
+		and J.IsInRange( botTarget, bot, nCastRange)
+		and J.CanBeAttacked(botTarget)
+		and J.IsAttacking(bot)
+		then
+			return BOT_ACTION_DESIRE_HIGH, botTarget
+		end
+	end
+
+    if J.IsDoingTormentor(bot)
+	then
+		if J.IsTormentor(botTarget)
+        and J.IsInRange( botTarget, bot, nCastRange)
+        and J.IsAttacking(bot)
+		then
+			return BOT_ACTION_DESIRE_HIGH, botTarget
+		end
+	end
+
 	return BOT_ACTION_DESIRE_NONE, nil
 end
 
 function X.ConsiderW2()
 
-	if not abilityW:IsFullyCastable() then
+	if not J.CanCastAbility(abilityW) then
 		return BOT_ACTION_DESIRE_NONE, nil
 	end
 
@@ -550,8 +598,7 @@ end
 
 function X.ConsiderD()
 
-	if not bot:HasScepter()
-		or not abilityD:IsFullyCastable()
+	if not J.CanCastAbility(abilityD)
 		or bot:IsInvisible()
 	then
 		return BOT_ACTION_DESIRE_NONE, nil
@@ -592,7 +639,7 @@ end
 
 function X.ConsiderR()
 
-	if not abilityR:IsFullyCastable() then
+	if not J.CanCastAbility(abilityR) then
 		return BOT_ACTION_DESIRE_NONE
 	end
 
@@ -717,7 +764,7 @@ end
 
 function X.ConsiderE()
 
-	if not abilityE:IsFullyCastable() 
+	if not J.CanCastAbility(abilityE)
 		or bot:IsRooted()
 	then
 		return BOT_ACTION_DESIRE_NONE

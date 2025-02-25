@@ -7,6 +7,9 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_void_spirit'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
 local sUtility = {}
@@ -45,27 +48,69 @@ local HeroBuild = {
 				"item_gauntlets",
 			
 				"item_bottle",
-				"item_bracer",
-				"item_boots",
 				"item_magic_wand",
+				"item_bracer",
 				"item_power_treads",
 				"item_manta",--
 				"item_ultimate_scepter",
 				"item_lesser_crit",
 				"item_black_king_bar",--
-				"item_travel_boots",
-				"item_greater_crit",--
 				"item_bloodthorn",--
-				"item_sheepstick",--
+				"item_greater_crit",--
+				"item_travel_boots",
+				"item_shivas_guard",--
 				"item_ultimate_scepter_2",
 				"item_travel_boots_2",--
 				"item_moon_shard",
 				"item_aghanims_shard",
 			},
             ['sell_list'] = {
+				"item_magic_wand", "item_lesser_crit",
+				"item_bottle", "item_black_king_bar",
+				"item_bracer", "item_bloodthorn",
+			},
+        },
+		[2] = {
+            ['talent'] = {
+				[1] = {
+					['t25'] = {0, 10},
+					['t20'] = {10, 0},
+					['t15'] = {10, 0},
+					['t10'] = {10, 0},
+				}
+            },
+            ['ability'] = {
+                [1] = {3,1,3,2,2,6,2,2,3,3,6,1,1,1,6},
+            },
+            ['buy_list'] = {
+				"item_quelling_blade",
+				"item_tango",
+				"item_double_branches",
+				"item_circlet",
+			
 				"item_bottle",
-				"item_bracer",
 				"item_magic_wand",
+				"item_bracer",
+				"item_power_treads",
+				"item_orchid",
+				"item_kaya",
+				"item_ultimate_scepter",
+				"item_black_king_bar",--
+				"item_devastator",--
+				"item_kaya_and_sange",--
+				"item_travel_boots",
+				"item_bloodthorn",--
+				"item_shivas_guard",--
+				"item_ultimate_scepter_2",
+				"item_travel_boots_2",--
+				"item_moon_shard",
+				"item_aghanims_shard",
+			},
+            ['sell_list'] = {
+				"item_quelling_blade", "item_kaya",
+				"item_magic_wand", "item_ultimate_scepter",
+				"item_bottle", "item_black_king_bar",
+				"item_bracer", "item_devastator",
 			},
         },
     },
@@ -136,6 +181,8 @@ function X.MinionThink( hMinionUnit )
 
 end
 
+end
+
 local AetherRemnant = bot:GetAbilityByName( "void_spirit_aether_remnant" )
 local Dissimilate   = bot:GetAbilityByName( "void_spirit_dissimilate" )
 local ResonantPulse = bot:GetAbilityByName( "void_spirit_resonant_pulse" )
@@ -156,6 +203,11 @@ function X.SkillsComplement()
 	then
 		return
 	end
+
+	AetherRemnant = bot:GetAbilityByName( "void_spirit_aether_remnant" )
+	Dissimilate   = bot:GetAbilityByName( "void_spirit_dissimilate" )
+	ResonantPulse = bot:GetAbilityByName( "void_spirit_resonant_pulse" )
+	AstralStep    = bot:GetAbilityByName( "void_spirit_astral_step" )
 
 	botTarget = J.GetProperTarget(bot)
 	nAllyHeroes = bot:GetNearbyHeroes(1600, false, BOT_MODE_NONE)
@@ -197,7 +249,7 @@ function X.SkillsComplement()
 end
 
 function X.ConsiderAetherRemnant()
-    if not AetherRemnant:IsFullyCastable()
+    if not J.CanCastAbility(AetherRemnant)
 	then
 		return BOT_ACTION_DESIRE_NONE, 0
 	end
@@ -306,15 +358,18 @@ function X.ConsiderAetherRemnant()
 end
 
 function X.ConsiderDissimilate()
-    if not Dissimilate:IsFullyCastable()
+    if not J.CanCastAbility(Dissimilate)
+	or bot:IsRooted()
 	then
 		return BOT_ACTION_DESIRE_NONE
 	end
 
 	local nRadius = Dissimilate:GetSpecialValueInt('first_ring_distance_offset')
+	local nManaCost = Dissimilate:GetManaCost()
 
     if (J.IsStunProjectileIncoming(bot, 350) or J.IsUnitTargetProjectileIncoming(bot, 400))
     then
+		bot.dissimilate_status = {'retreat', J.GetTeamFountain()}
         return BOT_ACTION_DESIRE_HIGH
     end
 
@@ -322,6 +377,7 @@ function X.ConsiderDissimilate()
 	then
 		if J.IsWillBeCastUnitTargetSpell(bot, 400)
 		then
+			bot.dissimilate_status = {'retreat', J.GetTeamFountain()}
 			return BOT_ACTION_DESIRE_HIGH
 		end
 	end
@@ -336,6 +392,7 @@ function X.ConsiderDissimilate()
 		and not J.IsSuspiciousIllusion(botTarget)
 		and not botTarget:HasModifier('modifier_faceless_void_chronosphere_freeze')
 		then
+			bot.dissimilate_status = {'engaging', botTarget}
 			return BOT_ACTION_DESIRE_HIGH
 		end
 	end
@@ -350,6 +407,47 @@ function X.ConsiderDissimilate()
 		and J.IsChasingTarget(nEnemyHeroes[1], bot)
 		and (not J.IsSuspiciousIllusion(nEnemyHeroes[1]) or J.GetHP(bot) < 0.2)
 		then
+			bot.dissimilate_status = {'retreating', J.GetTeamFountain()}
+			return BOT_ACTION_DESIRE_HIGH
+		end
+	end
+
+	if J.IsFarming(bot) and J.GetManaAfter(nManaCost) > 0.45
+	then
+		local tEnemyCreeps = bot:GetNearbyCreeps(nRadius, true)
+		if J.CanBeAttacked(tEnemyCreeps[1])
+		and (#tEnemyCreeps >= 4 or (#tEnemyCreeps >= 2 and tEnemyCreeps[1]:IsAncientCreep()))
+		and not J.IsRunning(tEnemyCreeps[1])
+		and J.IsAttacking(bot)
+		then
+			local nLocationAoE = bot:FindAoELocation(true, false, tEnemyCreeps[1]:GetLocation(), 0, 300, 0, 0)
+			if nLocationAoE.count >= 2 then
+				bot.dissimilate_status = {'farming', tEnemyCreeps[1]}
+				return BOT_ACTION_DESIRE_HIGH
+			end
+		end
+	end
+
+	if J.IsDoingRoshan(bot) and J.GetManaAfter(nManaCost) > 0.4
+	then
+		if J.IsRoshan(botTarget)
+		and J.CanBeAttacked(botTarget)
+		and J.IsInRange(bot, botTarget, nRadius)
+		and J.GetHP(botTarget) > 0.2
+		and J.IsAttacking(bot)
+		then
+			bot.dissimilate_status = {'miniboss', botTarget}
+			return BOT_ACTION_DESIRE_HIGH
+		end
+	end
+
+	if J.IsDoingTormentor(bot) and J.GetManaAfter(nManaCost) > 0.4
+	then
+		if J.IsRoshan(botTarget)
+		and J.IsInRange(bot, botTarget, nRadius)
+		and J.IsAttacking(bot)
+		then
+			bot.dissimilate_status = {'miniboss', botTarget}
 			return BOT_ACTION_DESIRE_HIGH
 		end
 	end
@@ -358,7 +456,7 @@ function X.ConsiderDissimilate()
 end
 
 function X.ConsiderResonantPulse()
-    if not ResonantPulse:IsFullyCastable()
+    if not J.CanCastAbility(ResonantPulse)
 	then
 		return BOT_ACTION_DESIRE_NONE
 	end
@@ -489,7 +587,7 @@ function X.ConsiderResonantPulse()
 end
 
 function X.ConsiderAstralStep()
-	if not AstralStep:IsFullyCastable()
+	if not J.CanCastAbility(AstralStep)
 	or bot:IsRooted()
 	then
 		return BOT_ACTION_DESIRE_NONE, 0
@@ -519,7 +617,7 @@ function X.ConsiderAstralStep()
 		and J.CanKillTarget(enemyHero, nDamage, DAMAGE_TYPE_MAGICAL)
 		and not enemyHero:HasModifier('modifier_abaddon_borrowed_time')
 		and not enemyHero:HasModifier('modifier_dazzle_shallow_grave')
-		and not botTarget:HasModifier('modifier_faceless_void_chronosphere_freeze')
+		and not enemyHero:HasModifier('modifier_faceless_void_chronosphere_freeze')
 		and not enemyHero:HasModifier('modifier_templar_assassin_refraction_absorb')
 		and J.WeAreStronger(bot, 1600)
 		then

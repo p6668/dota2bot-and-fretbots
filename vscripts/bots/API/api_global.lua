@@ -4,9 +4,38 @@
 -- int GetTeam()
 
 -- Returns the team for which the script is currently being run. If it's being run on a bot, returns the team of that bot.
--- {int, ...} GetTeamPlayers( nTeam )
 
 -- Returns a table of the Player IDs on the specified team
+local o_GetTeamPlayers = GetTeamPlayers
+function GetTeamPlayers(nTeam)
+	local nIDs = o_GetTeamPlayers(nTeam)
+
+	-- All humans should only be on one team.
+	-- Since bot IDs assignment are all over the place in 7.38, having humans on either side can't be fixed without a proper call to get their slot IDs.
+	if nTeam == TEAM_DIRE then
+		local hHumanTable = {}
+		for _, id in pairs(nIDs) do
+			if not IsPlayerBot(id) and id < 5 then
+				table.insert(hHumanTable, id)
+			end
+		end
+		if #hHumanTable > 0 then
+			nIDs = {}
+			for _, id in pairs(o_GetTeamPlayers(TEAM_DIRE)) do
+				if IsPlayerBot(id) and GetTeamForPlayer(id) == TEAM_DIRE then
+					table.insert(nIDs, id)
+				end
+			end
+
+			for _, id in pairs(hHumanTable) do
+				if id < 5 then table.insert(nIDs, id + 1, id) end
+			end
+		end
+	end
+
+	return nIDs
+end
+
 -- hUnit GetTeamMember( nPlayerNumberOnTeam )
 
 -- Returns a handle to the Nth player on the team.
@@ -322,3 +351,7 @@
 -- DebugDrawText( fScreenX, fScreenY, sText, nRed, nGreen, nBlue )
 
 -- Draws the specified text at fScreenX, fScreenY on the screen in the specified color for one frame.
+
+-- { location, time_remaining, playerid } GetIncomingTeleports()
+
+-- Gets a table of all the teleports that are visibly happening.

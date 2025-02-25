@@ -7,6 +7,9 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_visage'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
 local sUtility = {"item_pipe", "item_crimson_guard"}
@@ -28,8 +31,14 @@ local HeroBuild = {
     ['pos_2'] = {
         [1] = {
             ['talent'] = {
+                -- [1] = {
+                --     ['t25'] = {10, 0},
+                --     ['t20'] = {10, 0},
+                --     ['t15'] = {10, 0},
+                --     ['t10'] = {0, 10},
+                -- }
                 [1] = {
-                    ['t25'] = {10, 0},
+                    ['t25'] = {0, 10},
                     ['t20'] = {10, 0},
                     ['t15'] = {10, 0},
                     ['t10'] = {0, 10},
@@ -45,34 +54,41 @@ local HeroBuild = {
                 "item_enchanted_mango",
             
                 "item_bottle",
-                "item_double_bracer",
                 "item_magic_wand",
+                "item_double_bracer",
                 "item_boots",
                 "item_vladmir",--
                 "item_orchid",
-                "item_ancient_janggo",
                 "item_ultimate_scepter",
-                "item_bloodthorn",--
-                "item_boots_of_bearing",--
                 "item_assault",--
                 "item_black_king_bar",--
+                "item_aghanims_shard",
+                "item_bloodthorn",--
+                "item_travel_boots",
                 "item_sheepstick",--
                 "item_ultimate_scepter_2",
-                "item_aghanims_shard",
+                "item_travel_boots_2",--
                 "item_moon_shard",
             },
             ['sell_list'] = {
-                "item_bottle",
-                "item_bracer",
-                "item_magic_wand",
+                "item_magic_wand", "item_orchid",
+                "item_bottle", "item_ultimate_scepter",
+                "item_bracer", "item_assault",
+                "item_bracer", "item_black_king_bar",
             },
         },
     },
     ['pos_3'] = {
         [1] = {
             ['talent'] = {
+                -- [1] = {
+                --     ['t25'] = {10, 0},
+                --     ['t20'] = {10, 0},
+                --     ['t15'] = {10, 0},
+                --     ['t10'] = {0, 10},
+                -- }
                 [1] = {
-                    ['t25'] = {10, 0},
+                    ['t25'] = {0, 10},
                     ['t20'] = {10, 0},
                     ['t15'] = {10, 0},
                     ['t10'] = {0, 10},
@@ -87,25 +103,25 @@ local HeroBuild = {
                 "item_double_circlet",
                 "item_enchanted_mango",
             
-                "item_double_bracer",
                 "item_magic_wand",
+                "item_double_bracer",
                 "item_boots",
                 "item_vladmir",--
-                "item_orchid",
-                "item_ancient_janggo",
-                "item_ultimate_scepter",
                 sUtilityItem,--
-                "item_boots_of_bearing",--
+                "item_orchid",
+                "item_ultimate_scepter",
                 "item_assault",--
                 "item_black_king_bar",--
                 "item_ultimate_scepter_2",
-                "item_bloodthorn",--
                 "item_aghanims_shard",
+                "item_bloodthorn",--
+                "item_travel_boots_2",--
                 "item_moon_shard",
             },
             ['sell_list'] = {
-                "item_bracer",
-                "item_magic_wand",
+                "item_magic_wand", "item_orchid",
+                "item_bracer", "item_ultimate_scepter",
+                "item_bracer", "item_assault",
             },
         },
     },
@@ -156,6 +172,8 @@ function X.MinionThink(hMinionUnit)
 	Minion.MinionThink(hMinionUnit)
 end
 
+end
+
 local GraveChill        = bot:GetAbilityByName('visage_grave_chill')
 local SoulAssumption    = bot:GetAbilityByName('visage_soul_assumption')
 local GravekeepersCloak = bot:GetAbilityByName('visage_gravekeepers_cloak')
@@ -172,6 +190,12 @@ local botTarget
 
 function X.SkillsComplement()
 	if J.CanNotUseAbility(bot) then return end
+
+    GraveChill        = bot:GetAbilityByName('visage_grave_chill')
+    SoulAssumption    = bot:GetAbilityByName('visage_soul_assumption')
+    GravekeepersCloak = bot:GetAbilityByName('visage_gravekeepers_cloak')
+    SilentAsTheGrave  = bot:GetAbilityByName('visage_silent_as_the_grave')
+    SummonFamiliars   = bot:GetAbilityByName('visage_summon_familiars')
 
     botTarget = J.GetProperTarget(bot)
 
@@ -213,7 +237,7 @@ function X.SkillsComplement()
 end
 
 function X.ConsiderGraveChill()
-    if not GraveChill:IsFullyCastable()
+    if not J.CanCastAbility(GraveChill)
     then
         return BOT_ACTION_DESIRE_NONE, nil
     end
@@ -301,7 +325,7 @@ function X.ConsiderGraveChill()
 end
 
 function X.ConsiderSoulAssumption()
-    if not SoulAssumption:IsFullyCastable()
+    if not J.CanCastAbility(SoulAssumption)
     then
         return BOT_ACTION_DESIRE_NONE, nil
     end
@@ -407,8 +431,7 @@ function X.ConsiderSoulAssumption()
 end
 
 function X.ConsiderGravekeepersCloak()
-    if GravekeepersCloak:IsPassive()
-    or not GravekeepersCloak:IsFullyCastable()
+    if not J.CanCastAbility(GravekeepersCloak)
     then
         return BOT_ACTION_DESIRE_NONE
     end
@@ -422,7 +445,7 @@ function X.ConsiderGravekeepersCloak()
 end
 
 function X.ConsiderSummonFamiliars()
-    if not SummonFamiliars:IsFullyCastable()
+    if not J.CanCastAbility(SummonFamiliars)
     then
         return BOT_ACTION_DESIRE_NONE
     end
@@ -447,8 +470,7 @@ function X.ConsiderSummonFamiliars()
 end
 
 function X.ConsiderSilentAsTheGrave()
-    if not SilentAsTheGrave:IsTrained()
-    or not SilentAsTheGrave:IsFullyCastable()
+    if not J.CanCastAbility(SilentAsTheGrave)
     then
         return BOT_ACTION_DESIRE_NONE
     end

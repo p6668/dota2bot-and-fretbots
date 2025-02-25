@@ -132,6 +132,7 @@ Item['sBasicItems'] = {
 	'item_blade_of_alacrity',
 	'item_blades_of_attack',
 	'item_blight_stone',
+	'item_orb_of_frost',
 	'item_blink',
 	'item_boots',
 	'item_bottle',
@@ -326,27 +327,17 @@ do
 end
 
 Item['tEarlyItem'] = {
-	 'item_clarity',
-	 'item_faerie_fire',
-	 'item_tango',
-	 'item_flask',
-	 'item_infused_raindrop',
-	 -- 'item_magic_stick',
-	 -- 'item_orb_of_venom',
-	 'item_bracer',
-	 'item_wraith_band',
-	 'item_null_talisman',
-	 'item_bottle',
-	 'item_soul_ring',
-	 -- 'item_magic_wand',
-	 -- 'item_ancient_janggo',
-	--  'item_refresher_shard',
-	--  'item_cheese',
-	 'item_blood_grenade',
+	'item_faerie_fire',
+	'item_tango',
+	'item_blood_grenade',
+	'item_clarity',
+	-- 'item_enchanted_mango',
+	-- 'item_flask',
+	'item_infused_raindrop',
 }
 
 Item['tEarlyBoots'] = {
-	'item_boots',
+	-- 'item_boots',
 	'item_phase_boots',
 	'item_power_treads',
 	'item_tranquil_boots',
@@ -481,7 +472,7 @@ Item['item_arcane_boots']	= {"item_boots", "item_ring_of_basilius", "item_recipe
 
 Item['item_armlet']	= GetItemComponents( 'item_armlet' )[1]
 
-Item['item_assault']	= {"item_platemail", "item_hyperstone", "item_buckler", "item_recipe_assault"}
+Item['item_assault']	= GetItemComponents( 'item_assault' )[1]
 
 Item['item_ancient_janggo']	= GetItemComponents( 'item_ancient_janggo' )[1]
 
@@ -501,7 +492,7 @@ Item['item_bracer']	= GetItemComponents( 'item_bracer' )[1]
 
 Item['item_buckler']	= GetItemComponents( 'item_buckler' )[1]
 
-Item['item_butterfly']	= {"item_claymore", "item_talisman_of_evasion", "item_eagle"}
+Item['item_butterfly']	= {"item_talisman_of_evasion", "item_claymore", "item_eagle"}
 
 Item['item_basher']	= GetItemComponents( 'item_basher' )[1]
 
@@ -672,15 +663,15 @@ Item['item_yasha']	= { 'item_boots_of_elves', 'item_blade_of_alacrity', 'item_re
 Item['item_yasha_and_kaya']	= GetItemComponents( 'item_yasha_and_kaya' )[1]
 
 
-Item['item_falcon_blade']	= {"item_sobi_mask", "item_blades_of_attack", "item_fluffy_hat", "item_recipe_falcon_blade"}
+Item['item_falcon_blade']	= GetItemComponents( 'item_falcon_blade' )[1]
 
-Item['item_orb_of_corrosion']	= {"item_orb_of_venom", "item_blight_stone", "item_boots_of_elves"}
+Item['item_orb_of_corrosion']	= GetItemComponents( 'item_orb_of_corrosion' )[1]
 
 Item['item_witch_blade']	= GetItemComponents( 'item_witch_blade' )[1]
 
 Item['item_gungir']	= GetItemComponents( 'item_gungir' )[1]
 
-Item['item_mage_slayer']	= {"item_oblivion_staff", "item_cloak", "item_recipe_mage_slayer"}
+Item['item_mage_slayer']	= GetItemComponents( 'item_mage_slayer' )[1]
 
 Item['item_eternal_shroud']	= GetItemComponents( 'item_eternal_shroud' )[1]
 
@@ -702,15 +693,15 @@ Item['item_boots_of_bearing']	= GetItemComponents( 'item_boots_of_bearing' )[1]
 Item['item_wraith_pact']	= GetItemComponents( 'item_wraith_pact' )[1]
 
 ---------- 7.33 NEW ITEMS ---------------
-Item["item_pavise"] 							= { "item_energy_booster", "item_ring_of_protection", "item_fluffy_hat", "item_recipe_pavise" }
-Item["item_phylactery"] 						= { "item_point_booster", "item_diadem", "item_recipe_phylactery" }
-Item["item_harpoon"] 							= { "item_echo_sabre", "item_diadem", "item_recipe_harpoon" }
-Item["item_disperser"] 							= { "item_diffusal_blade", "item_eagle", "item_recipe_disperser" }
+Item["item_pavise"] 							= GetItemComponents( 'item_pavise' )[1]
+Item["item_phylactery"] 						= GetItemComponents( 'item_phylactery' )[1]
+Item["item_harpoon"] 							= GetItemComponents( 'item_harpoon' )[1]
+Item["item_disperser"] 							= GetItemComponents( 'item_disperser' )[1]
 Item["item_blood_grenade"] 						= GetItemComponents( 'item_blood_grenade' )[1]
 
 ---------- 7.35 NEW ITEMS ---------------
-Item["item_angels_demise"] 						= { "item_phylactery", "item_tiara_of_selemene", "item_recipe_angels_demise" }
-Item["item_devastator"] 						= { "item_witch_blade", "item_mystic_staff", "item_recipe_devastator" }
+Item["item_angels_demise"] 						= GetItemComponents( 'item_angels_demise' )[1]
+Item["item_devastator"] 						= GetItemComponents( 'item_devastator' )[1]
 
 --新自定义物品
 Item['item_new_1']	= GetItemComponents( 'item_new_1' )[1]
@@ -1029,6 +1020,11 @@ end
 function Item.IsItemInHero( sItemName )
 
 	local bot = GetBot()
+	if bot:GetUnitName() == 'npc_dota_hero_lone_druid' and bot.bearItems ~= nil then
+		for i = 0, 8 do
+			if bot.bearItems[i] == sItemName then return true end
+		end
+	end
 	
 	--7.33
 	if sItemName == 'item_double_flask'

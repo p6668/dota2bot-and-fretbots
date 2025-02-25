@@ -7,6 +7,9 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_shadow_demon'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
 local sUtility = {}
@@ -55,7 +58,7 @@ local HeroBuild = {
             ['talent'] = {
                 [1] = {
                     ['t25'] = {10, 0},
-                    ['t20'] = {10, 0},
+                    ['t20'] = {0, 10},
                     ['t15'] = {10, 0},
                     ['t10'] = {10, 0},
                 }
@@ -70,19 +73,19 @@ local HeroBuild = {
             
                 "item_tranquil_boots",
                 "item_magic_wand",
+                "item_glimmer_cape",--
                 "item_aether_lens",--
                 "item_blink",
-                nGlimmerForce,--
                 "item_boots_of_bearing",--
+                "item_force_staff",--
                 "item_ultimate_scepter",
                 "item_octarine_core",--
-                "item_aeon_disk",--
                 "item_ultimate_scepter_2",
                 "item_arcane_blink",--
                 "item_moon_shard",
             },
             ['sell_list'] = {
-                "item_magic_wand",
+                "item_magic_wand", "item_aether_lens",
             },
         },
     },
@@ -91,7 +94,7 @@ local HeroBuild = {
             ['talent'] = {
                 [1] = {
                     ['t25'] = {10, 0},
-                    ['t20'] = {10, 0},
+                    ['t20'] = {0, 10},
                     ['t15'] = {10, 0},
                     ['t10'] = {10, 0},
                 }
@@ -106,19 +109,19 @@ local HeroBuild = {
             
                 "item_arcane_boots",
                 "item_magic_wand",
+                "item_glimmer_cape",--
                 "item_aether_lens",--
                 "item_blink",
-                nGlimmerForce,--
                 "item_guardian_greaves",--
+                "item_force_staff",--
                 "item_ultimate_scepter",
-                "item_aeon_disk",--
                 "item_octarine_core",--
                 "item_ultimate_scepter_2",
                 "item_arcane_blink",--
                 "item_moon_shard",
             },
             ['sell_list'] = {
-                "item_magic_wand",
+                "item_magic_wand", "item_aether_lens",
             },
         },
     },
@@ -145,6 +148,8 @@ function X.MinionThink(hMinionUnit)
     Minion.MinionThink(hMinionUnit)
 end
 
+end
+
 local Disruption            = bot:GetAbilityByName('shadow_demon_disruption')
 local Disseminate           = bot:GetAbilityByName('shadow_demon_disseminate')
 local ShadowPoison          = bot:GetAbilityByName('shadow_demon_shadow_poison')
@@ -161,6 +166,13 @@ local DemonicPurgeDesire, DemonicPurgeTarget
 
 function X.SkillsComplement()
 	if J.CanNotUseAbility(bot) then return end
+
+    Disruption            = bot:GetAbilityByName('shadow_demon_disruption')
+    Disseminate           = bot:GetAbilityByName('shadow_demon_disseminate')
+    ShadowPoison          = bot:GetAbilityByName('shadow_demon_shadow_poison')
+    ShadowPoisonRelease   = bot:GetAbilityByName('shadow_demon_shadow_poison_release')
+    DemonicCleanse        = bot:GetAbilityByName('shadow_demon_demonic_cleanse')
+    DemonicPurge          = bot:GetAbilityByName('shadow_demon_demonic_purge')
 
     DisruptionDesire, DisruptionTarget = X.ConsiderDisruption()
     if DisruptionDesire > 0
@@ -206,7 +218,7 @@ function X.SkillsComplement()
 end
 
 function X.ConsiderDisruption()
-    if not Disruption:IsFullyCastable()
+    if not J.CanCastAbility(Disruption)
     then
         return BOT_ACTION_DESIRE_NONE, nil
     end
@@ -395,7 +407,7 @@ function X.ConsiderDisruption()
 end
 
 function X.ConsiderDisseminate()
-    if not Disseminate:IsFullyCastable()
+    if not J.CanCastAbility(Disseminate)
     then
         return BOT_ACTION_DESIRE_NONE, nil
     end
@@ -451,7 +463,7 @@ function X.ConsiderDisseminate()
 end
 
 function X.ConsiderShadowPoison()
-    if not ShadowPoison:IsFullyCastable()
+    if not J.CanCastAbility(ShadowPoison)
     then
         return BOT_ACTION_DESIRE_NONE, 0
     end
@@ -549,7 +561,7 @@ function X.ConsiderShadowPoison()
 end
 
 function X.ConsiderDemonicPurge()
-    if not DemonicPurge:IsFullyCastable()
+    if not J.CanCastAbility(DemonicPurge)
     then
         return BOT_ACTION_DESIRE_NONE, nil
     end
@@ -635,8 +647,7 @@ function X.ConsiderDemonicPurge()
 end
 
 function X.ConsiderDemonicCleanse()
-    if not DemonicCleanse:IsTrained()
-    or not DemonicCleanse:IsFullyCastable()
+    if not J.CanCastAbility(DemonicCleanse)
     then
         return BOT_ACTION_DESIRE_NONE, nil
     end

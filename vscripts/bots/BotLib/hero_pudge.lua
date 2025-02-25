@@ -7,9 +7,12 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_pudge'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
-local sUtility = {"item_crimson_guard", "item_pipe", "item_lotus_orb"}
+local sUtility = {"item_crimson_guard", "item_lotus_orb"}
 local sUtilityItem = RI.GetBestUtilityItem(sUtility)
 
 local HeroBuild = {
@@ -33,10 +36,16 @@ local HeroBuild = {
                     ['t20'] = {0, 10},
                     ['t15'] = {10, 0},
                     ['t10'] = {0, 10},
-                }
+                },
+                [2] = {
+                    ['t25'] = {10, 0},
+                    ['t20'] = {0, 10},
+                    ['t15'] = {0, 10},
+                    ['t10'] = {0, 10},
+                },
             },
             ['ability'] = {
-                [1] = {1,2,2,3,1,6,1,1,2,2,6,3,3,3,6},
+                [1] = {1,2,2,3,2,6,3,2,3,3,1,6,1,1,6},
             },
             ['buy_list'] = {
                 "item_tango",
@@ -44,25 +53,25 @@ local HeroBuild = {
             
                 "item_bracer",
                 "item_bottle",
-                "item_boots",
                 "item_magic_wand",
-                "item_eternal_shroud",--
-                "item_blink",
+                "item_phase_boots",
+                "item_blade_mail",
                 "item_ultimate_scepter",
-                "item_travel_boots",
                 "item_bloodstone",--
                 "item_black_king_bar",--
-                "item_kaya_and_sange",--
+                "item_shivas_guard",--
+                "item_heart",--
+                "item_heavens_halberd",--
                 "item_ultimate_scepter_2",
-                "item_overwhelming_blink",--
                 "item_travel_boots_2",--
                 "item_aghanims_shard",
                 "item_moon_shard",
             },
             ['sell_list'] = {
-                "item_bracer",
-                "item_bottle",
-                "item_magic_wand",
+                "item_magic_wand", "item_bloodstone",
+                "item_bottle", "item_black_king_bar",
+                "item_bracer", "item_shivas_guard",
+                "item_blade_mail", "item_heavens_halberd",
             },
         },
     },
@@ -70,11 +79,11 @@ local HeroBuild = {
         [1] = {
             ['talent'] = {
                 [1] = {
-                    ['t25'] = {0, 10},
+                    ['t25'] = {10, 0},
                     ['t20'] = {0, 10},
                     ['t15'] = {0, 10},
                     ['t10'] = {10, 0},
-                }
+                },
             },
             ['ability'] = {
                 [1] = {1,2,2,3,2,6,2,3,3,3,6,1,1,1,6},
@@ -85,27 +94,27 @@ local HeroBuild = {
                 "item_magic_stick",
                 "item_ring_of_protection",
             
-                "item_helm_of_iron_will",
-                "item_boots",
                 "item_magic_wand",
+                "item_double_bracer",
+                "item_boots",
                 "item_phase_boots",
-                "item_veil_of_discord",
-                "item_eternal_shroud",--
                 "item_ultimate_scepter",
+                "item_pipe",--
+                "item_black_king_bar",--
+                sUtilityItem,--
                 "item_blink",
                 "item_shivas_guard",--
-                sUtilityItem,--
-                "item_black_king_bar",--
-                "item_travel_boots",
-                "item_overwhelming_blink",--
                 "item_ultimate_scepter_2",
+                "item_overwhelming_blink",--
                 "item_travel_boots_2",--
                 "item_aghanims_shard",
                 "item_moon_shard",
             },
             ['sell_list'] = {
-                "item_ring_of_protection",
-                "item_magic_wand",
+                "item_ring_of_protection", "item_pipe",
+                "item_magic_wand", "item_black_king_bar",
+                "item_bracer", sUtilityItem,
+                "item_bracer", "item_blink",
             },
         },
     },
@@ -120,23 +129,25 @@ local HeroBuild = {
                 }
             },
             ['ability'] = {
-                [1] = {1,2,2,3,1,6,1,1,2,2,3,6,3,3,6},
+                [1] = {1,2,1,3,1,6,1,2,2,2,6,3,3,3,6},
             },
             ['buy_list'] = {
                 "item_tango",
-                "item_flask",
+                "item_double_branches",
                 "item_enchanted_mango",
                 "item_wind_lace",
                 "item_blood_grenade",
             
                 "item_tranquil_boots",
                 "item_magic_wand",
+                "item_force_staff",--
                 "item_blink",
-                "item_aether_lens",--
-                "item_force_staff",
+                "item_ancient_janggo",
+                "item_veil_of_discord",
                 "item_boots_of_bearing",--
-                "item_pipe",--
-                "item_lotus_orb",--
+                "item_heart",--
+                "item_shivas_guard",--
+                "item_cyclone",
                 "item_overwhelming_blink",--
                 "item_wind_waker",--
                 "item_aghanims_shard",
@@ -144,7 +155,7 @@ local HeroBuild = {
                 "item_moon_shard",
             },
             ['sell_list'] = {
-                "item_magic_wand",
+                "item_magic_wand", "item_ancient_janggo",
             },
         },
     },
@@ -163,19 +174,21 @@ local HeroBuild = {
             },
             ['buy_list'] = {
                 "item_tango",
-                "item_flask",
+                "item_double_branches",
                 "item_enchanted_mango",
                 "item_wind_lace",
                 "item_blood_grenade",
             
                 "item_arcane_boots",
                 "item_magic_wand",
+                "item_force_staff",--
                 "item_blink",
-                "item_aether_lens",--
+                "item_mekansm",
+                "item_veil_of_discord",
                 "item_guardian_greaves",--
-                "item_force_staff",
-                "item_pipe",--
-                "item_lotus_orb",--
+                "item_heart",--
+                "item_shivas_guard",--
+                "item_cyclone",
                 "item_overwhelming_blink",--
                 "item_wind_waker",--
                 "item_aghanims_shard",
@@ -183,7 +196,7 @@ local HeroBuild = {
                 "item_moon_shard",
             },
             ['sell_list'] = {
-                "item_magic_wand",
+                "item_magic_wand", "item_mekansm",
             },
         },
     },
@@ -210,10 +223,12 @@ function X.MinionThink(hMinionUnit)
     Minion.MinionThink(hMinionUnit)
 end
 
+end
+
 local MeatHook   = bot:GetAbilityByName('pudge_meat_hook')
 local Rot        = bot:GetAbilityByName('pudge_rot')
 local MeatShield = bot:GetAbilityByName('pudge_flesh_heap')
--- local Eject     = bot:GetAbilityByName('')
+-- local Eject     = bot:GetAbilityByName('pudge_eject')
 local Dismember  = bot:GetAbilityByName('pudge_dismember')
 
 local MeatHookDesire, MeatHookLocation
@@ -224,6 +239,11 @@ local DismemberDesire, DismemberTarget
 
 function X.SkillsComplement()
     if J.CanNotUseAbility(bot) then return end
+
+    MeatHook   = bot:GetAbilityByName('pudge_meat_hook')
+    Rot        = bot:GetAbilityByName('pudge_rot')
+    MeatShield = bot:GetAbilityByName('pudge_flesh_heap')
+    Dismember  = bot:GetAbilityByName('pudge_dismember')
 
     MeatHookDesire, MeatHookLocation = X.ConsiderMeatHook()
     if MeatHookDesire > 0
@@ -249,13 +269,13 @@ function X.SkillsComplement()
     DismemberDesire, DismemberTarget = X.ConsiderDismember()
     if DismemberDesire > 0
     then
-        if  Rot:IsTrained()
+        if  J.CanCastAbility(Rot)
         and Rot:GetToggleState() == false
         then
             bot:Action_UseAbility(Rot)
         end
 
-        if  MeatShield:IsTrained()
+        if  J.CanCastAbility(MeatShield)
         and MeatShield:IsFullyCastable()
         then
             bot:Action_UseAbility(MeatShield)
@@ -274,7 +294,7 @@ function X.SkillsComplement()
 end
 
 function X.ConsiderMeatHook()
-    if not MeatHook:IsFullyCastable()
+    if not J.CanCastAbility(MeatHook)
     then
         return BOT_ACTION_DESIRE_NONE, 0
     end
@@ -286,16 +306,16 @@ function X.ConsiderMeatHook()
 	local nDamage = MeatHook:GetSpecialValueInt('damage')
     local botTarget = J.GetProperTarget(bot)
 
-    local nEnemyHeroes = bot:GetNearbyHeroes(nCastRange, true, BOT_MODE_NONE)
+    local nEnemyHeroes = bot:GetNearbyHeroes(1600, true, BOT_MODE_NONE)
     for _, enemyHero in pairs(nEnemyHeroes)
     do
         if  J.IsValidHero(enemyHero)
+        and J.IsInRange(bot, enemyHero, nCastRange)
         and not J.IsSuspiciousIllusion(enemyHero)
         then
-            if enemyHero:IsChanneling() or J.IsCastingUltimateAbility(enemyHero)
+            if enemyHero:IsChanneling()
             then
-                if  not J.IsHeroBetweenMeAndTarget(bot, enemyHero, enemyHero:GetLocation(), nRadius)
-                and not J.IsCreepBetweenMeAndTarget(bot, enemyHero, enemyHero:GetLocation(), nRadius)
+                if not J.IsUnitBetweenMeAndLocation(bot, enemyHero, enemyHero:GetLocation(), nRadius)
                 then
                     return BOT_ACTION_DESIRE_HIGH, enemyHero:GetLocation()
                 end
@@ -309,15 +329,9 @@ function X.ConsiderMeatHook()
             and not enemyHero:HasModifier('modifier_templar_assassin_refraction_absorb')
             then
                 local eta = (GetUnitToUnitDistance(bot, enemyHero) / nSpeed) + nCastPoint
-                local targetLoc = enemyHero:GetExtrapolatedLocation(eta)
+                local targetLoc = J.GetCorrectLoc(enemyHero, eta)
 
-                if GetUnitToUnitDistance(bot, enemyHero) < nCastRange * 0.5
-                then
-                    targetLoc = enemyHero:GetLocation()
-                end
-
-                if  not J.IsHeroBetweenMeAndTarget(bot, enemyHero, targetLoc, nRadius)
-                and not J.IsCreepBetweenMeAndTarget(bot, enemyHero, targetLoc, nRadius)
+                if not J.IsUnitBetweenMeAndLocation(bot, enemyHero, targetLoc, nRadius)
                 and not J.IsLocationInChrono(targetLoc)
                 and not J.IsLocationInBlackHole(targetLoc)
                 then
@@ -347,15 +361,9 @@ function X.ConsiderMeatHook()
                 and enemyHero:GetUnitName() == 'npc_dota_hero_sniper'
                 then
                     local eta = (GetUnitToUnitDistance(bot, enemyHero) / nSpeed) + nCastPoint
-                    local targetLoc = enemyHero:GetExtrapolatedLocation(eta)
+                    local targetLoc = J.GetCorrectLoc(enemyHero, eta)
 
-                    if GetUnitToUnitDistance(bot, enemyHero) < nCastRange * 0.5
-                    then
-                        targetLoc = enemyHero:GetLocation()
-                    end
-
-                    if  not J.IsHeroBetweenMeAndTarget(bot, enemyHero, targetLoc, nRadius)
-                    and not J.IsCreepBetweenMeAndTarget(bot, enemyHero, targetLoc, nRadius)
+                    if not J.IsUnitBetweenMeAndLocation(bot, enemyHero, targetLoc, nRadius)
                     and not J.IsLocationInChrono(targetLoc)
                     and not J.IsLocationInBlackHole(targetLoc)
                     then
@@ -375,18 +383,12 @@ function X.ConsiderMeatHook()
             and #nInRangeAlly >= #nTargetInRangeAlly
             then
                 local eta = (GetUnitToUnitDistance(bot, strongestTarget) / nSpeed) + nCastPoint
-                local targetLoc = strongestTarget:GetExtrapolatedLocation(eta)
+                local targetLoc = J.GetCorrectLoc(strongestTarget, eta)
 
-                if  not J.IsHeroBetweenMeAndTarget(bot, strongestTarget, targetLoc, nRadius)
-                and not J.IsCreepBetweenMeAndTarget(bot, strongestTarget, targetLoc, nRadius)
+                if not J.IsUnitBetweenMeAndLocation(bot, strongestTarget, targetLoc, nRadius)
                 and not J.IsLocationInChrono(targetLoc)
                 and not J.IsLocationInBlackHole(targetLoc)
                 then
-                    if GetUnitToUnitDistance(bot, strongestTarget) < nCastRange * 0.5
-                    then
-                        targetLoc = strongestTarget:GetLocation()
-                    end
-
                     return BOT_ACTION_DESIRE_HIGH, targetLoc
                 end
             end
@@ -400,6 +402,7 @@ function X.ConsiderMeatHook()
 		for _, creep in pairs(nEnemyLaneCreeps)
 		do
 			if  J.IsValid(creep)
+            and not J.IsRunning(creep)
             and J.CanBeAttacked(creep)
 			and J.IsKeyWordUnit('siege', creep)
 			and creep:GetHealth() <= nDamage
@@ -409,8 +412,7 @@ function X.ConsiderMeatHook()
 				if  ((J.IsValid(nCreepInRangeHero[1])
                     and GetUnitToUnitDistance(nCreepInRangeHero[1], creep) < 500)
                         or not J.IsInRange(bot, creep, bot:GetAttackRange() + 25))
-                and not J.IsHeroBetweenMeAndTarget(bot, creep, creep:GetLocation(), nRadius)
-                and not J.IsNonSiegeCreepBetweenMeAndLocation(bot, creep:GetLocation(), nRadius)
+                and not J.IsUnitBetweenMeAndLocation(bot, creep, creep:GetLocation(), nRadius)
                 and (J.IsCore(bot) or not J.IsCore(bot) and not J.IsThereCoreNearby(1200))
 				then
 					return BOT_ACTION_DESIRE_HIGH, creep:GetLocation()
@@ -421,8 +423,8 @@ function X.ConsiderMeatHook()
         local nInRangeTower = bot:GetNearbyTowers(700, false)
         local nInRangeEnemy = bot:GetNearbyHeroes(nCastRange, true, BOT_MODE_NONE)
 
-        if  nInRangeTower ~= nil and #nInRangeTower >= 1
-        and nInRangeEnemy ~= nil and #nInRangeEnemy >= 1
+        if J.IsValidBuilding(nInRangeTower[1])
+        and J.IsValidHero(nInRangeEnemy[1])
         and J.IsInRange(bot, nInRangeTower[1], 500)
         then
             local towerTarget = nInRangeTower[1]:GetAttackTarget()
@@ -437,15 +439,9 @@ function X.ConsiderMeatHook()
                     and not enemyHero:HasModifier('modifier_abaddon_aphotic_shield')
                     then
                         local eta = (GetUnitToUnitDistance(bot, enemyHero) / nSpeed) + nCastPoint
-                        local targetLoc = enemyHero:GetExtrapolatedLocation(eta)
+                        local targetLoc = J.GetCorrectLoc(enemyHero, eta)
 
-                        if GetUnitToUnitDistance(bot, enemyHero) < nCastRange * 0.5
-                        then
-                            targetLoc = enemyHero:GetLocation()
-                        end
-
-                        if  not J.IsHeroBetweenMeAndTarget(bot, enemyHero, targetLoc, nRadius)
-                        and not J.IsCreepBetweenMeAndTarget(bot, enemyHero, targetLoc, nRadius)
+                        if not J.IsUnitBetweenMeAndLocation(bot, enemyHero, targetLoc, nRadius)
                         then
                             return BOT_ACTION_DESIRE_HIGH, targetLoc
                         end
@@ -462,8 +458,7 @@ function X.ConsiderMeatHook()
         and not allyHero:IsIllusion()
         and allyHero:HasModifier('modifier_enigma_black_hole_pull')
         and allyHero:HasModifier('modifier_faceless_void_chronosphere_freeze')
-        and not J.IsHeroBetweenMeAndTarget(bot, allyHero, allyHero:GetLocation(), nRadius)
-        and not J.IsCreepBetweenMeAndTarget(bot, allyHero, allyHero:GetLocation(), nRadius)
+        and not J.IsUnitBetweenMeAndLocation(bot, allyHero, allyHero:GetLocation(), nRadius)
         then
             return BOT_ACTION_DESIRE_HIGH, allyHero:GetLocation()
         end
@@ -489,8 +484,7 @@ function X.ConsiderMeatHook()
             and not nAllyInRangeEnemy[1]:HasModifier('modifier_enigma_black_hole_pull')
             and not nAllyInRangeEnemy[1]:HasModifier('modifier_faceless_void_chronosphere_freeze')
             and not nAllyInRangeEnemy[1]:HasModifier('modifier_necrolyte_reapers_scythe')
-            and not J.IsHeroBetweenMeAndTarget(bot, allyHero, allyHero:GetLocation(), nRadius)
-            and not J.IsCreepBetweenMeAndTarget(bot, allyHero, allyHero:GetLocation(), nRadius)
+            and not J.IsUnitBetweenMeAndLocation(bot, allyHero, allyHero:GetLocation(), nRadius)
             then
                 return BOT_ACTION_DESIRE_HIGH, allyHero:GetLocation()
             end
@@ -502,7 +496,7 @@ function X.ConsiderMeatHook()
         if  J.IsRoshan(botTarget)
         and J.IsInRange(bot, botTarget, 500)
         and J.IsAttacking(bot)
-        and not J.IsHeroBetweenMeAndTarget(bot, botTarget, botTarget:GetLocation(), nRadius)
+        and not J.IsUnitBetweenMeAndLocation(bot, botTarget, botTarget:GetLocation(), nRadius)
         then
             return BOT_ACTION_DESIRE_HIGH, botTarget:GetLocation()
         end
@@ -513,7 +507,7 @@ function X.ConsiderMeatHook()
         if  J.IsTormentor(botTarget)
         and J.IsInRange(bot, botTarget, 400)
         and J.IsAttacking(bot)
-        and not J.IsHeroBetweenMeAndTarget(bot, botTarget, botTarget:GetLocation(), nRadius)
+        and not J.IsUnitBetweenMeAndLocation(bot, botTarget, botTarget:GetLocation(), nRadius)
         then
             return BOT_ACTION_DESIRE_HIGH, botTarget:GetLocation()
         end
@@ -523,7 +517,7 @@ function X.ConsiderMeatHook()
 end
 
 function X.ConsiderRot()
-    if not Rot:IsFullyCastable()
+    if not J.CanCastAbility(Rot)
     then
         return BOT_ACTION_DESIRE_NONE
     end
@@ -721,7 +715,7 @@ function X.ConsiderRot()
 end
 
 function X.ConsiderMeatShield()
-    if not MeatShield:IsFullyCastable()
+    if not J.CanCastAbility(MeatShield)
     then
         return BOT_ACTION_DESIRE_NONE
     end
@@ -758,7 +752,7 @@ function X.ConsiderMeatShield()
 end
 
 function X.ConsiderDismember()
-    if not Dismember:IsFullyCastable()
+    if not J.CanCastAbility(Dismember)
     then
         return BOT_ACTION_DESIRE_NONE, nil
     end

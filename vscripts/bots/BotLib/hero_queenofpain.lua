@@ -7,6 +7,9 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_queenofpain'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
 local sUtility = {}
@@ -29,7 +32,7 @@ local HeroBuild = {
         [1] = {
             ['talent'] = {
 				[1] = {
-					['t25'] = {0, 10},
+					['t25'] = {10, 0},
 					['t20'] = {0, 10},
 					['t15'] = {10, 0},
 					['t10'] = {0, 10},
@@ -42,18 +45,19 @@ local HeroBuild = {
 				"item_tango",
 				"item_double_branches",
 				"item_faerie_fire",
+				"item_circlet",
 			
 				"item_bottle",
-				"item_boots",
 				"item_magic_wand",
+				"item_null_talisman",
 				"item_power_treads",
 				"item_witch_blade",
-				"item_kaya_and_sange",--
-				"item_ultimate_scepter",
-				"item_black_king_bar",--
-				"item_shivas_guard",--
+				"item_kaya",
 				"item_aghanims_shard",
-				"item_travel_boots",
+				"item_black_king_bar",--
+				"item_ultimate_scepter",
+				"item_yasha_and_kaya",--
+				"item_shivas_guard",--
 				"item_devastator",--
 				"item_cyclone",
 				"item_ultimate_scepter_2",
@@ -62,8 +66,9 @@ local HeroBuild = {
 				"item_moon_shard",
 			},
             ['sell_list'] = {
-				"item_bottle",
-				"item_magic_wand",
+				"item_magic_wand", "item_black_king_bar",
+				"item_bottle", "item_ultimate_scepter",
+				"item_null_talisman", "item_shivas_guard",
 			},
         },
     },
@@ -131,6 +136,8 @@ function X.MinionThink(hMinionUnit)
 
 end
 
+end
+
 --[[
 
 npc_dota_hero_queenofpain
@@ -155,10 +162,10 @@ modifier_queenofpain_scream_of_pain_fear
 
 --]]
 
-local abilityQ = bot:GetAbilityByName( sAbilityList[1] )
-local abilityW = bot:GetAbilityByName( sAbilityList[2] )
-local abilityE = bot:GetAbilityByName( sAbilityList[3] )
-local abilityR = bot:GetAbilityByName( sAbilityList[6] )
+local abilityQ = bot:GetAbilityByName('queenofpain_shadow_strike')
+local abilityW = bot:GetAbilityByName('queenofpain_blink')
+local abilityE = bot:GetAbilityByName('queenofpain_scream_of_pain')
+local abilityR = bot:GetAbilityByName('queenofpain_sonic_wave')
 local talent6 = bot:GetAbilityByName( sTalentList[6] )
 
 local castQDesire, castQTarget
@@ -170,10 +177,16 @@ local castRDesire, castRTarget
 local nKeepMana,nMP,nHP,nLV,hEnemyList,hAllyList,botTarget,sMotive;
 local aetherRange = 0
 
+local botName
 
 function X.SkillsComplement()
 	
 	if J.CanNotUseAbility(bot) or bot:IsInvisible() then return end
+
+	abilityQ = bot:GetAbilityByName('queenofpain_shadow_strike')
+	abilityW = bot:GetAbilityByName('queenofpain_blink')
+	abilityE = bot:GetAbilityByName('queenofpain_scream_of_pain')
+	abilityR = bot:GetAbilityByName('queenofpain_sonic_wave')
 	
 	nKeepMana = 400
 	aetherRange = 0
@@ -183,6 +196,7 @@ function X.SkillsComplement()
 	botTarget = J.GetProperTarget(bot);
 	hEnemyList = bot:GetNearbyHeroes(1600, true, BOT_MODE_NONE);
 	hAllyList = J.GetAlliesNearLoc(bot:GetLocation(), 1600);
+	botName = GetBot():GetUnitName()
 	
 	local aether = J.IsItemAvailable("item_aether_lens");
 	if aether ~= nil then aetherRange = 250 end	
@@ -203,7 +217,8 @@ function X.SkillsComplement()
 
 		J.SetQueuePtToINT(bot, true)
 
-		if bot:HasScepter()
+		if string.find(botName, 'queenofpain')
+		and bot:HasScepter()
 		and castQTarget ~= nil
 		then
 			bot:ActionQueue_UseAbilityOnLocation( abilityQ, castQTarget:GetLocation() )
@@ -242,7 +257,7 @@ end
 function X.ConsiderQ()
 
 
-	if not abilityQ:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityQ) then return 0 end
 	
 	local nSkillLV    = abilityQ:GetLevel()
 	local nCastRange  = abilityQ:GetCastRange()
@@ -325,7 +340,27 @@ function X.ConsiderQ()
 		end
 	end
 	
-	
+	if J.IsDoingRoshan(bot)
+	then
+		if J.IsRoshan( botTarget )
+		and J.IsInRange( botTarget, bot, nCastRange )
+		and J.CanBeAttacked(botTarget)
+		and J.IsAttacking(bot)
+		and not botTarget:HasModifier('modifier_roshan_spell_block')
+		then
+			return BOT_ACTION_DESIRE_HIGH, botTarget, ''
+		end
+	end
+
+    if J.IsDoingTormentor(bot)
+	then
+		if J.IsTormentor(botTarget)
+        and J.IsInRange( botTarget, bot, nCastRange )
+        and J.IsAttacking(bot)
+		then
+			return BOT_ACTION_DESIRE_HIGH, botTarget, ''
+		end
+	end
 	
 
 	if J.IsFarming( bot )
@@ -357,7 +392,7 @@ end
 function X.ConsiderW()
 
 
-	if not abilityW:IsFullyCastable() 
+	if not J.CanCastAbility(abilityW)
 		or bot:IsRooted()
 		or bot:HasModifier( "modifier_bloodseeker_rupture" )
 	then return 0 end
@@ -516,7 +551,7 @@ end
 function X.ConsiderE()
 
 
-	if not abilityE:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityE) then return 0 end
 	
 	local nSkillLV    = abilityE:GetLevel()
 	local nCastRange  = abilityE:GetCastRange()
@@ -679,6 +714,27 @@ function X.ConsiderE()
 			return BOT_ACTION_DESIRE_HIGH, hCastTarget, sCastMotive
 	    end
 	end
+
+	if J.IsDoingRoshan(bot)
+	then
+		if J.IsRoshan( botTarget )
+		and J.IsInRange( botTarget, bot, nCastRange )
+		and J.CanBeAttacked(botTarget)
+		and J.IsAttacking(bot)
+		then
+			return BOT_ACTION_DESIRE_HIGH
+		end
+	end
+
+    if J.IsDoingTormentor(bot)
+	then
+		if J.IsTormentor(botTarget)
+        and J.IsInRange( botTarget, bot, nCastRange )
+        and J.IsAttacking(bot)
+		then
+			return BOT_ACTION_DESIRE_HIGH
+		end
+	end
 	
 	
 	return BOT_ACTION_DESIRE_NONE;
@@ -689,7 +745,7 @@ end
 function X.ConsiderR()
 
 
-	if not abilityR:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityR) then return 0 end
 	
 	local nSkillLV    = abilityR:GetLevel()
 	local nCastRange  = abilityR:GetCastRange()
@@ -788,5 +844,4 @@ end
 
 
 return X
--- dota2jmz@163.com QQ:2462331592
 

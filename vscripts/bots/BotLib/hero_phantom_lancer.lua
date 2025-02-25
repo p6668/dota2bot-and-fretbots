@@ -7,6 +7,9 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_phantom_lancer'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
 local sUtility = {}
@@ -19,7 +22,7 @@ local HeroBuild = {
 				[1] = {
 					['t25'] = {10, 0},
 					['t20'] = {10, 0},
-					['t15'] = {10, 0},
+					['t15'] = {0, 10},
 					['t10'] = {0, 10},
 				}
             },
@@ -34,26 +37,27 @@ local HeroBuild = {
 				"item_circlet",
 			
 				"item_wraith_band",
-				"item_power_treads",
 				"item_magic_wand",
-				"item_ultimate_scepter",
+				"item_power_treads",
 				"item_diffusal_blade",
+				"item_yasha",
+				"item_ultimate_scepter",
 				"item_manta",--
 				"item_heart",--
 				"item_basher",
 				"item_disperser",--
-				"item_ultimate_scepter_2",
 				"item_butterfly",--
-				"item_bloodthorn",--
+				"item_ultimate_scepter_2",
 				"item_abyssal_blade",--
+				"item_bloodthorn",--
 				"item_moon_shard",
 				"item_aghanims_shard",
 			},
             ['sell_list'] = {
-				"item_quelling_blade",
-				"item_wraith_band",
-				"item_power_treads",
-				"item_magic_wand",
+				"item_quelling_blade", "item_ultimate_scepter",
+				"item_magic_wand", "item_heart",
+				"item_wraith_band", "item_basher",
+				"item_power_treads", "item_bloodthorn",
 			},
         },
     },
@@ -135,6 +139,8 @@ function X.MinionThink( hMinionUnit )
 
 end
 
+end
+
 --[[
 
 npc_dota_hero_phantom_lancer
@@ -164,10 +170,10 @@ modifier_phantom_lancer_juxtapose_illusion
 --]]
 
 
-local abilityQ = bot:GetAbilityByName( sAbilityList[1] )
-local abilityW = bot:GetAbilityByName( sAbilityList[2] )
-local abilityE = bot:GetAbilityByName( sAbilityList[3] )
-local abilityR = bot:GetAbilityByName( sAbilityList[6] )
+local abilityQ = bot:GetAbilityByName('phantom_lancer_spirit_lance')
+local abilityW = bot:GetAbilityByName('phantom_lancer_doppelwalk')
+local abilityE = bot:GetAbilityByName('phantom_lancer_phantom_edge')
+local abilityR = bot:GetAbilityByName('phantom_lancer_juxtapose')
 local talent4 = bot:GetAbilityByName( sTalentList[4] )
 local talent5 = bot:GetAbilityByName( sTalentList[5] )
 
@@ -192,6 +198,11 @@ function X.SkillsComplement()
 		or bot:HasModifier( 'modifier_phantom_lancer_phantom_edge_boost' )
 	then return end
 
+	abilityQ = bot:GetAbilityByName('phantom_lancer_spirit_lance')
+	abilityW = bot:GetAbilityByName('phantom_lancer_doppelwalk')
+	abilityE = bot:GetAbilityByName('phantom_lancer_phantom_edge')
+	abilityR = bot:GetAbilityByName('phantom_lancer_juxtapose')
+
 
 	nKeepMana = 400
 	talent4Damage = 0
@@ -204,7 +215,7 @@ function X.SkillsComplement()
 	hAllyList = J.GetAlliesNearLoc( bot:GetLocation(), 1600 )
 
 
-	if abilityE:IsTrained() then boostRange = abilityE:GetSpecialValueInt( "max_distance" ) end
+	if abilityE ~= nil and abilityE:IsTrained() then boostRange = abilityE:GetSpecialValueInt( "max_distance" ) end
 --	if talent4:IsTrained() then talent4Damage = talent4:GetSpecialValueInt( "value" ) end
 	if talent5:IsTrained() then boostRange = boostRange + talent5:GetSpecialValueInt( "value" ) end
 	local aether = J.IsItemAvailable( "item_aether_lens" )
@@ -246,7 +257,7 @@ end
 
 function X.ConsiderR()
 
-	if not abilityR:IsFullyCastable()
+	if not J.CanCastAbility(abilityR)
 		or not bot:HasScepter()
 		or true
 	then
@@ -277,7 +288,7 @@ end
 function X.ConsiderQ()
 
 
-	if not abilityQ:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityQ) then return 0 end
 
 	local nSkillLV = abilityQ:GetLevel()
 	local nCastRange = abilityQ:GetCastRange() + aetherRange
@@ -448,7 +459,7 @@ end
 function X.ConsiderW()
 
 
-	if not abilityW:IsFullyCastable() or bot:DistanceFromFountain() < 600 then return 0 end
+	if not J.CanCastAbility(abilityW) or bot:DistanceFromFountain() < 600 then return 0 end
 
 	local nSkillLV = abilityW:GetLevel()
 	local nCastRange = abilityW:GetCastRange() + aetherRange
@@ -573,7 +584,7 @@ function X.IsEnemyCastAbility()
 
 	for _, npcEnemy in pairs( enemyList )
 	do
-		if npcEnemy ~= nil and npcEnemy:IsAlive()
+		if J.IsValidHero(npcEnemy)
 			and ( npcEnemy:IsCastingAbility() or npcEnemy:IsUsingAbility() )
 			and npcEnemy:IsFacingLocation( bot:GetLocation(), 25 )
 		then
@@ -606,10 +617,3 @@ function X.IsEnemyCastAbility()
 end
 
 return X
--- dota2jmz@163.com QQ:2462331592..
-
-
-
-
-
-

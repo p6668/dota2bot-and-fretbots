@@ -7,6 +7,9 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_pugna'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
 local sUtility = {}
@@ -31,8 +34,8 @@ local HeroBuild = {
 				[1] = {
 					['t25'] = {0, 10},
 					['t20'] = {10, 0},
-					['t15'] = {0, 10},
-					['t10'] = {10, 0},
+					['t15'] = {10, 0},
+					['t10'] = {0, 10},
 				}
             },
             ['ability'] = {
@@ -44,24 +47,27 @@ local HeroBuild = {
 				"item_tango",
 			
 				"item_bottle",
-				"item_arcane_boots",
 				"item_magic_wand",
+				"item_arcane_boots",
 				"item_aether_lens",
 				"item_dagon_2",
-				"item_octarine_core",--
+				"item_veil_of_discord",
+				"item_kaya",
 				"item_black_king_bar",--
-				"item_dagon_5",--
 				"item_kaya_and_sange",--
+				"item_dagon_5",--
+				"item_shivas_guard",--
 				"item_travel_boots",
-				"item_ethereal_blade",--
+				"item_sheepstick",--
 				"item_travel_boots_2",--
 				"item_ultimate_scepter_2",
 				"item_aghanims_shard",
 				"item_moon_shard",
 			},
             ['sell_list'] = {
-				"item_bottle",
-				"item_magic_wand",
+				"item_magic_wand", "item_kaya",
+				"item_bottle", "item_black_king_bar",
+				"item_aether_lens", "item_sheepstick",
 			},
         },
     },
@@ -81,7 +87,7 @@ local HeroBuild = {
         [1] = {
             ['talent'] = {
 				[1] = {
-					['t25'] = {0, 10},
+					['t25'] = {10, 0},
 					['t20'] = {0, 10},
 					['t15'] = {10, 0},
 					['t10'] = {10, 0},
@@ -96,14 +102,13 @@ local HeroBuild = {
 				"item_enchanted_mango",
 				"item_blood_grenade",
 			
-				"item_boots",
 				"item_tranquil_boots",
 				"item_magic_wand",
 				"item_glimmer_cape",--
 				"item_aether_lens",--
-				"item_aghanims_shard",
-				"item_force_staff",--
 				"item_boots_of_bearing",--
+				"item_force_staff",--
+				"item_aghanims_shard",
 				"item_cyclone",
 				"item_lotus_orb",--
 				"item_wind_waker",--
@@ -111,7 +116,7 @@ local HeroBuild = {
 				"item_moon_shard",
 			},
             ['sell_list'] = {
-				"item_magic_wand",
+				"item_magic_wand", "item_boots_of_bearing",
 			},
         },
     },
@@ -119,7 +124,7 @@ local HeroBuild = {
         [1] = {
             ['talent'] = {
 				[1] = {
-					['t25'] = {0, 10},
+					['t25'] = {10, 0},
 					['t20'] = {0, 10},
 					['t15'] = {10, 0},
 					['t10'] = {10, 0},
@@ -134,14 +139,13 @@ local HeroBuild = {
 				"item_enchanted_mango",
 				"item_blood_grenade",
 			
-				"item_boots",
 				"item_arcane_boots",
 				"item_magic_wand",
 				"item_glimmer_cape",--
 				"item_aether_lens",--
-				"item_aghanims_shard",
-				"item_force_staff",--
 				"item_guardian_greaves",--
+				"item_force_staff",--
+				"item_aghanims_shard",
 				"item_cyclone",
 				"item_lotus_orb",--
 				"item_wind_waker",--
@@ -149,7 +153,7 @@ local HeroBuild = {
 				"item_moon_shard",
 			},
             ['sell_list'] = {
-				"item_magic_wand",
+				"item_magic_wand", "item_guardian_greaves",
 			},
         },
     },
@@ -187,10 +191,12 @@ function X.MinionThink( hMinionUnit )
 
 end
 
-local abilityQ = bot:GetAbilityByName( sAbilityList[1] )
-local abilityW = bot:GetAbilityByName( sAbilityList[2] )
-local abilityE = bot:GetAbilityByName( sAbilityList[3] )
-local abilityR = bot:GetAbilityByName( sAbilityList[6] )
+end
+
+local abilityQ = bot:GetAbilityByName('pugna_nether_blast')
+local abilityW = bot:GetAbilityByName('pugna_decrepify')
+local abilityE = bot:GetAbilityByName('pugna_nether_ward')
+local abilityR = bot:GetAbilityByName('pugna_life_drain')
 local talent7 = bot:GetAbilityByName( sTalentList[7] )
 
 local castQDesire, castQLocation
@@ -199,7 +205,7 @@ local castEDesire, castELocation
 local castRDesire, castRTarget
 
 
-local nKeepMana, nMP, nHP, nLV, hEnemyList, hAllyList, botTarget, sMotive
+local nKeepMana, nMP, nHP, nLV, hEnemyList, hAllyList, botTarget, sMotive, botName
 local aetherRange = 0
 local talent7Damage = 0
 
@@ -208,6 +214,11 @@ local hNetherWard = nil
 function X.SkillsComplement()
 
 	if J.CanNotUseAbility( bot ) or bot:IsInvisible() then return end
+
+	abilityQ = bot:GetAbilityByName('pugna_nether_blast')
+	abilityW = bot:GetAbilityByName('pugna_decrepify')
+	abilityE = bot:GetAbilityByName('pugna_nether_ward')
+	abilityR = bot:GetAbilityByName('pugna_life_drain')
 
 	nKeepMana = 400
 	aetherRange = 0
@@ -218,11 +229,12 @@ function X.SkillsComplement()
 	botTarget = J.GetProperTarget( bot )
 	hEnemyList = bot:GetNearbyHeroes( 1600, true, BOT_MODE_NONE )
 	hAllyList = J.GetAlliesNearLoc( bot:GetLocation(), 1600 )
+	botName = GetBot():GetUnitName()
 
 
 	local aether = J.IsItemAvailable( "item_aether_lens" )
 	if aether ~= nil then aetherRange = 250 end
-	if talent7:IsTrained() then talent7Damage = talent7:GetSpecialValueInt( "value" ) end
+	if string.find(botName, 'pugna') and talent7:IsTrained() then talent7Damage = talent7:GetSpecialValueInt( "value" ) end
 
 
 	castQDesire, castQLocation, sMotive = X.ConsiderQ()
@@ -272,7 +284,7 @@ end
 function X.ConsiderQ()
 
 
-	if not abilityQ:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityQ) then return 0 end
 
 	local nSkillLV = abilityQ:GetLevel()
 	local nCastRange = abilityQ:GetCastRange() + aetherRange
@@ -444,9 +456,21 @@ function X.ConsiderQ()
 	then
 		if J.IsRoshan( botTarget ) and J.GetHP( botTarget ) > 0.2
 			and J.IsInRange( botTarget, bot, nCastRange + 300 )
+			and J.CanBeAttacked(botTarget)
+			and J.IsAttacking(bot)
 		then
 			nTargetLocation = botTarget:GetLocation()
 			return BOT_ACTION_DESIRE_HIGH, nTargetLocation, 'Q肉山'
+		end
+	end
+
+	if J.IsDoingTormentor(bot)
+	then
+		if J.IsTormentor(botTarget)
+        and J.IsInRange( botTarget, bot, nCastRange )
+        and J.IsAttacking(bot)
+		then
+			return BOT_ACTION_DESIRE_HIGH, botTarget:GetLocation()
 		end
 	end
 
@@ -455,7 +479,7 @@ function X.ConsiderQ()
 	if J.IsAllowedToSpam( bot, 120 )
 		and nSkillLV >= 4
 		and ( nLV >= 8 or DotaTime() > 8 * 60 )
-		and bot:GetMana() > abilityR:GetManaCost() + 200
+		and bot:GetMana() > 400
 	then
 		local nTowerList = bot:GetNearbyTowers( 990, true )
 		local nBarrackList = bot:GetNearbyBarracks( 990, true )
@@ -498,7 +522,7 @@ end
 function X.ConsiderW()
 
 
-	if not abilityW:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityW) then return 0 end
 
 	local nSkillLV = abilityW:GetLevel()
 	local nCastRange = abilityW:GetCastRange() + aetherRange
@@ -608,7 +632,7 @@ end
 function X.ConsiderE()
 
 
-	if not abilityE:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityE) then return 0 end
 
 	local nSkillLV = abilityE:GetLevel()
 	local nCastRange = abilityE:GetCastRange() + aetherRange
@@ -668,7 +692,7 @@ end
 function X.ConsiderR()
 
 
-	if not abilityR:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityR) then return 0 end
 
 	local nSkillLV = abilityR:GetLevel()
 	local nCastRange = abilityR:GetCastRange() + aetherRange

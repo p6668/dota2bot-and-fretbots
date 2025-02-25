@@ -7,11 +7,13 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_tiny'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
-local sUtility = {"item_pipe", "item_heavens_halberd", "item_crimson_guard", "item_pipe", "item_nullifier"}
+local sUtility = {"item_pipe", "item_heavens_halberd", "item_lotus_orb"}
 local sUtilityItem = RI.GetBestUtilityItem(sUtility)
-local sBlinkUpgrade = RandomInt(1, 2) == 1 and "item_swift_blink" or "item_overwhelming_blink"
 
 local HeroBuild = {
     ['pos_1'] = {
@@ -30,8 +32,6 @@ local HeroBuild = {
             ['buy_list'] = {
 				"item_tango",
 				"item_quelling_blade",
-				"item_slippers",
-				"item_circlet",
 				"item_double_branches",
 			
 				"item_wraith_band",
@@ -39,19 +39,20 @@ local HeroBuild = {
 				"item_power_treads",
 				"item_echo_sabre",
 				"item_aghanims_shard",
+				"item_lesser_crit",
 				"item_black_king_bar",--
-				"item_harpoon",--
+				"item_assault",--
 				"item_greater_crit",--
-				"item_sange_and_yasha",--
+				"item_harpoon",--
 				"item_satanic",--
 				"item_moon_shard",
 				"item_travel_boots_2",--
 				"item_ultimate_scepter_2",
 			},
             ['sell_list'] = {
-				"item_quelling_blade",
-				"item_wraith_band",
-				"item_magic_wand",
+				"item_quelling_blade", "item_black_king_bar",
+				"item_magic_wand", "item_assault",
+				"item_wraith_band", "item_satanic",
 			},
         },
     },
@@ -75,27 +76,24 @@ local HeroBuild = {
 				"item_quelling_blade",
 			
 				"item_bottle",
-				"item_power_treads",
 				"item_magic_wand",
+				"item_power_treads",
 				"item_blink",
-				"item_echo_sabre",
 				"item_phylactery",
 				"item_black_king_bar",--
 				"item_angels_demise",--
 				"item_aghanims_shard",
 				"item_assault",--
-				"item_travel_boots",
-				"item_moon_shard",
-				"item_monkey_king_bar",--
-				sBlinkUpgrade,--
+				"item_octarine_core",--
+				"item_overwhelming_blink",--
 				"item_travel_boots_2",--
+				"item_moon_shard",
 				"item_ultimate_scepter_2",
 			},
             ['sell_list'] = {
-				"item_quelling_blade",
-				"item_bottle",
-				"item_magic_wand",
-				"item_echo_sabre",
+				"item_quelling_blade", "item_black_king_bar",
+				"item_magic_wand", "item_assault",
+				"item_bottle", "item_octarine_core",
 			},
         },
     },
@@ -103,7 +101,7 @@ local HeroBuild = {
         [1] = {
             ['talent'] = {
 				[1] = {
-					['t25'] = {10, 0},
+					['t25'] = {0, 10},
 					['t20'] = {0, 10},
 					['t15'] = {10, 0},
 					['t10'] = {10, 0},
@@ -115,33 +113,27 @@ local HeroBuild = {
             ['buy_list'] = {
 				"item_tango",
 				"item_double_branches",
-				"item_slippers",
-				"item_circlet",
 				"item_quelling_blade",
 			
-				"item_wraith_band",
-				"item_boots",
+				"item_double_bracer",
 				"item_magic_wand",
 				"item_power_treads",
-				"item_echo_sabre",
 				"item_blink",
-				"item_phylactery",
-				sUtilityItem,--
+				"item_crimson_guard",--
 				"item_black_king_bar",--
-				"item_angels_demise",--
-				"item_aghanims_shard",
+				sUtilityItem,--
 				"item_assault",--
-				"item_travel_boots",
-				sBlinkUpgrade,--
-				"item_moon_shard",
+				"item_overwhelming_blink",--
+				"item_aghanims_shard",
 				"item_travel_boots_2",--
+				"item_moon_shard",
 				"item_ultimate_scepter_2",
 			},
             ['sell_list'] = {
-				"item_quelling_blade",
-				"item_wraith_band",
-				"item_magic_wand",
-				"item_echo_sabre",
+				"item_quelling_blade", "item_crimson_guard",
+				"item_magic_wand", "item_black_king_bar",
+				"item_bracer", sUtilityItem,
+				"item_bracer", "item_assault",
 			},
         },
     },
@@ -149,7 +141,7 @@ local HeroBuild = {
         [1] = {
             ['talent'] = {
 				[1] = {
-					['t25'] = {10, 0},
+					['t25'] = {0, 10},
 					['t20'] = {10, 0},
 					['t15'] = {10, 0},
 					['t10'] = {0, 10},
@@ -166,24 +158,23 @@ local HeroBuild = {
 			
 				"item_boots",
 				"item_ring_of_basilius",
-				"item_blink",
-				"item_tranquil_boots",
 				"item_magic_wand",
-				"item_cyclone",
+				"item_tranquil_boots",
+				"item_blink",
 				"item_force_staff",--
-				"item_phylactery",
 				"item_boots_of_bearing",--
-				"item_wind_waker",--
-				"item_angels_demise",--
+				"item_cyclone",
+				"item_lotus_orb",--
 				"item_octarine_core",--
+				"item_wind_waker",--
 				"item_overwhelming_blink",--
 				"item_aghanims_shard",
 				"item_ultimate_scepter_2",
 				"item_moon_shard",
 			},
             ['sell_list'] = {
-				"item_ring_of_basilius",
-				"item_magic_wand",
+				"item_ring_of_basilius", "item_boots_of_bearing",
+				"item_magic_wand", "item_cyclone",
 			},
         },
     },
@@ -208,23 +199,22 @@ local HeroBuild = {
 			
 				"item_boots",
 				"item_ring_of_basilius",
-				"item_blink",
-				"item_arcane_boots",
 				"item_magic_wand",
-				"item_cyclone",
+				"item_arcane_boots",
+				"item_blink",
 				"item_force_staff",--
-				"item_phylactery",
 				"item_guardian_greaves",--
-				"item_wind_waker",--
-				"item_angels_demise",--
+				"item_cyclone",
+				"item_lotus_orb",--
 				"item_octarine_core",--
+				"item_wind_waker",--
 				"item_overwhelming_blink",--
 				"item_aghanims_shard",
 				"item_ultimate_scepter_2",
 				"item_moon_shard",
 			},
             ['sell_list'] = {
-				"item_magic_wand",
+				"item_magic_wand", "item_guardian_greaves",
 			},
         },
     },
@@ -251,11 +241,14 @@ function X.MinionThink(hMinionUnit)
 	Minion.MinionThink(hMinionUnit)
 end
 
+end
+
 local Avalanche     = bot:GetAbilityByName("tiny_avalanche")
 local Toss          = bot:GetAbilityByName("tiny_toss")
 local TreeGrab      = bot:GetAbilityByName("tiny_tree_grab")
 local TreeThrow     = bot:GetAbilityByName("tiny_toss_tree")
 local TreeVolley    = bot:GetAbilityByName("tiny_tree_channel")
+local Grow  	  	= bot:GetAbilityByName("tiny_grow")
 
 local AvalancheDesire, AvalancheTarget
 local TossDesire, TossTarget
@@ -265,21 +258,25 @@ local TreeVolleyDesire, TreeVolleyTarget
 
 local BlinkTossDesire, BlinkTossTarget
 
-local Blink
-local BlinkLocation
-
-local botTarget
+local botTarget, botName
 
 function X.SkillsComplement()
 	if J.CanNotUseAbility(bot) then return end
 
+	Avalanche     = bot:GetAbilityByName("tiny_avalanche")
+	Toss          = bot:GetAbilityByName("tiny_toss")
+	TreeGrab      = bot:GetAbilityByName("tiny_tree_grab")
+	TreeThrow     = bot:GetAbilityByName("tiny_toss_tree")
+	TreeVolley    = bot:GetAbilityByName("tiny_tree_channel")
+
 	botTarget = J.GetProperTarget(bot)
+	botName = GetBot():GetUnitName()
 
 	BlinkTossDesire, BlinkTossTarget = X.ConsiderBlinkToss()
 	if BlinkTossDesire > 0
 	then
 		bot:Action_ClearActions(false)
-		bot:ActionQueue_UseAbilityOnLocation(Blink, BlinkLocation)
+		bot:ActionQueue_UseAbilityOnLocation(bot.Blink, BlinkTossTarget:GetLocation())
 		bot:ActionQueue_Delay(0.1)
 		bot:ActionQueue_UseAbilityOnEntity(Toss, BlinkTossTarget)
 		return
@@ -322,7 +319,7 @@ function X.SkillsComplement()
 end
 
 function X.ConsiderAvalanche()
-    if not Avalanche:IsFullyCastable()
+    if not J.CanCastAbility(Avalanche)
 	then
 		return BOT_ACTION_DESIRE_NONE, nil
 	end
@@ -424,8 +421,20 @@ function X.ConsiderAvalanche()
 		if  nEnemyLaneCreeps ~= nil and #nEnemyLaneCreeps >= 4
 		and J.IsValid(nEnemyLaneCreeps[1])
 		and J.CanBeAttacked(nEnemyLaneCreeps[1])
-		and J.GetManaAfter(Avalanche:GetManaCost()) * bot:GetMana() > Avalanche:GetManaCost() + Toss:GetManaCost()
 		then
+			if string.find(botName, 'tiny')
+			then
+				if J.GetManaAfter(Avalanche:GetManaCost()) * bot:GetMana() < Avalanche:GetManaCost() + Toss:GetManaCost()
+				then
+					return BOT_ACTION_DESIRE_NONE, 0
+				end
+			else
+				if J.GetMP(GetBot()) < 0.35
+				then
+					return BOT_ACTION_DESIRE_NONE, 0
+				end
+			end
+
 			local nInRangeEnemy = J.GetEnemiesNearLoc(J.GetCenterOfUnits(nEnemyLaneCreeps), 1600)
 			if nInRangeEnemy ~= nil and #nInRangeEnemy == 0
 			then
@@ -435,8 +444,20 @@ function X.ConsiderAvalanche()
 	end
 
 	if  J.IsFarming(bot)
-	and J.GetManaAfter(Avalanche:GetManaCost()) * bot:GetMana() > Avalanche:GetManaCost() + Toss:GetManaCost()
 	then
+		if string.find(botName, 'tiny')
+		then
+			if J.GetManaAfter(Avalanche:GetManaCost()) * bot:GetMana() < Avalanche:GetManaCost() + Toss:GetManaCost()
+			then
+				return BOT_ACTION_DESIRE_NONE, 0
+			end
+		else
+			if J.GetMP(GetBot()) < 0.4
+			then
+				return BOT_ACTION_DESIRE_NONE, 0
+			end
+		end
+
 		local nNeutralCreeps = bot:GetNearbyNeutralCreeps(1000)
 		if  nNeutralCreeps ~= nil
 		and (#nNeutralCreeps >= 3 or (#nNeutralCreeps >= 1 and nNeutralCreeps[1]:IsAncientCreep()))
@@ -520,7 +541,7 @@ function X.ConsiderAvalanche()
 end
 
 function X.ConsiderToss()
-    if not Toss:IsFullyCastable()
+    if not J.CanCastAbility(Toss)
 	then
 		return BOT_ACTION_DESIRE_NONE, nil
 	end
@@ -537,7 +558,7 @@ function X.ConsiderToss()
 		and not J.IsSuspiciousIllusion(enemyHero)
 		then
 			if  (enemyHero:IsChanneling() or J.IsCastingUltimateAbility(enemyHero))
-			and Avalanche:IsTrained() and not Avalanche:IsCooldownReady()
+			and Avalanche ~= nil and Avalanche:IsTrained() and not Avalanche:IsCooldownReady()
 			then
 				return BOT_ACTION_DESIRE_HIGH, enemyHero
 			end
@@ -691,7 +712,7 @@ function X.ConsiderToss()
 end
 
 function X.ConsiderTreeGrab()
-	if not TreeGrab:IsFullyCastable()
+	if not J.CanCastAbility(TreeGrab)
 	or bot:HasModifier('modifier_tiny_tree_grab')
 	then
 		return BOT_ACTION_DESIRE_NONE, nil
@@ -718,7 +739,7 @@ function X.ConsiderTreeGrab()
 end
 
 function X.ConsiderTreeThrow()
-	if not TreeThrow:IsFullyCastable()
+	if not J.CanCastAbility(TreeThrow)
 	or not bot:HasModifier('modifier_tiny_tree_grab')
 	then
 		return BOT_ACTION_DESIRE_NONE, nil
@@ -825,8 +846,7 @@ function X.ConsiderTreeThrow()
 end
 
 function X.ConsiderTreeVolley()
-	if not bot:HasScepter()
-	or not TreeVolley:IsFullyCastable()
+	if not J.CanCastAbility(TreeVolley)
 	then
 		return BOT_ACTION_DESIRE_NONE, nil
 	end
@@ -921,8 +941,6 @@ function X.ConsiderBlinkToss()
 				if  nInRangeAlly ~= nil and nInRangeEnemy ~= nil
 				and #nInRangeAlly >= #nInRangeEnemy
 				then
-					BlinkLocation = botTarget:GetLocation()
-
 					local allyTarget = nil
 					for _, allyHero in pairs(nInRangeAlly)
 					do
@@ -954,8 +972,8 @@ function X.ConsiderBlinkToss()
 end
 
 function X.CanDoBlinkToss()
-    if  Toss:IsFullyCastable()
-    and X.HasBlink()
+    if  J.CanCastAbility(Toss)
+    and J.CanBlinkDagger(GetBot())
     then
         local manaCost = Toss:GetManaCost()
 
@@ -964,31 +982,6 @@ function X.CanDoBlinkToss()
             return true
         end
     end
-
-    return false
-end
-
-function X.HasBlink()
-    local blink = nil
-
-    for i = 0, 5
-    do
-		local item = bot:GetItemInSlot(i)
-
-		if item ~= nil
-        and (item:GetName() == "item_blink" or item:GetName() == "item_overwhelming_blink" or item:GetName() == "item_arcane_blink" or item:GetName() == "item_swift_blink")
-        then
-			blink = item
-			break
-		end
-	end
-
-    if  blink ~= nil
-    and blink:IsFullyCastable()
-	then
-        Blink = blink
-        return true
-	end
 
     return false
 end

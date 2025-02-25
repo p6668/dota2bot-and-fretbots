@@ -7,9 +7,12 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_omniknight'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
-local sUtility = {"item_crimson_guard", "item_pipe", "item_heavens_halberd"}
+local sUtility = {"item_pipe", "item_heavens_halberd", "item_lotus_orb"}
 local sUtilityItem = RI.GetBestUtilityItem(sUtility)
 
 local HeroBuild = {
@@ -45,17 +48,15 @@ local HeroBuild = {
 				"item_quelling_blade",
 				"item_double_gauntlets",
 			
-				"item_double_bracer",
-				"item_boots",
 				"item_magic_wand",
+				"item_double_bracer",
 				"item_phase_boots",
 				"item_phylactery",
 				"item_blink",
 				"item_aghanims_shard",
 				"item_black_king_bar",--
 				"item_angels_demise",--
-				"item_kaya_and_sange",--
-				"item_travel_boots",
+				"item_sange_and_yasha",--
 				"item_shivas_guard",--
 				"item_overwhelming_blink",--
 				"item_travel_boots_2",--
@@ -63,9 +64,10 @@ local HeroBuild = {
 				"item_ultimate_scepter_2",
 			},
             ['sell_list'] = {
-				"item_quelling_blade",
-				"item_bracer",
-				"item_magic_wand",
+				"item_quelling_blade", "item_blink",
+				"item_magic_wand", "item_black_king_bar",
+				"item_bracer", "item_sange_and_yasha",
+				"item_bracer", "item_shivas_guard",
 			},
         },
     },
@@ -74,14 +76,13 @@ local HeroBuild = {
             ['talent'] = {
 				[1] = {
 					['t25'] = {10, 0},
-					['t20'] = {10, 0},
+					['t20'] = {0, 10},
 					['t15'] = {10, 0},
 					['t10'] = {10, 0},
 				}
             },
             ['ability'] = {
-				[1] = {3,1,3,1,3,1,1,3,2,6,6,2,2,2,6},
-				[2] = {3,2,3,1,3,6,3,2,2,2,1,1,1,6,6},
+				[1] = {3,1,3,1,3,1,3,1,6,2,6,2,2,2,6},
             },
             ['buy_list'] = {
 				"item_tango",
@@ -89,27 +90,25 @@ local HeroBuild = {
 				"item_quelling_blade",
 				"item_double_gauntlets",
 			
-				"item_double_bracer",
-				"item_boots",
 				"item_magic_wand",
+				"item_double_bracer",
 				"item_phase_boots",
-				"item_phylactery",
 				"item_blink",
 				"item_aghanims_shard",
+				"item_crimson_guard",--
 				"item_black_king_bar",--
-				"item_angels_demise",--
 				sUtilityItem,--
 				"item_shivas_guard",--
-				"item_travel_boots",
 				"item_overwhelming_blink",--
 				"item_travel_boots_2",--
 				"item_moon_shard",
 				"item_ultimate_scepter_2",
 			},
             ['sell_list'] = {
-				"item_quelling_blade",
-				"item_bracer",
-				"item_magic_wand",
+				"item_quelling_blade", "item_crimson_guard",
+				"item_magic_wand", "item_black_king_bar",
+				"item_bracer", sUtilityItem,
+				"item_bracer", "item_shivas_guard",
 			},
         },
     },
@@ -117,10 +116,10 @@ local HeroBuild = {
         [1] = {
             ['talent'] = {
 				[1] = {
-					['t25'] = {10, 0},
-					['t20'] = {10, 0},
-					['t15'] = {0, 10},
-					['t10'] = {10, 0},
+					['t25'] = {0, 10},
+					['t20'] = {0, 10},
+					['t15'] = {10, 0},
+					['t10'] = {0, 10},
 				}
             },
             ['ability'] = {
@@ -133,15 +132,14 @@ local HeroBuild = {
 				"item_faerie_fire",
 				"item_blood_grenade",
 			
-				"item_tranquil_boots",
 				"item_magic_wand",
-				"item_aether_lens",
+				"item_tranquil_boots",
+				"item_solar_crest",--
 				"item_force_staff",--
-				"item_ultimate_scepter",
 				"item_boots_of_bearing",--
-				"item_pipe",--
 				"item_holy_locket",--
-				"item_octarine_core",--
+				"item_ultimate_scepter",
+				"item_sheepstick",--
 				"item_wind_waker",--
 				"item_ultimate_scepter_2",
 				"item_aghanims_shard",
@@ -154,10 +152,10 @@ local HeroBuild = {
         [1] = {
             ['talent'] = {
 				[1] = {
-					['t25'] = {10, 0},
-					['t20'] = {10, 0},
-					['t15'] = {0, 10},
-					['t10'] = {10, 0},
+					['t25'] = {0, 10},
+					['t20'] = {0, 10},
+					['t15'] = {10, 0},
+					['t10'] = {0, 10},
 				}
             },
             ['ability'] = {
@@ -170,15 +168,14 @@ local HeroBuild = {
 				"item_faerie_fire",
 				"item_blood_grenade",
 			
-				"item_arcane_boots",
 				"item_magic_wand",
-				"item_aether_lens",
+				"item_arcane_boots",
+				"item_solar_crest",--
 				"item_force_staff",--
-				"item_ultimate_scepter",
 				"item_guardian_greaves",--
-				"item_pipe",--
 				"item_holy_locket",--
-				"item_octarine_core",--
+				"item_ultimate_scepter",
+				"item_sheepstick",--
 				"item_wind_waker",--
 				"item_ultimate_scepter_2",
 				"item_aghanims_shard",
@@ -215,18 +212,18 @@ function X.MinionThink( hMinionUnit )
 
 end
 
-local abilityQ = bot:GetAbilityByName( sAbilityList[1] )
-local abilityW = bot:GetAbilityByName( sAbilityList[2] )
-local abilityE = bot:GetAbilityByName( sAbilityList[3] )
-local abilityR = bot:GetAbilityByName( sAbilityList[6] )
-local abilityAS = bot:GetAbilityByName( sAbilityList[4] )
+end
+
+local abilityQ = bot:GetAbilityByName('omniknight_purification')
+local abilityW = bot:GetAbilityByName('omniknight_martyr')
+local abilityE = bot:GetAbilityByName('omniknight_hammer_of_purity')
+local abilityR = bot:GetAbilityByName('omniknight_guardian_angel')
 local talent7 = bot:GetAbilityByName( sTalentList[7] )
 
 local castQDesire, castQTarget
 local castWDesire, castWTarget
 local castEDesire, castETarget
 local castRDesire, castRTarget
-local castASDesire, castASTarget
 
 local nKeepMana, nMP, nHP, nLV, hEnemyList, hAllyList, botTarget, sMotive
 local aetherRange = 0
@@ -235,6 +232,11 @@ local aetherRange = 0
 function X.SkillsComplement()
 
 	if J.CanNotUseAbility( bot ) or bot:IsInvisible() then return end
+
+	abilityQ = bot:GetAbilityByName('omniknight_purification')
+	abilityW = bot:GetAbilityByName('omniknight_martyr')
+	abilityE = bot:GetAbilityByName('omniknight_hammer_of_purity')
+	abilityR = bot:GetAbilityByName('omniknight_guardian_angel')
 
 	nKeepMana = 400
 	aetherRange = 0
@@ -298,7 +300,7 @@ end
 function X.ConsiderQ()
 
 
-	if not abilityQ:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityQ) then return 0 end
 
 	local nSkillLV = abilityQ:GetLevel()
 	local nCastRange = abilityQ:GetCastRange() + aetherRange
@@ -552,7 +554,7 @@ end
 function X.ConsiderW()
 
 
-	if not abilityW:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityW) then return 0 end
 
 	local nSkillLV = abilityW:GetLevel()
 	local nCastRange = abilityW:GetCastRange() + aetherRange
@@ -649,7 +651,7 @@ end
 function X.ConsiderE()
 
 
-	if not abilityE:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityE) then return 0 end
 	
 	local nCastRange = abilityE:GetCastRange()
 	local nCastPoint = abilityE:GetCastPoint()
@@ -795,7 +797,7 @@ end
 function X.ConsiderR()
 
 
-	if not abilityR:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityR) then return 0 end
 
 	local nRadius = abilityR:GetSpecialValueInt( 'radius' )	
 	local nCastRange = nRadius
@@ -819,7 +821,7 @@ function X.ConsiderR()
 			and botTarget:GetAttackTarget() == bot
 		then
 			hCastTarget = bot:GetLocation()
-			return BOT_ACTION_DESIRE_HIGH, hCastTarget
+			return BOT_ACTION_DESIRE_HIGH, hCastTarget					
 		end
 	end
 	
@@ -856,7 +858,7 @@ function X.ConsiderR()
 					if guardianCount >= 2
 					then
 						hCastTarget = npcAlly:GetLocation()
-						return BOT_ACTION_DESIRE_HIGH, hCastTarget
+						return BOT_ACTION_DESIRE_HIGH, hCastTarget	
 					end
 				end
 			end
@@ -868,7 +870,7 @@ function X.ConsiderR()
 				if ( #attackModeAlly >= 2 or ( #attackModeAlly >= 1 and #retreatModeAlly >= 2 ) )
 				then
 					hCastTarget = npcAlly:GetLocation()
-					return BOT_ACTION_DESIRE_HIGH, hCastTarget
+					return BOT_ACTION_DESIRE_HIGH, hCastTarget	
 				end
 			end
 		end

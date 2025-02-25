@@ -7,6 +7,9 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_skywrath_mage'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
 local sUtility = {}
@@ -56,7 +59,7 @@ local HeroBuild = {
 					['t25'] = {10, 0},
 					['t20'] = {10, 0},
 					['t15'] = {0, 10},
-					['t10'] = {0, 10},
+					['t10'] = {10, 0},
 				}
             },
             ['ability'] = {
@@ -65,25 +68,28 @@ local HeroBuild = {
             ['buy_list'] = {
 				"item_double_tango",
 				"item_double_branches",
-				"item_faerie_fire",
+				"item_circlet",
 				"item_blood_grenade",
 			
-				"item_tranquil_boots",
+				"item_null_talisman",
 				"item_magic_wand",
+				"item_tranquil_boots",
 				"item_rod_of_atos",
-				"item_aether_lens",--
+				"item_force_staff",
 				"item_aghanims_shard",
 				"item_glimmer_cape",--
 				"item_boots_of_bearing",--
 				"item_ultimate_scepter",
 				"item_octarine_core",--
-				"item_gungir",--
 				"item_sheepstick",--
 				"item_ultimate_scepter_2",
+				"item_gungir",--
+				"item_hurricane_pike",--
 				"item_moon_shard",
 			},
             ['sell_list'] = {
-				"item_magic_wand",
+				"item_null_talisman", "item_force_staff",
+				"item_magic_wand", "item_glimmer_cape",
 			},
         },
     },
@@ -94,7 +100,7 @@ local HeroBuild = {
 					['t25'] = {10, 0},
 					['t20'] = {10, 0},
 					['t15'] = {0, 10},
-					['t10'] = {0, 10},
+					['t10'] = {10, 0},
 				}
             },
             ['ability'] = {
@@ -103,25 +109,28 @@ local HeroBuild = {
             ['buy_list'] = {
 				"item_double_tango",
 				"item_double_branches",
-				"item_faerie_fire",
+				"item_circlet",
 				"item_blood_grenade",
 			
-				"item_arcane_boots",
+				"item_null_talisman",
 				"item_magic_wand",
+				"item_arcane_boots",
 				"item_rod_of_atos",
-				"item_aether_lens",--
+				"item_force_staff",
 				"item_aghanims_shard",
 				"item_glimmer_cape",--
 				"item_guardian_greaves",--
 				"item_ultimate_scepter",
 				"item_octarine_core",--
-				"item_gungir",--
-				"item_shivas_guard",--
+				"item_sheepstick",--
 				"item_ultimate_scepter_2",
+				"item_gungir",--
+				"item_hurricane_pike",--
 				"item_moon_shard",
 			},
             ['sell_list'] = {
-				"item_magic_wand",
+				"item_null_talisman", "item_force_staff",
+				"item_magic_wand", "item_glimmer_cape",
 			},
         },
     },
@@ -153,6 +162,8 @@ function X.MinionThink( hMinionUnit )
 
 end
 
+end
+
 --[[
 
 npc_dota_hero_skywrath_mage
@@ -180,10 +191,10 @@ modifier_skywrath_mystic_flare_aura_effect
 
 --]]
 
-local abilityQ = bot:GetAbilityByName( sAbilityList[1] )
-local abilityW = bot:GetAbilityByName( sAbilityList[2] )
-local abilityE = bot:GetAbilityByName( sAbilityList[3] )
-local abilityR = bot:GetAbilityByName( sAbilityList[6] )
+local abilityQ = bot:GetAbilityByName('skywrath_mage_arcane_bolt')
+local abilityW = bot:GetAbilityByName('skywrath_mage_concussive_shot')
+local abilityE = bot:GetAbilityByName('skywrath_mage_ancient_seal')
+local abilityR = bot:GetAbilityByName('skywrath_mage_mystic_flare')
 
 
 local castQDesire, castQTarget
@@ -199,6 +210,11 @@ local aetherRange = 0
 function X.SkillsComplement()
 
 	if J.CanNotUseAbility( bot ) or bot:IsInvisible() then return end
+
+	abilityQ = bot:GetAbilityByName('skywrath_mage_arcane_bolt')
+	abilityW = bot:GetAbilityByName('skywrath_mage_concussive_shot')
+	abilityE = bot:GetAbilityByName('skywrath_mage_ancient_seal')
+	abilityR = bot:GetAbilityByName('skywrath_mage_mystic_flare')
 
 	nKeepMana = 400
 	nLV = bot:GetLevel()
@@ -265,7 +281,7 @@ end
 function X.ConsiderQ()
 
 
-	if not abilityQ:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityQ) then return 0 end
 
 	local nSkillLV = abilityQ:GetLevel()
 	local nCastRange = abilityQ:GetCastRange() + aetherRange
@@ -390,8 +406,19 @@ function X.ConsiderQ()
 		if J.IsRoshan( botTarget )
 			and J.GetHP( botTarget ) > 0.2
 			and J.IsInRange( botTarget, bot, nCastRange )
+			and J.CanBeAttacked(botTarget)
+			and J.IsAttacking(bot)
 		then
 			return BOT_ACTION_DESIRE_HIGH, botTarget, 'Q肉山'
+		end
+	end
+
+	if J.IsDoingTormentor(bot) then
+		if J.IsTormentor(botTarget)
+        and J.IsInRange(bot, botTarget, nCastRange)
+        and J.IsAttacking(bot)
+		then
+			return BOT_ACTION_DESIRE_HIGH, botTarget, ''
 		end
 	end
 
@@ -404,7 +431,7 @@ end
 function X.ConsiderW()
 
 
-	if not abilityW:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityW) then return 0 end
 
 	local nSkillLV = abilityW:GetLevel()
 	local nCastRange = 1600
@@ -458,7 +485,7 @@ end
 function X.ConsiderE()
 
 
-	if not abilityE:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityE) then return 0 end
 
 	local nSkillLV = abilityE:GetLevel()
 	local nCastRange = abilityE:GetCastRange() + aetherRange
@@ -471,7 +498,8 @@ function X.ConsiderE()
 
 	for _, npcEnemy in pairs( nInRangeEnemyHeroList )
 	do
-		if ( npcEnemy:IsCastingAbility() or npcEnemy:IsChanneling() )
+		if J.IsValidHero(npcEnemy)
+		and ( npcEnemy:IsCastingAbility() or npcEnemy:IsChanneling() )
 			and not npcEnemy:HasModifier( "modifier_teleporting" )
 			and not npcEnemy:HasModifier( "modifier_boots_of_travel_incoming" )
 			and J.CanCastOnNonMagicImmune( npcEnemy )
@@ -571,8 +599,19 @@ function X.ConsiderE()
 	then
 		if J.IsRoshan( botTarget )
 			and J.IsInRange( botTarget, bot, nCastRange )
+			and J.CanBeAttacked(botTarget)
+			and J.IsAttacking(bot)
 		then
 			return BOT_ACTION_DESIRE_HIGH, botTarget, "E肉山"
+		end
+	end
+
+	if J.IsDoingTormentor(bot) then
+		if J.IsTormentor(botTarget)
+        and J.IsInRange(bot, botTarget, nCastRange)
+        and J.IsAttacking(bot)
+		then
+			return BOT_ACTION_DESIRE_HIGH, botTarget, ''
 		end
 	end
 
@@ -586,7 +625,7 @@ end
 function X.ConsiderR()
 
 
-	if not abilityR:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityR) then return 0 end
 
 
 	local nCastRange = abilityR:GetCastRange() + aetherRange
@@ -646,4 +685,3 @@ end
 
 
 return X
--- dota2jmz@163.com QQ:2462331592..

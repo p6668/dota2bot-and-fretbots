@@ -22,7 +22,7 @@ function GetDesire()
     local aliveAlly = J.GetNumOfAliveHeroes(false)
     local aliveEnemy = J.GetNumOfAliveHeroes(true)
     local hasSameOrMoreHero = aliveAlly >= aliveEnemy
-    local timeOfDay = J.CheckTimeOfDay()
+    local botTarget = J.GetProperTarget(bot)
 
     local aliveHeroesList = {}
     for i = 1, 5
@@ -36,17 +36,14 @@ function GetDesire()
 
     shouldKillRoshan = J.IsRoshanAlive()
 
-    if  shouldKillRoshan
-    and not roshTimeFlag
-    then
-        sinceRoshAliveTime = DotaTime()
-        roshTimeFlag = trueF
-    else
-        if not shouldKillRoshan
-        then
-            sinceRoshAliveTime = 0
-            roshTimeFlag = false
+    if shouldKillRoshan then
+        if not roshTimeFlag then
+            sinceRoshAliveTime = DotaTime()
+            roshTimeFlag = trueF
         end
+    else
+        sinceRoshAliveTime = 0
+        roshTimeFlag = false
     end
 
     if J.HasEnoughDPSForRoshan(aliveHeroesList)
@@ -54,41 +51,35 @@ function GetDesire()
         initDPSFlag = true
     end
 
-    local nTeamFightLocation = J.GetTeamFightLocation(bot)
-    if nTeamFightLocation ~= nil
+    local nEnemyHeroes = J.GetEnemiesNearLoc(bot:GetLocation(), 1300)
+    if nEnemyHeroes ~= nil and #nEnemyHeroes > 0
+    or (J.IsRoshanCloseToChangingSides() and not (J.IsRoshan(botTarget) and J.IsInRange(bot, botTarget, 900) and J.GetHP(botTarget) > 0.25))
     then
-        if  timeOfDay == 'day'
-        and GetUnitToLocationDistance(bot, roshanRadiantLoc) < 1000
-        and GetUnitToLocationDistance(bot, nTeamFightLocation) < 1600
-        then
-            return BOT_ACTION_DESIRE_NONE
-        else
-            if  timeOfDay == 'night'
-            and GetUnitToLocationDistance(bot, roshanDireLoc) < 1000
-            and GetUnitToLocationDistance(bot, nTeamFightLocation) < 1600
+        return BOT_MODE_DESIRE_NONE
+    end
+
+    if shouldKillRoshan and initDPSFlag then
+        local mul = RemapValClamped(DotaTime(), sinceRoshAliveTime, sinceRoshAliveTime + (2.5 * 60), 1, 2)
+        local nRoshanDesire = Max(GetRoshanDesire(), 0.1) * mul
+
+        local human, humanPing = J.GetHumanPing()
+        if human ~= nil and DotaTime() > 5.0 then
+            if humanPing ~= nil
+            and humanPing.normal_ping
+            and GetUnitToLocationDistance(human, J.GetCurrentRoshanLocation()) <= 1200
+            and J.GetDistance(humanPing.location, J.GetCurrentRoshanLocation()) <= 600
+            and DotaTime() < humanPing.time + 5.0
             then
-                return BOT_ACTION_DESIRE_NONE
+                return 0.95
             end
+        end
+
+        if hasSameOrMoreHero or (not hasSameOrMoreHero and J.HasEnoughDPSForRoshan(aliveHeroesList)) then
+            return Clamp(nRoshanDesire, 0, 0.8)
         end
     end
 
-    local nEnemyHeroes = bot:GetNearbyHeroes(700 + bot:GetAttackRange(), true, BOT_MODE_NONE)
-    if nEnemyHeroes ~= nil and #nEnemyHeroes > 0
-    then
-        return BOT_ACTION_DESIRE_NONE
-    end
-
-    if  shouldKillRoshan
-    and initDPSFlag
-    and (hasSameOrMoreHero or (not hasSameOrMoreHero and IsEnoughAllies()))
-    then
-        local mul = RemapValClamped(DotaTime(), sinceRoshAliveTime, sinceRoshAliveTime + (2.5 * 60), 1, 2)
-        local nRoshanDesire = (GetRoshanDesire() * mul)
-
-        return Clamp(nRoshanDesire, 0, 0.8)
-    end
-
-    return BOT_ACTION_DESIRE_NONE
+    return BOT_MODE_DESIRE_NONE
 end
 
 -- function Think()

@@ -7,6 +7,9 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_razor'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
 local sUtility = {}
@@ -17,7 +20,7 @@ local HeroBuild = {
         [1] = {
             ['talent'] = {
 				[1] = {
-					['t25'] = {0, 10},
+					['t25'] = {10, 0},
 					['t20'] = {10, 0},
 					['t15'] = {0, 10},
 					['t10'] = {0, 10},
@@ -34,23 +37,20 @@ local HeroBuild = {
 			
 				"item_power_treads",
 				"item_magic_wand",
-				"item_falcon_blade",
 				"item_manta",--
 				"item_black_king_bar",--
 				"item_aghanims_shard",
-				"item_butterfly",--
 				"item_satanic",--
+				"item_butterfly",--
 				"item_assault",--
-				"item_skadi",--
 				"item_refresher",--
 				"item_moon_shard",
 				"item_ultimate_scepter_2",
 			},
             ['sell_list'] = {
-				"item_quelling_blade",
-				"item_power_treads",
-				"item_magic_wand",
-				"item_falcon_blade",
+				"item_quelling_blade", "item_butterfly",
+				"item_magic_wand", "item_assault",
+				"item_power_treads", "item_refresher",
 			},
         },
     },
@@ -58,7 +58,7 @@ local HeroBuild = {
         [1] = {
             ['talent'] = {
 				[1] = {
-					['t25'] = {0, 10},
+					['t25'] = {10, 0},
 					['t20'] = {10, 0},
 					['t15'] = {0, 10},
 					['t10'] = {0, 10},
@@ -76,24 +76,21 @@ local HeroBuild = {
 				"item_bottle",
 				"item_power_treads",
 				"item_magic_wand",
-				"item_falcon_blade",
 				"item_manta",--
 				"item_black_king_bar",--
 				"item_aghanims_shard",
-				"item_butterfly",--
 				"item_satanic",--
+				"item_butterfly",--
 				"item_assault",--
-				"item_skadi",--
 				"item_refresher",--
 				"item_moon_shard",
 				"item_ultimate_scepter_2",
 			},
             ['sell_list'] = {
-				"item_quelling_blade",
-				"item_bottle",
-				"item_power_treads",
-				"item_magic_wand",
-				"item_falcon_blade",
+				"item_quelling_blade", "item_satanic",
+				"item_magic_wand", "item_butterfly",
+				"item_bottle", "item_assault",
+				"item_power_treads", "item_refresher",
 			},
         },
     },
@@ -104,7 +101,7 @@ local HeroBuild = {
 					['t25'] = {10, 0},
 					['t20'] = {10, 0},
 					['t15'] = {10, 0},
-					['t10'] = {0, 10},
+					['t10'] = {10, 0},
 				}
             },
             ['ability'] = {
@@ -113,29 +110,26 @@ local HeroBuild = {
             ['buy_list'] = {
 				"item_tango",
 				"item_double_branches",
-				"item_slippers",
-				"item_circlet",
+				"item_double_circlet",
 			
-				"item_wraith_band",
-				"item_boots",
 				"item_magic_wand",
-				"item_falcon_blade",
+				"item_double_wraith_band",
 				"item_power_treads",
 				"item_manta",--
 				"item_black_king_bar",--
+				"item_heavens_halberd",--
 				"item_aghanims_shard",
 				"item_shivas_guard",--
 				"item_assault",--
-				"item_refresher",--
 				"item_satanic",--
 				"item_moon_shard",
 				"item_ultimate_scepter_2",
 			},
             ['sell_list'] = {
-				"item_wraith_band",
-				"item_magic_wand",
-				"item_falcon_blade",
-				"item_power_treads",
+				"item_magic_wand", "item_heavens_halberd",
+				"item_wraith_band", "item_shivas_guard",
+				"item_wraith_band", "item_assault",
+				"item_power_treads", "item_satanic",
 			},
         },
     },
@@ -191,6 +185,8 @@ function X.MinionThink( hMinionUnit )
 
 end
 
+end
+
 --[[
 
 npc_dota_hero_razor
@@ -222,10 +218,10 @@ modifier_razor_eye_of_the_storm_armor
 --]]
 
 
-local abilityQ = bot:GetAbilityByName( sAbilityList[1] )
-local abilityW = bot:GetAbilityByName( sAbilityList[2] )
-local abilityE = bot:GetAbilityByName( sAbilityList[3] )
-local abilityR = bot:GetAbilityByName( sAbilityList[6] )
+local abilityQ = bot:GetAbilityByName('razor_plasma_field')
+local abilityW = bot:GetAbilityByName('razor_static_link')
+local abilityE = bot:GetAbilityByName('razor_unstable_current')
+local abilityR = bot:GetAbilityByName('razor_eye_of_the_storm')
 
 
 local castQDesire
@@ -243,6 +239,10 @@ function X.SkillsComplement()
 
 
 	if J.CanNotUseAbility( bot ) or bot:IsInvisible() then return end
+
+	abilityQ = bot:GetAbilityByName('razor_plasma_field')
+	abilityW = bot:GetAbilityByName('razor_static_link')
+	abilityR = bot:GetAbilityByName('razor_eye_of_the_storm')
 
 
 	nKeepMana = 280
@@ -300,7 +300,7 @@ end
 function X.ConsiderQ()
 
 
-	if not abilityQ:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityQ) then return 0 end
 
 	local nSkillLV = abilityQ:GetLevel()
 	local nCastRange = 777
@@ -456,6 +456,25 @@ function X.ConsiderQ()
 		end
 	end
 
+	if J.IsDoingRoshan(bot) then
+		if J.IsRoshan( botTarget )
+		and J.IsInRange( botTarget, bot, nCastRange )
+		and J.CanBeAttacked(botTarget)
+		and J.IsAttacking(bot)
+		then
+			return BOT_ACTION_DESIRE_HIGH, ''
+		end
+	end
+
+    if J.IsDoingTormentor(bot) then
+		if J.IsTormentor(botTarget)
+        and J.IsInRange( botTarget, bot, nCastRange )
+        and J.IsAttacking(bot)
+		then
+			return BOT_ACTION_DESIRE_HIGH, ''
+		end
+	end
+
 	return BOT_ACTION_DESIRE_NONE
 
 
@@ -465,7 +484,7 @@ end
 function X.ConsiderW()
 
 
-	if not abilityW:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityW) then return 0 end
 
 	local nSkillLV = abilityW:GetLevel()
 	local nCastRange = abilityW:GetCastRange()	 + aetherRange
@@ -572,7 +591,7 @@ end
 function X.ConsiderR()
 
 
-	if not abilityR:IsFullyCastable()
+	if not J.CanCastAbility(abilityR)
 		or bot:HasModifier( 'modifier_razor_eye_of_the_storm' )
 	then return 0 end
 
@@ -634,5 +653,4 @@ end
 
 
 return X
--- dota2jmz@163.com QQ:2462331592..
 

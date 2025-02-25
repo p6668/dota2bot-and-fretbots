@@ -7,6 +7,9 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_ursa'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
 local sUtility = {}
@@ -17,7 +20,7 @@ local HeroBuild = {
         [1] = {
             ['talent'] = {
 				[1] = {
-					['t25'] = {0, 10},
+					['t25'] = {10, 0},
 					['t20'] = {10, 0},
 					['t15'] = {0, 10},
 					['t10'] = {0, 10},
@@ -33,25 +36,24 @@ local HeroBuild = {
 				"item_quelling_blade",
 				"item_circlet",
 			
-				"item_phase_boots",
 				"item_magic_wand",
+				"item_phase_boots",
 				"item_bfury",--
 				"item_blink",
 				"item_basher",
 				"item_black_king_bar",--
+				"item_aghanims_shard",
 				"item_abyssal_blade",--
 				"item_ultimate_scepter",
 				"item_satanic",--
 				"item_swift_blink",--
 				"item_ultimate_scepter_2",
-				"item_travel_boots",
 				"item_moon_shard",
-				"item_aghanims_shard",
 				"item_travel_boots_2",--
 			},
             ['sell_list'] = {
-				"item_circlet",
-				"item_magic_wand",
+				"item_circlet", "item_black_king_bar",
+				"item_magic_wand", "item_satanic",
 			},
         },
     },
@@ -70,13 +72,41 @@ local HeroBuild = {
     ['pos_3'] = {
         [1] = {
             ['talent'] = {
-                [1] = {},
+				[1] = {
+					['t25'] = {0, 10},
+					['t20'] = {0, 10},
+					['t15'] = {0, 10},
+					['t10'] = {0, 10},
+				}
             },
             ['ability'] = {
-                [1] = {},
+                [1] = {3,1,3,2,3,6,3,2,2,2,6,1,1,1,6},
             },
-            ['buy_list'] = {},
-            ['sell_list'] = {},
+            ['buy_list'] = {
+				"item_tango",
+				"item_double_branches",
+				"item_faerie_fire",
+				"item_quelling_blade",
+				"item_circlet",
+			
+				"item_magic_wand",
+				"item_phase_boots",
+				"item_bfury",--
+				"item_crimson_guard",--
+				"item_blink",
+				"item_black_king_bar",--
+				"item_basher",
+				"item_aghanims_shard",
+				"item_abyssal_blade",--
+				"item_overwhelming_blink",--
+				"item_ultimate_scepter_2",
+				"item_moon_shard",
+				"item_travel_boots_2",--
+			},
+            ['sell_list'] = {
+				"item_circlet", "item_black_king_bar",
+				"item_magic_wand", "item_basher",
+			},
         },
     },
     ['pos_4'] = {
@@ -134,8 +164,11 @@ function X.MinionThink( hMinionUnit )
 
 end
 
+end
+
 local Earthshock    = bot:GetAbilityByName( "ursa_earthshock" )
 local Overpower     = bot:GetAbilityByName( "ursa_overpower" )
+local FurySwipes    = bot:GetAbilityByName( "ursa_fury_swipes" )
 local Enrage        = bot:GetAbilityByName( "ursa_enrage" )
 
 local EarthshockDesire
@@ -144,6 +177,10 @@ local EnrageDesire
 
 function X.SkillsComplement()
     if J.CanNotUseAbility(bot) then return end
+
+	Earthshock    = bot:GetAbilityByName( "ursa_earthshock" )
+	Overpower     = bot:GetAbilityByName( "ursa_overpower" )
+	Enrage        = bot:GetAbilityByName( "ursa_enrage" )
 
 	EnrageDesire = X.ConsiderEnrage()
     if EnrageDesire > 0
@@ -168,7 +205,7 @@ function X.SkillsComplement()
 end
 
 function X.ConsiderEarthshock()
-	if not Earthshock:IsFullyCastable()
+	if not J.CanCastAbility(Earthshock)
 	then
 		return BOT_ACTION_DESIRE_NONE
 	end
@@ -291,7 +328,7 @@ function X.ConsiderEarthshock()
 end
 
 function X.ConsiderOverpower()
-	if not Overpower:IsFullyCastable()
+	if not J.CanCastAbility(Overpower)
 	then
 		return BOT_ACTION_DESIRE_NONE
 	end
@@ -346,7 +383,20 @@ function X.ConsiderOverpower()
 
 	if J.IsDoingRoshan(bot)
 	then
-		if J.IsRoshan(botTarget)
+		if J.IsRoshan( botTarget )
+		and J.IsInRange( botTarget, bot, 600)
+		and J.CanBeAttacked(botTarget)
+		and J.IsAttacking(bot)
+		then
+			return BOT_ACTION_DESIRE_HIGH
+		end
+	end
+
+    if J.IsDoingTormentor(bot)
+	then
+		if J.IsTormentor(botTarget)
+        and J.IsInRange( botTarget, bot, 600)
+        and J.IsAttacking(bot)
 		then
 			return BOT_ACTION_DESIRE_HIGH
 		end
@@ -356,7 +406,7 @@ function X.ConsiderOverpower()
 end
 
 function X.ConsiderEnrage()
-	if not Enrage:IsFullyCastable()
+	if not J.CanCastAbility(Enrage)
 	then
 		return BOT_ACTION_DESIRE_NONE
 	end
