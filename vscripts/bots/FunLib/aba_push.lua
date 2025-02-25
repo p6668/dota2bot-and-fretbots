@@ -1,9 +1,6 @@
 local Push = {}
 local J = require( GetScriptDirectory()..'/FunLib/jmz_func')
 
-local IsSupportHelpCorePush = false
-local SupportHelpCore = nil
-
 local ShouldNotPushLane = false
 local LanePushCooldown = 0
 local LanePush = LANE_MID
@@ -12,32 +9,64 @@ local GlyphDuration = 7
 local ShoulNotPushTower = false
 local TowerPushCooldown = 0
 
+local pingTimeDelta = 5
+
 function Push.GetPushDesire(bot, lane)
     if bot.laneToPush == nil then bot.laneToPush = lane end
 
-    local maxDesire = 1
-    local nMode = bot:GetActiveMode()
-    local nModeDesire = bot:GetActiveModeDesire()
+    local nMaxDesire = 0.95 - 0.02
+    local bMyLane = bot:GetAssignedLane() == lane
 
-	if  (nMode == BOT_MODE_DEFEND_TOWER_TOP or nMode == BOT_MODE_DEFEND_TOWER_MID or nMode == BOT_MODE_DEFEND_TOWER_BOT)
-    and nModeDesire > 0.75
-    then
-        maxDesire = 0.75
+	if (not bMyLane and J.GetPosition(bot) == 1 and (DotaTime() < 12 * 60 and bot:GetNetWorth() <= 5000)) -- reduce carry feeds
+    or (J.IsDoingRoshan(bot) and #J.GetAlliesNearLoc(J.GetCurrentRoshanLocation(), 2800) >= 3)
+    or (#J.GetAlliesNearLoc(J.GetTormentorLocation(GetTeam()), 1600) >= 3)
+	then
+		return BOT_MODE_DESIRE_NONE
+	end
+
+    for i = 1, 5
+    do
+		local member = GetTeamMember(i)
+        if member ~= nil and member:GetLevel() < 8 then return BOT_MODE_DESIRE_NONE end
     end
 
-    if J.IsGoingOnSomeone(bot) and J.IsValidHero(J.GetProperTarget(bot)) and J.IsInRange(bot, J.GetProperTarget(bot), 1600) then return BOT_ACTION_DESIRE_NONE end
+    local human, humanPing = J.GetHumanPing()
+	if human ~= nil and DotaTime() > pingTimeDelta
+	then
+		local isPinged, pingedLane = J.IsPingCloseToValidTower(GetOpposingTeam(), humanPing)
+		if isPinged and lane == pingedLane
+		and DotaTime() < humanPing.time + pingTimeDelta
+		then
+			return BOT_ACTION_DESIRE_ABSOLUTE * 0.95 - 0.01
+		end
+	end
 
-    if  J.IsInLaningPhase()
-    and bot:GetLevel() < 8
-    then
-        return BOT_MODE_DESIRE_VERYLOW
+    local nInRangeAlly = J.GetAlliesNearLoc(bot:GetLocation(), 1200)
+    local nInRangeEnemy = J.GetEnemiesNearLoc(bot:GetLocation(), 1200)
+
+    local nInRangeAlly_core = {}
+    for _, ally in pairs(nInRangeAlly) do
+        if J.IsValidHero(ally) and J.IsCore(ally) then
+            table.insert(nInRangeAlly_core, ally)
+        end
+    end
+
+    local nInRangeEnemy_core = {}
+    for _, enemy in pairs(nInRangeEnemy) do
+        if J.IsValidHero(enemy) and J.IsCore(enemy) then
+            table.insert(nInRangeEnemy_core, enemy)
+        end
+    end
+
+    if #nInRangeAlly < #nInRangeEnemy and #nInRangeAlly_core < #nInRangeEnemy_core then
+        return BOT_MODE_DESIRE_NONE
     end
 
     if ShoulNotPushTower
     then
         if DotaTime() < TowerPushCooldown + GlyphDuration
         then
-            return BOT_ACTION_DESIRE_NONE
+            return BOT_MODE_DESIRE_NONE
         else
             ShoulNotPushTower = false
             TowerPushCooldown = 0
@@ -46,10 +75,11 @@ function Push.GetPushDesire(bot, lane)
 
     if ShouldNotPushLane
     then
-        if  DotaTime() < LanePushCooldown + 10
-        and LanePush == lane
+        if DotaTime() < LanePushCooldown + 10
         then
-            return BOT_MODE_DESIRE_NONE
+            if LanePush == lane then
+                return BOT_MODE_DESIRE_NONE
+            end
         else
             ShouldNotPushLane = false
             LanePushCooldown = 0
@@ -62,40 +92,72 @@ function Push.GetPushDesire(bot, lane)
     local enemyKills = J.GetNumOfTeamTotalKills(true) + 1
     local aAliveCoreCount = J.GetAliveCoreCount(false)
     local eAliveCoreCount = J.GetAliveCoreCount(true)
-    local nPushDesire = RemapValClamped(GetPushLaneDesire(lane), 0, 1, 0, maxDesire)
+    local nPushDesire = GetPushLaneDesire(lane)
+
+    local hEnemyAncient = GetAncient(GetOpposingTeam())
+    if J.IsValidBuilding(hEnemyAncient)
+    and J.CanBeAttacked(hEnemyAncient)
+    and GetUnitToUnitDistance(bot, hEnemyAncient) < 2000
+    then
+        return BOT_MODE_DESIRE_HIGH - 0.01
+    end
+
+    local fEnemyLaneFrontAmount = GetLaneFrontAmount(GetOpposingTeam(), lane, true)
+    if fEnemyLaneFrontAmount < 0.25 and GetUnitToUnitDistance(bot, hEnemyAncient) > 3500 then
+        return BOT_MODE_DESIRE_HIGH - 0.01
+    end
+
+    local vEnemyLaneFrontLocation = GetLaneFrontLocation(GetOpposingTeam(), lane, 0)
+    if nPushDesire > 0.7
+    and Push.ShouldWaitForImportantItemsSpells(vEnemyLaneFrontLocation)
+    and (  eAliveCount >= aAliveCount
+        or eAliveCount >= aAliveCount and eAliveCoreCount >= aAliveCoreCount
+        )
+    then
+        return BOT_MODE_DESIRE_NONE
+    end
 
     local botTarget = bot:GetAttackTarget()
     if J.IsValidBuilding(botTarget)
+    and not string.find(botTarget:GetUnitName(), 'tower1')
+    and not string.find(botTarget:GetUnitName(), 'tower2')
     then
         if  botTarget:HasModifier('modifier_fountain_glyph')
         and not (aAliveCount >= eAliveCount + 2)
         then
             ShoulNotPushTower = true
             TowerPushCooldown = DotaTime()
-            return BOT_ACTION_DESIRE_NONE
+            return BOT_MODE_DESIRE_NONE
         end
 
         if botTarget:HasModifier('modifier_backdoor_protection')
         or botTarget:HasModifier('modifier_backdoor_protection_in_base')
         or botTarget:HasModifier('modifier_backdoor_protection_active')
         then
-            return BOT_ACTION_DESIRE_NONE
+            return BOT_MODE_DESIRE_NONE
         end
     end
 
-    if bot:WasRecentlyDamagedByTower(3) and DotaTime() < 10 * 60
-    or J.GetHP(bot) < 0.45
+    if bot:WasRecentlyDamagedByTower(3) and Push.IsInDangerWithinTower(bot, 0.4, 5.0)
     then
-        return BOT_ACTION_DESIRE_NONE
+        return BOT_MODE_DESIRE_NONE
     end
 
-    local enemyInLane = J.GetEnemyCountInLane(lane)
-    if enemyInLane > 0
-    then
-        local nInRangeAlly = J.GetAlliesNearLoc(GetLaneFrontLocation(GetTeam(), lane, 0), 700)
+    local hTeleports = GetIncomingTeleports()
+    local nTPCount = 0
+    for _, tp in pairs(hTeleports) do
+        if tp ~= nil
+        and J.GetDistance(vEnemyLaneFrontLocation, tp.location) <= 1600
+        and Push.IsEnemyTP(tp.playerid)
+        then
+            nTPCount = nTPCount + 1
+        end
+    end
 
-        if  nInRangeAlly ~= nil
-        and enemyInLane > (GetUnitToLocationDistance(bot, GetLaneFrontLocation(GetTeam(), lane, 0)) < 700 and #nInRangeAlly + 1 or #nInRangeAlly)
+    if nTPCount > 0 then
+        local nInRangeAlly__ = J.GetAlliesNearLoc(vEnemyLaneFrontLocation, 1600)
+        local nInRangeEnemy__ = J.GetEnemiesNearLoc(vEnemyLaneFrontLocation, 1600)
+        if (#nInRangeAlly__ < #nInRangeEnemy__ + nTPCount)
         then
             ShouldNotPushLane = true
             LanePushCooldown = DotaTime()
@@ -104,171 +166,57 @@ function Push.GetPushDesire(bot, lane)
         end
     end
 
-    local aliveHeroesList = {}
-    for i = 1, 5
-    do
-        local member = GetTeamMember(i)
-        if  J.IsValidHero(member)
-        and not J.IsSuspiciousIllusion(member)
-        and not J.IsMeepoClone(member)
-        then
-            table.insert(aliveHeroesList, member)
-
-            if  J.IsNotSelf(bot, member)
-            and J.IsCore(member)
-            and not J.IsCore(bot)
-            and not J.IsPushing(member)
-            then
-                return BOT_MODE_DESIRE_LOW
-            end
-        end
-    end
-
-    local laneFrontAmount = GetLaneFrontAmount(GetTeam(), lane, true)
-    local laneFrontAmountEnemy = 1 - GetLaneFrontAmount(GetOpposingTeam(), lane, true)
-    if  not J.IsInLaningPhase()
-    and (aAliveCount <= eAliveCount + 2)
-    and nPushDesire < maxDesire / 2
-    then
-        local nInRangeEnemy = J.GetEnemiesNearLoc(bot:GetLocation(), 1600)
-        local nInRangeEnemyTowers = bot:GetNearbyTowers(700, true)
-
-        -- Push/Shove
-        if (laneFrontAmount < 0.5
-            and laneFrontAmountEnemy > 0.5)
-        or (laneFrontAmount > 0.5
-            and nInRangeEnemy ~= nil and #nInRangeEnemy == 0
-            and nInRangeEnemyTowers ~= nil and #nInRangeEnemyTowers == 0)
-        then
-            local dist = GetUnitToLocationDistance(bot, GetLaneFrontLocation(GetTeam(), lane, 0))
-            local isCorePushing = false
-
-            for i = 1, 5
-            do
-                local member = GetTeamMember(i)
-                if  J.IsValidHero(member)
-                and not J.IsSuspiciousIllusion(member)
-                and not J.IsMeepoClone(member)
-                and J.IsCore(member)
-                and J.IsNotSelf(bot, member)
-                then
-                    if member:GetActiveMode() == BOT_MODE_PUSH_TOWER_TOP and lane == LANE_TOP
-                    or member:GetActiveMode() == BOT_MODE_PUSH_TOWER_MID and lane == LANE_MID
-                    or member:GetActiveMode() == BOT_MODE_PUSH_TOWER_BOT and lane == LANE_BOT
-                    then
-                        isCorePushing = true
-                        break
-                    end
-                end
-            end
-
-            if not isCorePushing
-            then
-                local nearbynum = 0
-                for _, id in pairs(GetTeamPlayers(GetOpposingTeam()))
-                do
-                    if IsHeroAlive(id)
-                    then
-                        local info = GetHeroLastSeenInfo(id)
-                        if info ~= nil
-                        then
-                            local dInfo = info[1]
-                            if dInfo ~= nil
-                            then
-                                if  J.GetDistance(GetLaneFrontLocation(GetTeam(), lane, 0), dInfo.location) < 1600
-                                and dInfo.time_since_seen < 5
-                                then
-                                    nearbynum = nearbynum + 1
-                                end
-                            end
-                        end
-                    end
-                end
-
-                if nearbynum == 0
-                then
-                    bot.laneToPush = lane
-                    return RemapValClamped(dist, 4000, 1000, 0, 0.75)
-                end
-            end
-        end
-
-        -- Help Core Push
-        for i = 1, 5
-        do
-            local member = GetTeamMember(i)
-            if  J.IsValidHero(member)
-            and J.IsCore(member)
-            and J.IsNotSelf(bot, member)
-            and not J.IsSuspiciousIllusion(member)
-            and not J.IsMeepoClone(member)
-            and not J.IsCore(bot)
-            and not J.IsRetreating(bot)
-            and not J.IsGoingOnSomeone(bot)
-            and not J.IsDoingTormentor(bot)
-            and not J.IsDoingRoshan(bot)
-            then
-                if (member:GetActiveMode() == BOT_MODE_PUSH_TOWER_TOP and lane == LANE_TOP
-                    or member:GetActiveMode() == BOT_MODE_PUSH_TOWER_MID and lane == LANE_MID
-                    or member:GetActiveMode() == BOT_MODE_PUSH_TOWER_BOT and lane == LANE_BOT)
-                or GetUnitToUnitDistance(member, GetAncient(GetOpposingTeam())) < 3200
-                then
-                    IsSupportHelpCorePush = true
-                    SupportHelpCore = member
-                    return RemapValClamped(GetUnitToUnitDistance(bot, member), 3800, 1000, 0.42, 0.75)
-                end
-            end
-        end
-    end
-
     -- General Push
-    if eAliveCount == 0
-    or aAliveCoreCount >= eAliveCoreCount
-    or (aAliveCoreCount >= 1 and aAliveCount >= eAliveCount + 2)
+    if (not J.IsCore(bot) and (Push.WhichLaneToPush(bot) == lane))
+    or (J.IsCore(bot) and ((J.IsLateGame() and (Push.WhichLaneToPush(bot) == lane)) or (J.IsEarlyGame() or J.IsMidGame())))
     then
-        if J.DoesTeamHaveAegis()
+        if eAliveCount == 0
+        or aAliveCoreCount >= eAliveCoreCount
+        or (aAliveCoreCount >= 1 and aAliveCount >= eAliveCount + 2)
         then
-            local aegis = 1.3
-            nPushDesire = nPushDesire * aegis
-        end
+            if J.DoesTeamHaveAegis()
+            then
+                local aegis = 1.3
+                nPushDesire = nPushDesire * aegis
+            end
 
-        if aAliveCount >= eAliveCount
-        and J.GetAverageLevel(GetTeam()) >= 12
-        then
-            -- nPushDesire = nPushDesire * RemapValClamped(allyKills / enemyKills, 1, 2, 1, 2)
-            nPushDesire = nPushDesire + RemapValClamped(allyKills / enemyKills, 1, 2, 0.0, 1)
-        end
+            if aAliveCount >= eAliveCount
+            and J.GetAverageLevel(GetTeam()) >= 12
+            then
+                -- nPushDesire = nPushDesire * RemapValClamped(allyKills / enemyKills, 1, 2, 1, 2)
+                nPushDesire = nPushDesire + RemapValClamped(allyKills / enemyKills, 1, 2, 0.0, 1)
+            end
 
-        bot.laneToPush = lane
-        return Clamp(nPushDesire, 0, maxDesire)
+            bot.laneToPush = lane
+            return Clamp(nPushDesire, 0, nMaxDesire)
+        end
     end
 
     return BOT_MODE_DESIRE_NONE
 end
 
-function OnEnd()
-    IsSupportHelpCorePush = false
-    SupportHelpCore = nil
-end
-
 local TeamLocation = {}
 function Push.WhichLaneToPush(bot)
-
-    TeamLocation[bot:GetPlayerID()] = bot:GetLocation()
+    for i = 1, 5 do
+        local member = GetTeamMember(i)
+        if member ~= nil and member:IsAlive() then
+            TeamLocation[member:GetPlayerID()] = member:GetLocation()
+        end
+    end
 
     local distanceToTop = 0
     local distanceToMid = 0
     local distanceToBot = 0
 
-    for _, id in pairs(GetTeamPlayers(GetTeam()))
+    for i, id in pairs(GetTeamPlayers(GetTeam()))
     do
-        if TeamLocation[id] ~= nil
+        if TeamLocation[id] ~= nil and i <= 3
         then
             if IsHeroAlive(id)
             then
-                distanceToTop = distanceToTop + math.max(distanceToTop, #(GetLaneFrontLocation(GetTeam(), LANE_TOP, 0.0) - TeamLocation[id]))
-                distanceToMid = distanceToMid + math.max(distanceToMid, #(GetLaneFrontLocation(GetTeam(), LANE_MID, 0.0) - TeamLocation[id]))
-                distanceToBot = distanceToBot + math.max(distanceToBot, #(GetLaneFrontLocation(GetTeam(), LANE_BOT, 0.0) - TeamLocation[id]))
+                distanceToTop = math.max(distanceToTop, #(GetLaneFrontLocation(GetTeam(),LANE_TOP, 0) - TeamLocation[id]))
+                distanceToMid = math.max(distanceToMid, #(GetLaneFrontLocation(GetTeam(),LANE_MID, 0) - TeamLocation[id]))
+                distanceToBot = math.max(distanceToBot, #(GetLaneFrontLocation(GetTeam(),LANE_BOT, 0) - TeamLocation[id]))
             end
         end
     end
@@ -291,137 +239,16 @@ function Push.WhichLaneToPush(bot)
         return LANE_BOT
     end
 
-    return Push.TeamPushLane()
-end
-
-function Push.TeamPushLane()
-
-    local team = TEAM_RADIANT
-
-    if GetTeam() == TEAM_RADIANT then
-        team = TEAM_DIRE
-    end
-  
-    if GetTower(team, TOWER_MID_1) ~= nil then
-        return LANE_MID;
-    end
-    if GetTower(team, TOWER_BOT_1) ~= nil then
-        return LANE_BOT;
-    end
-    if GetTower(team, TOWER_TOP_1) ~= nil then
-        return LANE_TOP;
-    end
-  
-    if GetTower(team, TOWER_MID_2) ~= nil then
-        return LANE_MID;
-    end
-    if GetTower(team, TOWER_BOT_2) ~= nil then
-        return LANE_BOT;
-    end
-    if GetTower(team, TOWER_TOP_2) ~= nil then
-        return LANE_TOP;
-    end
-  
-    if GetTower(team, TOWER_MID_3) ~= nil
-    or GetBarracks(team, BARRACKS_MID_MELEE) ~= nil
-    or GetBarracks(team, BARRACKS_MID_RANGED) ~= nil then
-        return LANE_MID;
-    end
-
-    if GetTower(team, TOWER_BOT_3) ~= nil 
-    or GetBarracks(team, BARRACKS_BOT_MELEE) ~= nil
-    or GetBarracks(team, BARRACKS_BOT_RANGED) ~= nil then
-        return LANE_BOT;
-    end
-
-    if GetTower(team, TOWER_TOP_3) ~= nil
-    or GetBarracks(team, BARRACKS_TOP_MELEE) ~= nil
-    or GetBarracks(team, BARRACKS_TOP_RANGED) ~= nil then
-        return LANE_TOP;
-    end
-
-    return LANE_MID
+    return nil
 end
 
 function Push.PushThink(bot, lane)
     if J.CanNotUseAction(bot) then return end
 
-    local laneFrontLocation = GetLaneFrontLocation(GetTeam(), lane, 0)
-    local enemyDistance = 0
-    local enemyAlive = 0
-    local teammateDistance = 0
-    local teammateAlive = 0
-    local nRange = bot:GetAttackRange()
-
-    for _, id in pairs(GetTeamPlayers(GetOpposingTeam()))
-    do
-        if IsHeroAlive(id)
-        then
-            local info = GetHeroLastSeenInfo(id)
-
-            if info.location ~= nil
-            then
-                enemyDistance = enemyDistance + math.max(#(info.location - laneFrontLocation), bot:GetCurrentVisionRange())
-                enemyAlive = enemyAlive + 1
-            end
-        end
-    end
-
-    for _,id in pairs(GetTeamPlayers(GetTeam()))
-    do
-        if IsHeroAlive(id)
-        then
-            local info = GetHeroLastSeenInfo(id)
-
-            if info.location ~= nil
-            then
-                teammateDistance = teammateDistance + #(info.location - laneFrontLocation)
-                teammateAlive = teammateAlive + 1
-            end
-        end
-    end
-
-    local offset = -math.max(teammateDistance / teammateAlive - enemyDistance / enemyAlive, 0)
+    local botAttackRange = bot:GetAttackRange()
+    local fDeltaFromFront = (Min(J.GetHP(bot), 0.7) * 1000 - 700) + RemapValClamped(botAttackRange, 300, 700, 0, -600)
     local nEnemyTowers = bot:GetNearbyTowers(1600, true)
-
-    local targetLoc = GetLaneFrontLocation(GetTeam(), lane, offset)
-
-    local nInRangeAlly = bot:GetNearbyHeroes(1600, false, BOT_MODE_NONE)
-    local nInRangeEnemy = bot:GetNearbyHeroes(1600, true, BOT_MODE_NONE)
-
-    if  nInRangeAlly ~= nil and nInRangeEnemy ~= nil
-    and #nInRangeEnemy > #nInRangeAlly
-    then
-        local enemyRange = 0
-        local longestRangeHero = nil
-		for _, enemyHero in pairs(nInRangeEnemy)
-		do
-			if  J.IsValidHero(enemyHero)
-            and not J.IsSuspiciousIllusion(enemyHero)
-            and enemyHero:GetAttackRange() > enemyRange
-            then
-                enemyRange = enemyHero:GetAttackRange()
-                longestRangeHero = enemyHero
-            end
-		end
-
-        if longestRangeHero ~= nil
-        then
-            if GetUnitToUnitDistance(bot, longestRangeHero) < enemyRange
-            then
-                bot:Action_MoveToLocation(J.GetEscapeLoc())
-                return
-            end
-        end
-    else
-        if  IsSupportHelpCorePush
-        and SupportHelpCore ~= nil
-        and GetUnitToUnitDistance(bot, SupportHelpCore) > 800
-        then
-            bot:Action_MoveToLocation(SupportHelpCore:GetLocation())
-            return
-        end
-    end
+    local targetLoc = GetLaneFrontLocation(GetTeam(), lane, fDeltaFromFront)
 
     local nEnemyAncient = GetAncient(GetOpposingTeam())
     if  GetUnitToUnitDistance(bot, nEnemyAncient) < 1600
@@ -431,13 +258,18 @@ function Push.PushThink(bot, lane)
         return
     end
 
-    local nCreeps = bot:GetNearbyLaneCreeps(700 + nRange, true)
-    if J.IsCore(bot)
-    or (not J.IsCore(bot) and not J.IsThereCoreNearby(800) and J.GetDistance(bot:GetLocation(), targetLoc) < 1600)
+    local nAllyHeroes = J.GetAlliesNearLoc(bot:GetLocation(), 900)
+    local nEnemyHeroes = J.GetEnemiesNearLoc(bot:GetLocation(), botAttackRange + 150)
+    if #nAllyHeroes >= #nEnemyHeroes
+    and J.IsValidHero(nEnemyHeroes[1]) and J.CanBeAttacked(nEnemyHeroes[1])
+    and (nEnemyHeroes[1]:GetAttackTarget() == bot or J.IsChasingTarget(nEnemyHeroes[1], bot))
     then
-        nCreeps = bot:GetNearbyCreeps(700 + nRange, true)
+        bot:Action_AttackUnit(nEnemyHeroes[1], true)
+        return
     end
 
+    local nCreeps = bot:GetNearbyLaneCreeps(math.min(700 + botAttackRange, 1600), true)
+    nCreeps = Push.GetSpecialUnitsNearby(bot, nCreeps, math.min(700 + botAttackRange, 1600))
     if  nCreeps ~= nil and #nCreeps > 0
     and J.CanBeAttacked(nCreeps[1])
     then
@@ -445,7 +277,7 @@ function Push.PushThink(bot, lane)
         return
     end
 
-    local nBarracks = bot:GetNearbyBarracks(700 + nRange, true)
+    local nBarracks = bot:GetNearbyBarracks(math.min(700 + botAttackRange, 1600), true)
     if  nBarracks ~= nil and #nBarracks > 0
     and Push.CanBeAttacked(nBarracks[1])
     then
@@ -460,7 +292,7 @@ function Push.PushThink(bot, lane)
         return
     end
 
-    local sEnemyTowers = bot:GetNearbyFillers(700 + nRange, true)
+    local sEnemyTowers = bot:GetNearbyFillers(math.min(700 + botAttackRange, 1600), true)
     if  sEnemyTowers ~= nil and #sEnemyTowers > 0
     and Push.CanBeAttacked(sEnemyTowers[1])
     then
@@ -477,6 +309,243 @@ function Push.CanBeAttacked(building)
     and not building:IsInvulnerable()
     then
         return true
+    end
+
+    return false
+end
+
+function Push.IsEnemyTP(nID)
+    for _, id in pairs(GetTeamPlayers(GetOpposingTeam())) do
+        if id == nID then
+            return true
+        end
+    end
+
+    return false
+end
+
+function Push.IsInDangerWithinTower(hUnit, fThreshold, fDuration)
+    local totalDamage = 0
+    for _, enemy in pairs(GetUnitList(UNIT_LIST_ENEMIES)) do
+        if J.IsValid(enemy)
+        and J.IsInRange(hUnit, enemy, 1600)
+        and (enemy:GetAttackTarget() == hUnit or J.IsChasingTarget(enemy, hUnit)) then
+            totalDamage = totalDamage + hUnit:GetActualIncomingDamage(enemy:GetAttackDamage() * enemy:GetAttackSpeed() * fDuration, DAMAGE_TYPE_PHYSICAL)
+        end
+    end
+
+    local hUnitHealth = hUnit:GetHealth()
+    return (totalDamage / hUnitHealth * 1.2) > fThreshold
+end
+
+function Push.GetSpecialUnitsNearby(bot, hUnitList, nRadius)
+    local hCreepList = hUnitList
+    for _, unit in pairs(GetUnitList(UNIT_LIST_ENEMIES)) do
+        if unit ~= nil and unit:CanBeSeen() and J.IsInRange(bot, unit, nRadius) then
+            local sUnitName = unit:GetUnitName()
+            if string.find(sUnitName, 'invoker_forge_spirit')
+            or string.find(sUnitName, 'lycan_wolf')
+            or string.find(sUnitName, 'eidolon')
+            or string.find(sUnitName, 'beastmaster_boar')
+            or string.find(sUnitName, 'beastmaster_greater_boar')
+            or string.find(sUnitName, 'furion_treant')
+            or string.find(sUnitName, 'broodmother_spiderling')
+            or string.find(sUnitName, 'skeleton_warrior')
+            or string.find(sUnitName, 'warlock_golem')
+            or unit:HasModifier('modifier_dominated')
+            or unit:HasModifier('modifier_chen_holy_persuasion')
+            then
+                table.insert(hCreepList, unit)
+            end
+        end
+    end
+
+    return hCreepList
+end
+
+local function IsValidAbility(hAbility)
+    if hAbility == nil
+	or hAbility:IsNull()
+	or hAbility:GetName() == ''
+	or hAbility:IsPassive()
+	or hAbility:IsHidden()
+	or not hAbility:IsTrained()
+	or not hAbility:IsActivated()
+	then
+		return false
+	end
+
+	return true
+end
+
+-- try, tentative
+local hItemList = {
+    'item_black_king_bar',
+    'item_refresher'
+}
+-- do k,v
+local hAbilityList = {
+    ['ncp_dota_hero_alchemist'] = {'alchemist_chemical_rage'},
+    ['ncp_dota_hero_axe'] = {'axe_culling_blade'},
+    ['ncp_dota_hero_bristleback'] = {'bristleback_bristleback'},
+    ['ncp_dota_hero_centaur'] = {'centaur_stampede'},
+    ['ncp_dota_hero_chaos_knight'] = {'chaos_knight_phantasm'},
+    ['ncp_dota_hero_dawnbreaker'] = {'dawnbreaker_solar_guardian'},
+    ['ncp_dota_hero_doom_bringer'] = {'doom_bringer_doom'},
+    ['ncp_dota_hero_dragon_knight'] = {'dragon_knight_elder_dragon_form'},
+    ['ncp_dota_hero_earth_spirit'] = {'earth_spirit_magnetize'},
+    ['ncp_dota_hero_earthshaker'] = {'earthshaker_echo_slam'},
+    ['ncp_dota_hero_elder_titan'] = {'elder_titan_earth_splitter'},
+    --huskar
+    ['ncp_dota_hero_kunkka'] = {'kunkka_ghostship'},
+    ['ncp_dota_hero_legion_commander'] = {'legion_commander_duel'},
+    ['ncp_dota_hero_life_stealer'] = {'life_stealer_rage'},
+    ['ncp_dota_hero_mars'] = {'mars_arena_of_blood'},
+    ['ncp_dota_hero_night_stalker'] = {'night_stalker_darkness'},
+    ['ncp_dota_hero_omniknight'] = {'omniknight_guardian_angel'},
+    ['ncp_dota_hero_primal_beast'] = {'primal_beast_pulverize'},
+    --pudge, slardar, spirit breaker
+    ['ncp_dota_hero_sven'] = {'sven_gods_strength'},
+    ['ncp_dota_hero_tidehunter'] = {'tidehunter_ravage'},
+    --timbersaw, tiny
+    ['ncp_dota_hero_treant'] = {'treant_overgrowth'},
+    --tusk
+    ['ncp_dota_hero_undying'] = {'undying_tombstone', 'undying_flesh_golem'},
+    ['ncp_dota_hero_skeleton_king'] = {'skeleton_king_reincarnation'},
+
+    ['npc_dota_hero_antimage'] = {'antimage_mana_void'},
+    --arc
+    ['npc_dota_hero_bloodseeker'] = {'bloodseeker_rupture'},
+    --bounty
+    ['npc_dota_hero_clinkz'] = {'clinkz_burning_barrage'},
+    --drow ranger, ember
+    ['npc_dota_hero_faceless_void'] = {'faceless_void_chronosphere'},
+    ['npc_dota_hero_gyrocopter'] = {'gyrocopter_flak_cannon'},
+    ['npc_dota_hero_hoodwink'] = {'hoodwink_sharpshooter'},
+    ['npc_dota_hero_juggernaut'] = {'juggernaut_omni_slash'},
+    --kez
+    ['npc_dota_hero_luna'] = {'luna_eclipse'},
+    ['npc_dota_hero_medusa'] = {'medusa_stone_gaze'},
+    --meepo
+    ['npc_dota_hero_monkey_king'] = {'monkey_king_wukongs_command'},
+    --morphling
+    ['npc_dota_hero_naga_siren'] = {'naga_siren_song_of_the_siren'},
+    --phantom ass, phantom lance
+    ['npc_dota_hero_razor'] = {'razor_static_link'},
+    --riki
+    ['npc_dota_hero_nevermore'] = {'nevermore_requiem'},
+    ['npc_dota_hero_slark'] = {'slark_shadow_dance'},
+    --sniper
+    ['npc_dota_hero_spectre'] = {'spectre_haunt_single', 'spectre_haunt'},
+    -- ta
+    ['npc_dota_hero_terrorblade'] = {'terrorblade_metamorphosis', 'terrorblade_sunder'},
+    ['npc_dota_hero_troll_warlord'] = {'troll_warlord_battle_trance'},
+    ['npc_dota_hero_ursa'] = {'ursa_enrage'},
+    ['npc_dota_hero_viper'] = {'viper_viper_strike'},
+    ['npc_dota_hero_weaver'] = {'weaver_time_lapse'},
+
+    ['npc_dota_hero_ancient_apparition'] = {'ancient_apparition_ice_blast'},
+    ['npc_dota_hero_crystal_maiden'] = {'crystal_maiden_freezing_field'},
+    ['npc_dota_hero_death_prophet'] = {'death_prophet_exorcism'},
+    ['npc_dota_hero_disruptor'] = {'disruptor_static_storm'},
+    --enchantress
+    ['npc_dota_hero_grimstroke'] = {'grimstroke_dark_portrait', 'grimstroke_soul_chain'},
+    ['npc_dota_hero_jakiro'] = {'jakiro_macropyre'},
+    --kotl, leshrac
+    ['npc_dota_hero_lich'] = {'lich_chain_frost'},
+    ['npc_dota_hero_lina'] = {'lina_laguna_blade'},
+    ['npc_dota_hero_lion'] = {'lion_finger_of_death'},
+    ['npc_dota_hero_muerta'] = {'muerta_pierce_the_veil'},
+    --np
+    ['npc_dota_hero_necrolyte'] = {'necrolyte_ghost_shroud', 'necrolyte_reapers_scythe'},
+    ['npc_dota_hero_oracle'] = {'oracle_false_promise'},
+    ['npc_dota_hero_obsidian_destroyer'] = {'obsidian_destroyer_sanity_eclipse'},
+    ['npc_dota_hero_puck'] = {'puck_dream_coil'},
+    ['npc_dota_hero_pugna'] = {'pugna_life_drain'},
+    ['npc_dota_hero_queenofpain'] = {'queenofpain_sonic_wave'},
+    ['npc_dota_hero_ringmaster'] = {'ringmaster_wheel'},
+    --rubick
+    ['npc_dota_hero_shadow_demon'] = {'shadow_demon_disruption', 'shadow_demon_demonic_cleanse', 'shadow_demon_demonic_purge'},
+    ['npc_dota_hero_shadow_shaman'] = {'shadow_shaman_mass_serpent_ward'},
+    ['npc_dota_hero_silencer'] = {'silencer_global_silence'},
+    ['npc_dota_hero_skywrath_mage'] = {'skywrath_mage_mystic_flare'},
+    --storm, tinker
+    ['npc_dota_hero_warlock'] = {'warlock_fatal_bonds', 'warlock_golem'},
+    ['npc_dota_hero_witch_doctor'] = {'witch_doctor_voodoo_switcheroo', 'witch_doctor_death_ward'},
+    ['npc_dota_hero_zuus'] = {'zuus_thundergods_wrath'},
+
+    ['npc_dota_hero_abaddon'] = {'abaddon_borrowed_time'},
+    ['npc_dota_hero_bane'] = {'bane_fiends_grip'},
+    ['npc_dota_hero_batrider'] = {'batrider_flaming_lasso'},
+    ['npc_dota_hero_beastmaster'] = {'beastmaster_primal_roar'},
+    ['npc_dota_hero_brewmaster'] = {'brewmaster_primal_split'},
+    ['npc_dota_hero_broodmother'] = {'broodmother_insatiable_hunger'},
+    ['npc_dota_hero_chen'] = {'chen_hand_of_god'},
+    --clockwerk
+    ['npc_dota_hero_dark_seer'] = {'dark_seer_wall_of_replica'},
+    ['npc_dota_hero_dark_willow'] = {'dark_willow_terrorize'},
+    --dazzle
+    ['npc_dota_hero_enigma'] = {'enigma_black_hole'},
+    --invoker, io, ld
+    ['npc_dota_hero_lycan'] = {'lycan_shapeshift'},
+    ['npc_dota_hero_magnataur'] = {'magnataur_reverse_polarity'},
+    ['npc_dota_hero_marci'] = {'marci_unleash'},
+    --mirana, nyx
+    ['npc_dota_hero_pangolier'] = {'pangolier_gyroshell'},
+    ['npc_dota_hero_phoenix'] = {'phoenix_supernova'},
+    ['npc_dota_hero_sand_king'] = {'sandking_epicenter'},
+    ['npc_dota_hero_snapfire'] = {'snapfire_mortimer_kisses'},
+    --techies
+    ['npc_dota_hero_vengefulspirit'] = {'vengefulspirit_nether_swap'},
+    ['npc_dota_hero_venomancer'] = {'venomancer_noxious_plague'},
+    --visage, void spirit
+    ['npc_dota_hero_windrunner'] = {'windrunner_focusfire'},
+    ['npc_dota_hero_winter_wyvern'] = {'winter_wyvern_cold_embrace', 'winter_wyvern_winters_curse'},
+}
+function Push.ShouldWaitForImportantItemsSpells(vLocation)
+    if J.IsMidGame() or J.IsLateGame() then
+        for i = 1, 5 do
+            local member = GetTeamMember(i)
+            if member ~= nil and member:IsAlive() then
+                for _, itemName in pairs(hItemList) do
+                    local hItem = J.GetItem(itemName)
+                    if hItem ~= nil
+                    and (hItem:GetCooldownTimeRemaining() >
+                        (GetUnitToLocationDistance(member, vLocation) / member:GetCurrentMovementSpeed())
+                    )
+                    then
+                        return true
+                    end
+                end
+            end
+        end
+
+        for i = 1, 5 do
+            local member = GetTeamMember(i)
+            if member ~= nil then
+                local sMemberName = member:GetUnitName()
+                local bCore = J.IsCore(member)
+                if string.find(sMemberName, 'gyrocopter') and not bCore
+                or string.find(sMemberName, 'weaver') and not bCore
+                then
+                    -- none
+                else
+                    -- do some mana later
+                    if hAbilityList[sMemberName] ~= nil then
+                        for _, abilityName in pairs(hAbilityList[sMemberName]) do
+                            local hAbility = J.GetAbility(member, abilityName)
+                            if IsValidAbility(hAbility)
+                            and (hAbility:GetCooldownTimeRemaining() >
+                                (GetUnitToLocationDistance(member, vLocation) / member:GetCurrentMovementSpeed())
+                            )
+                            then
+                                return true
+                            end
+                        end
+                    end
+                end
+            end
+        end
     end
 
     return false

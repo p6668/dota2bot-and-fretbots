@@ -7,6 +7,9 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_luna'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
 local sUtility = {}
@@ -17,43 +20,76 @@ local HeroBuild = {
         [1] = {
             ['talent'] = {
 				[1] = {
-					['t25'] = {0, 10},
-					['t20'] = {10, 0},
-					['t15'] = {0, 10},
+					['t25'] = {10, 0},
+					['t20'] = {0, 10},
+					['t15'] = {10, 0},
 					['t10'] = {0, 10},
 				}
             },
             ['ability'] = {
-				[1] = {1,2,2,3,2,3,2,3,3,1,1,1,6,6,6},
-				[2] = {2,1,2,3,2,6,2,3,3,3,6,1,1,1,6},
+				[1] = {1,3,1,3,1,6,1,3,3,2,6,2,2,2,6},
             },
             ['buy_list'] = {
 				"item_tango",
 				"item_double_branches",
-				"item_slippers",
-				"item_circlet",
+				"item_quelling_blade",
+			
+				"item_wraith_band",
+				"item_magic_wand",
+				"item_power_treads",
+				"item_lifesteal",
+				"item_manta",--
+				"item_black_king_bar",--
+				"item_greater_crit",--
+				"item_satanic",--
+				"item_butterfly",--
+				"item_travel_boots_2",--
+				"item_moon_shard",
+				"item_aghanims_shard",
+				"item_ultimate_scepter_2",
+			},
+            ['sell_list'] = {
+				"item_quelling_blade", "item_black_king_bar",
+				"item_magic_wand", "item_greater_crit",
+				"item_wraith_band", "item_butterfly",
+			},
+        },
+		[2] = {
+            ['talent'] = {
+				[1] = {
+					['t25'] = {10, 0},
+					['t20'] = {0, 10},
+					['t15'] = {10, 0},
+					['t10'] = {0, 10},
+				}
+            },
+            ['ability'] = {
+				[1] = {1,3,1,3,1,6,1,3,3,2,6,2,2,2,6},
+            },
+            ['buy_list'] = {
+				"item_tango",
+				"item_double_branches",
 				"item_quelling_blade",
 			
 				"item_wraith_band",
 				"item_power_treads",
 				"item_magic_wand",
-				"item_mask_of_madness",
+				"item_lifesteal",
 				"item_manta",--
 				"item_black_king_bar",--
-				"item_aghanims_shard",
-				"item_angels_demise",--
+				"item_lesser_crit",
 				"item_satanic",--
+				"item_greater_crit",--
 				"item_butterfly",--
-				"item_travel_boots",
-				"item_moon_shard",
 				"item_travel_boots_2",--
+				"item_moon_shard",
+				"item_aghanims_shard",
 				"item_ultimate_scepter_2",
 			},
             ['sell_list'] = {
-				"item_quelling_blade",
-				"item_wraith_band",
-				"item_magic_wand",
-				"item_mask_of_madness",
+				"item_quelling_blade", "item_black_king_bar",
+				"item_magic_wand", "item_lesser_crit",
+				"item_wraith_band", "item_butterfly",
 			},
         },
     },
@@ -128,8 +164,10 @@ function X.MinionThink(hMinionUnit)
 	Minion.MinionThink(hMinionUnit)
 end
 
+end
+
 local LucentBeam 	= bot:GetAbilityByName('luna_lucent_beam')
-local LunarOrbit = bot:GetAbilityByName("luna_lunar_orbit")
+local LunarOrbit 	= bot:GetAbilityByName("luna_lunar_orbit")
 -- local MoonGlaives 	= bot:GetAbilityByName('luna_moon_glaive')
 -- local LunarBlessing = bot:GetAbilityByName('luna_lunar_blessing')
 local Eclipse 		= bot:GetAbilityByName('luna_eclipse')
@@ -141,43 +179,39 @@ local EclipseDesire
 
 local talent6BonusDamage = 0
 
-local botTarget
+local botTarget, botName
 
 function X.SkillsComplement()
 	if J.CanNotUseAbility(bot) then return end
 
+	LucentBeam 	= bot:GetAbilityByName('luna_lucent_beam')
+	LunarOrbit 	= bot:GetAbilityByName("luna_lunar_orbit")
+	Eclipse 		= bot:GetAbilityByName('luna_eclipse')
+
 	botTarget = J.GetProperTarget(bot)
+	botName = GetBot():GetUnitName()
 	J.ConsiderTarget()
 
-	if talent6:IsTrained() then talent6BonusDamage = talent6:GetSpecialValueInt('value') end
+	if string.find(botName, 'luna') and talent6:IsTrained() then talent6BonusDamage = talent6:GetSpecialValueInt('value') end
 
 	LunarOrbitDesire = X.ConsiderLunarOrbit()
 	if LunarOrbitDesire > 0
 	then
-		bot:Action_UseAbility(LunarOrbit)
+		J.SetQueuePtToINT(bot, false)
+		bot:ActionQueue_UseAbility(LunarOrbit)
 		return
 	end
 
 	EclipseDesire = X.ConsiderEclipse()
 	if EclipseDesire > 0
 	then
-		if J.HasPowerTreads(bot)
-		then
-			J.SetQueuePtToINT(bot, false)
+		J.SetQueuePtToINT(bot, false)
 
-			if bot:HasScepter()
-			then
-				bot:ActionQueue_UseAbilityOnEntity(Eclipse, bot)
-			else
-				bot:ActionQueue_UseAbility(Eclipse)
-			end
+		if bot:HasScepter()
+		then
+			bot:ActionQueue_UseAbilityOnEntity(Eclipse, bot)
 		else
-			if bot:HasScepter()
-			then
-				bot:Action_UseAbilityOnEntity(Eclipse, bot)
-			else
-				bot:Action_UseAbility(Eclipse)
-			end
+			bot:ActionQueue_UseAbility(Eclipse)
 		end
 
 		return
@@ -186,20 +220,14 @@ function X.SkillsComplement()
 	LucentBeamDesire, LucentBeamTarget = X.ConsiderLucentBeam()
 	if LucentBeamDesire > 0
 	then
-		if J.HasPowerTreads(bot)
-		then
-			J.SetQueuePtToINT(bot, false)
-			bot:ActionQueue_UseAbilityOnEntity(LucentBeam, LucentBeamTarget)
-		else
-			bot:Action_UseAbilityOnEntity(LucentBeam, LucentBeamTarget)
-		end
-
+		J.SetQueuePtToINT(bot, false)
+		bot:ActionQueue_UseAbilityOnEntity(LucentBeam, LucentBeamTarget)
 		return
 	end
 end
 
 function X.ConsiderLucentBeam()
-	if not LucentBeam:IsFullyCastable()
+	if not J.CanCastAbility(LucentBeam)
 	then
 		return BOT_ACTION_DESIRE_NONE, nil
 	end
@@ -415,8 +443,7 @@ function X.ConsiderLucentBeam()
 end
 
 function X.ConsiderLunarOrbit()
-	if not LunarOrbit:IsTrained()
-	or not LunarOrbit:IsFullyCastable()
+	if not J.CanCastAbility(LunarOrbit)
 	then
 		return BOT_ACTION_DESIRE_NONE
 	end
@@ -506,7 +533,7 @@ function X.ConsiderLunarOrbit()
 end
 
 function X.ConsiderEclipse()
-	if not Eclipse:IsFullyCastable()
+	if not J.CanCastAbility(Eclipse)
 	then
 		return BOT_ACTION_DESIRE_NONE
 	end

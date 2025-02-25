@@ -7,11 +7,13 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_rattletrap'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
 local sUtility = {}
 local sUtilityItem = RI.GetBestUtilityItem(sUtility)
-local sGlimmerSolarCrest = RandomInt(1, 2) == 1 and "item_glimmer_cape" or "item_solar_crest"
 
 local HeroBuild = {
     ['pos_1'] = {
@@ -54,14 +56,14 @@ local HeroBuild = {
         [1] = {
             ['talent'] = {
                 [1] = {
-                    ['t25'] = {10, 0},
-                    ['t20'] = {10, 0},
-                    ['t15'] = {0, 10},
-                    ['t10'] = {10, 0},
+                    ['t25'] = {0, 10},
+                    ['t20'] = {0, 10},
+                    ['t15'] = {10, 0},
+                    ['t10'] = {0, 10},
                 }
             },
             ['ability'] = {
-                [1] = {1,2,1,3,1,6,1,2,2,2,6,3,3,3,6},
+                [1] = {1,2,1,3,1,6,1,3,3,3,6,2,2,2,6},
             },
             ['buy_list'] = {
                 "item_double_tango",
@@ -72,20 +74,18 @@ local HeroBuild = {
                 "item_boots",
                 "item_magic_wand",
                 "item_tranquil_boots",
-                "item_urn_of_shadows",
+                "item_solar_crest",--
                 "item_force_staff",--
-                "item_spirit_vessel",--
-                sGlimmerSolarCrest,--
+                "item_boots_of_bearing",--
                 "item_aghanims_shard",
-                "item_boots_of_bearing",-- 
-                "item_shivas_guard",--
                 "item_heavens_halberd",--
-                "item_ultimate_scepter",
+                "item_shivas_guard",--
+                "item_sheepstick",--
                 "item_ultimate_scepter_2",
                 "item_moon_shard",
             },
             ['sell_list'] = {
-                "item_magic_wand",
+                "item_magic_wand", "item_boots_of_bearing",
             },
         },
     },
@@ -93,7 +93,7 @@ local HeroBuild = {
         [1] = {
             ['talent'] = {
                 [1] = {
-                    ['t25'] = {10, 0},
+                    ['t25'] = {0, 10},
                     ['t20'] = {0, 10},
                     ['t15'] = {10, 0},
                     ['t10'] = {0, 10},
@@ -111,20 +111,18 @@ local HeroBuild = {
                 "item_boots",
                 "item_magic_wand",
                 "item_arcane_boots",
-                "item_urn_of_shadows",
+                "item_solar_crest",--
                 "item_force_staff",--
-                "item_spirit_vessel",--
-                sGlimmerSolarCrest,--
-                "item_aghanims_shard",
                 "item_guardian_greaves",-- 
-                "item_shivas_guard",--
+                "item_aghanims_shard",
                 "item_heavens_halberd",--
-                "item_ultimate_scepter",
+                "item_shivas_guard",--
+                "item_sheepstick",--
                 "item_ultimate_scepter_2",
                 "item_moon_shard",
             },
             ['sell_list'] = {
-                "item_magic_wand",
+                "item_magic_wand", "item_guardian_greaves",
             },
         },
     },
@@ -151,6 +149,8 @@ function X.MinionThink(hMinionUnit)
 	Minion.MinionThink(hMinionUnit)
 end
 
+end
+
 local BatteryAssault    = bot:GetAbilityByName('rattletrap_battery_assault')
 local PowerCogs         = bot:GetAbilityByName('rattletrap_power_cogs')
 local RocketFlare       = bot:GetAbilityByName('rattletrap_rocket_flare')
@@ -172,6 +172,13 @@ local botTarget
 
 function X.SkillsComplement()
 	if J.CanNotUseAbility(bot) then return end
+
+    BatteryAssault    = bot:GetAbilityByName('rattletrap_battery_assault')
+    PowerCogs         = bot:GetAbilityByName('rattletrap_power_cogs')
+    RocketFlare       = bot:GetAbilityByName('rattletrap_rocket_flare')
+    Jetpack           = bot:GetAbilityByName('rattletrap_jetpack')
+    Overclocking      = bot:GetAbilityByName('rattletrap_overclocking')
+    Hookshot          = bot:GetAbilityByName('rattletrap_hookshot')
 
     botTarget = J.GetProperTarget(bot)
 
@@ -220,7 +227,7 @@ function X.SkillsComplement()
 end
 
 function X.ConsiderBatteryAssault()
-    if not BatteryAssault:IsFullyCastable()
+    if not J.CanCastAbility(BatteryAssault)
     then
         return BOT_ACTION_DESIRE_NONE
     end
@@ -330,7 +337,7 @@ function X.ConsiderBatteryAssault()
 end
 
 function X.ConsiderPowerCogs()
-    if  not PowerCogs:IsFullyCastable()
+    if  not J.CanCastAbility(PowerCogs)
     then
 		return BOT_ACTION_DESIRE_NONE
 	end
@@ -391,7 +398,7 @@ function X.ConsiderPowerCogs()
 end
 
 function X.ConsiderRocketFlare()
-    if not RocketFlare:IsFullyCastable()
+    if not J.CanCastAbility(RocketFlare)
     then
         return BOT_ACTION_DESIRE_NONE, 0
 	end
@@ -532,7 +539,7 @@ function X.ConsiderRocketFlare()
 end
 
 function X.ConsiderHookshot()
-    if not Hookshot:IsFullyCastable()
+    if not J.CanCastAbility(Hookshot)
     then
         return BOT_ACTION_DESIRE_NONE, 0
     end
@@ -558,20 +565,19 @@ function X.ConsiderHookshot()
                 local nInRangeAlly = enemyHero:GetNearbyHeroes(1200, true, BOT_MODE_NONE)
                 local nTargetInRangeAlly = enemyHero:GetNearbyHeroes(1200, false, BOT_MODE_NONE)
                 local eta = (GetUnitToUnitDistance(bot, enemyHero) / nSpeed) + nCastPoint
-                local targetLoc = enemyHero:GetExtrapolatedLocation(eta)
+                local targetLoc = J.GetCorrectLoc(enemyHero, eta)
 
                 if  nInRangeAlly ~= nil and nTargetInRangeAlly ~= nil
                 and #nInRangeAlly >= #nTargetInRangeAlly
-                and not J.IsAllyHeroBetweenMeAndTarget(bot, enemyHero, targetLoc, nRadius)
-                and not J.IsCreepBetweenMeAndTarget(bot, enemyHero, targetLoc, nRadius)
+                and not J.IsUnitBetweenMeAndLocation(bot, enemyHero, targetLoc, nRadius)
                 and not J.IsLocationInChrono(targetLoc)
                 and not J.IsLocationInArena(targetLoc, 800)
                 then
                     if #nInRangeAlly == 0 and #nTargetInRangeAlly == 0
                     then
                         if  bot:GetEstimatedDamageToTarget(true, enemyHero, 5, DAMAGE_TYPE_ALL) > enemyHero:GetHealth()
-                        and PowerCogs:IsFullyCastable()
-                        and BatteryAssault:IsFullyCastable()
+                        and J.CanCastAbility(PowerCogs)
+                        and J.CanCastAbility(BatteryAssault)
                         then
                             bot:SetTarget(enemyHero)
                             return BOT_ACTION_DESIRE_HIGH, targetLoc
@@ -618,10 +624,9 @@ function X.ConsiderHookshot()
                         and not J.IsNotSelf(bot, allyHero)
                         then
                             local eta = (GetUnitToUnitDistance(bot, allyHero) / nSpeed) + nCastPoint
-                            local targetLoc = allyHero:GetExtrapolatedLocation(eta)
+                            local targetLoc = J.GetCorrectLoc(allyHero, eta)
 
-                            if  not J.IsHeroBetweenMeAndTarget(bot, allyHero, targetLoc, nRadius)
-                            and not J.IsCreepBetweenMeAndTarget(bot, allyHero, targetLoc, nRadius)
+                            if not J.IsUnitBetweenMeAndLocation(bot, allyHero, targetLoc, nRadius)
                             and not J.IsLocationInChrono(targetLoc)
                             and not J.IsLocationInArena(targetLoc, 800)
                             then
@@ -644,8 +649,7 @@ function X.ConsiderHookshot()
 			if  campDist < targetLoc
 			and GetUnitToLocationDistance(bot, camp.location) > 700
 			then
-				if  not J.IsHeroBetweenMeAndLocation(bot, camp.location, nRadius)
-				and not J.IsCreepBetweenMeAndLocation(bot, camp.location, nRadius)
+				if not J.IsUnitBetweenMeAndLocation(bot, bot, camp.location, nRadius)
                 and not J.IsLocationInChrono(camp.location)
                 and not J.IsLocationInArena(camp.location, 800)
 				then
@@ -659,8 +663,7 @@ function X.ConsiderHookshot()
 end
 
 function X.ConsiderJetpack()
-    if not Jetpack:IsTrained()
-    or not Jetpack:IsFullyCastable()
+    if not J.CanCastAbility(Jetpack)
     then
         return BOT_ACTION_DESIRE_NONE
     end
@@ -693,8 +696,7 @@ function X.ConsiderJetpack()
 end
 
 function X.ConsiderOverclocking()
-    if not Overclocking:IsTrained()
-    or not Overclocking:IsFullyCastable()
+    if not J.CanCastAbility(Overclocking)
     then
         return BOT_ACTION_DESIRE_NONE
     end

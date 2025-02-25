@@ -7,9 +7,12 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_ogre_magi'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
-local sUtility = {"item_crimson_guard", "item_pipe", "item_lotus_orb", "item_heavens_halberd"}
+local sUtility = {"item_pipe", "item_lotus_orb", "item_heavens_halberd"}
 local sUtilityItem = RI.GetBestUtilityItem(sUtility)
 
 local HeroBuild = {
@@ -33,6 +36,12 @@ local HeroBuild = {
 					['t20'] = {0, 10},
 					['t15'] = {0, 10},
 					['t10'] = {0, 10},
+				},
+				[2] = {
+					['t25'] = {10, 10},
+					['t20'] = {0, 10},
+					['t15'] = {0, 10},
+					['t10'] = {0, 10},
 				}
             },
             ['ability'] = {
@@ -41,33 +50,32 @@ local HeroBuild = {
             ['buy_list'] = {
 				"item_tango",
 				"item_double_branches",
-				"item_double_gauntlets",
-			
+
+				"item_bracer",
 				"item_bottle",
+				"item_magic_wand",
 				"item_phase_boots",
 				"item_soul_ring",
-				"item_magic_wand",
 				"item_hand_of_midas",
 				"item_blade_mail",
-				"item_heart",--
 				"item_black_king_bar",--
-				"item_shivas_guard",--
-				"item_ultimate_scepter",
-				"item_octarine_core",--
-				"item_travel_boots",
-				"item_ultimate_scepter_2",
-				"item_sheepstick",--
-				"item_travel_boots_2",
-				"item_moon_shard",
+				"item_heart",--
 				"item_aghanims_shard",
+				"item_shivas_guard",--
+				"item_octarine_core",--
+				"item_ultimate_scepter",
+				"item_sheepstick",--
+				"item_ultimate_scepter_2",
+				"item_travel_boots_2",--
+				"item_moon_shard",
 			},
             ['sell_list'] = {
-				"item_gauntlets",
-				"item_bottle",
-				"item_soul_ring",
-				"item_magic_wand",
-				"item_hand_of_midas",
-				"item_blade_mail",
+				"item_magic_wand", "item_blade_mail",
+				"item_soul_ring", "item_black_king_bar",
+				"item_bottle", "item_heart",
+				"item_bracer", "item_shivas_guard",
+				"item_hand_of_midas", "item_octarine_core",
+				"item_blade_mail", "item_sheepstick",
 			},
         },
     },
@@ -76,7 +84,7 @@ local HeroBuild = {
             ['talent'] = {
 				[1] = {
 					['t25'] = {10, 0},
-					['t20'] = {10, 0},
+					['t20'] = {0, 10},
 					['t15'] = {0, 10},
 					['t10'] = {0, 10},
 				}
@@ -90,24 +98,24 @@ local HeroBuild = {
 				"item_double_gauntlets",
 			
 				"item_boots",
-				"item_hand_of_midas",
 				"item_magic_wand",
-				"item_aether_lens",--
-				"item_ultimate_scepter",
+				"item_soul_ring",
+				"item_hand_of_midas",
+				"item_crimson_guard",--
+				"item_heart",--
 				sUtilityItem,--
+				"item_aghanims_shard",
 				"item_sange_and_yasha",--
 				"item_travel_boots",
-				"item_shivas_guard",--
-				"item_ultimate_scepter_2",
-				"item_heart",--
+				"item_sheepstick",--
 				"item_travel_boots_2",--
+				"item_ultimate_scepter_2",
 				"item_moon_shard",
-				"item_aghanims_shard",
 			},
             ['sell_list'] = {
-				"item_gauntlets",
-				"item_hand_of_midas",
-				"item_magic_wand",
+				"item_magic_wand", sUtilityItem,
+				"item_soul_ring", "item_sange_and_yasha",
+				"item_hand_of_midas", "item_sheepstick",
 			},
         },
     },
@@ -126,27 +134,27 @@ local HeroBuild = {
             },
             ['buy_list'] = {
 				"item_double_tango",
-				"item_double_enchanted_mango",
+				"item_enchanted_mango",
 				"item_faerie_fire",
 				"item_double_branches",
 				"item_blood_grenade",
 			
-				"item_tranquil_boots",
 				"item_magic_wand",
-				"item_hand_of_midas",
+				"item_tranquil_boots",
 				"item_aether_lens",--
+				"item_hand_of_midas",
 				"item_boots_of_bearing",--
-				"item_pipe",--
-				"item_sheepstick",--
-				"item_assault",--
-				"item_heart",--
 				"item_aghanims_shard",
+				"item_assault",--
+				"item_heavens_halberd",--
+				"item_sheepstick",--
+				"item_heart",--
 				"item_ultimate_scepter_2",
 				"item_moon_shard",
 			},
             ['sell_list'] = {
-				"item_magic_wand",
-				"item_hand_of_midas",
+				"item_magic_wand", "item_boots_of_bearing",
+				"item_hand_of_midas", "item_heart",
 			},
         },
     },
@@ -165,27 +173,27 @@ local HeroBuild = {
             },
             ['buy_list'] = {
 				"item_double_tango",
-				"item_double_enchanted_mango",
+				"item_enchanted_mango",
 				"item_faerie_fire",
 				"item_double_branches",
 				"item_blood_grenade",
 			
-				"item_arcane_boots",
 				"item_magic_wand",
-				"item_hand_of_midas",
+				"item_arcane_boots",
 				"item_aether_lens",--
+				"item_hand_of_midas",
 				"item_guardian_greaves",--
-				"item_pipe",--
-				"item_sheepstick",--
-				"item_assault",--
-				"item_heart",--
 				"item_aghanims_shard",
+				"item_assault",--
+				"item_heavens_halberd",--
+				"item_sheepstick",--
+				"item_heart",--
 				"item_ultimate_scepter_2",
 				"item_moon_shard",
 			},
             ['sell_list'] = {
-				"item_magic_wand",
-				"item_hand_of_midas",
+				"item_magic_wand", "item_guardian_greaves",
+				"item_hand_of_midas", "item_heart",
 			},
         },
     },
@@ -217,11 +225,14 @@ function X.MinionThink( hMinionUnit )
 
 end
 
-local abilityQ = bot:GetAbilityByName( sAbilityList[1] )
-local abilityW = bot:GetAbilityByName( sAbilityList[2] )
-local abilityE = bot:GetAbilityByName( sAbilityList[3] )
-local abilityD = bot:GetAbilityByName( sAbilityList[4] )
-local FireShield = bot:GetAbilityByName( sAbilityList[5] )
+end
+
+local abilityQ = bot:GetAbilityByName('ogre_magi_fireblast')
+local abilityW = bot:GetAbilityByName('ogre_magi_ignite')
+local abilityE = bot:GetAbilityByName('ogre_magi_bloodlust')
+local abilityD = bot:GetAbilityByName('ogre_magi_unrefined_fireblast')
+local FireShield = bot:GetAbilityByName('ogre_magi_smash')
+local abilityR = bot:GetAbilityByName('ogre_magi_multicast')
 local talent2 = bot:GetAbilityByName( sTalentList[2] )
 local talent8 = bot:GetAbilityByName( sTalentList[8] )
 
@@ -242,6 +253,11 @@ function X.SkillsComplement()
 
 	if J.CanNotUseAbility( bot ) or bot:IsInvisible() then return end
 
+	abilityQ = bot:GetAbilityByName('ogre_magi_fireblast')
+	abilityW = bot:GetAbilityByName('ogre_magi_ignite')
+	abilityE = bot:GetAbilityByName('ogre_magi_bloodlust')
+	abilityD = bot:GetAbilityByName('ogre_magi_unrefined_fireblast')
+	FireShield = bot:GetAbilityByName('ogre_magi_smash')
 
 	nKeepMana = 300
 	aetherRange = 0
@@ -318,7 +334,7 @@ end
 function X.ConsiderQ()
 
 
-	if not abilityQ:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityQ) then return 0 end
 
 	local nSkillLV = abilityQ:GetLevel()
 	local nCastRange = abilityQ:GetCastRange() + aetherRange
@@ -564,7 +580,7 @@ end
 function X.ConsiderW()
 
 
-	if not abilityW:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityW) then return 0 end
 
 	local nSkillLV = abilityW:GetLevel()
 	local nCastRange = abilityW:GetCastRange() + aetherRange
@@ -739,7 +755,7 @@ end
 --"modifier_ogre_magi_bloodlust"
 function X.ConsiderE()
 
-	if not abilityE:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityE) then return 0 end
 
 	local nSkillLV = abilityE:GetLevel()
 	local nCastRange = abilityE:GetCastRange() + aetherRange
@@ -771,8 +787,18 @@ function X.ConsiderE()
 	then
 		if J.IsRoshan( botTarget )
 			and J.IsInRange( botTarget, bot, 1000 )
+			and J.IsAttacking(bot)
 		then
 			return BOT_ACTION_DESIRE_HIGH, bestTarget, 'E打肉'..J.Chat.GetNormName( bestTarget )
+		end
+	end
+
+	if J.IsDoingTormentor(bot) and bestTarget ~= nil then
+		if J.IsTormentor(botTarget)
+        and J.IsInRange( botTarget, bot, 800 )
+        and J.IsAttacking(bot)
+		then
+			return BOT_ACTION_DESIRE_HIGH, bestTarget, ''
 		end
 	end
 
@@ -906,7 +932,7 @@ end
 function X.ConsiderD()
 
 
-	if abilityQ:IsFullyCastable() or not abilityD:IsFullyCastable() or not bot:HasScepter() then return 0 end
+	if J.CanCastAbility(abilityQ) or not J.CanCastAbility(abilityD) or not bot:HasScepter() then return 0 end
 
 	local nSkillLV = abilityD:GetLevel()
 	local nCastRange = abilityD:GetCastRange() + aetherRange
@@ -1111,8 +1137,7 @@ end
 
 function X.ConsiderFireShield()
 
-	if not FireShield:IsTrained()
-	or not FireShield:IsFullyCastable()
+	if not J.CanCastAbility(FireShield)
 	then
 		return BOT_ACTION_DESIRE_NONE, 0
 	end

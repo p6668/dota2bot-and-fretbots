@@ -7,6 +7,9 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_witch_doctor'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
 local sUtility = {}
@@ -70,20 +73,21 @@ local HeroBuild = {
 			
 				"item_tranquil_boots",
 				"item_magic_wand",
-				"item_aghanims_shard",
 				"item_glimmer_cape",--
-				"item_solar_crest",--
+				"item_aghanims_shard",
+				"item_force_staff",
 				"item_ultimate_scepter",
 				"item_boots_of_bearing",--
 				"item_cyclone",
 				"item_refresher",--
-				"item_black_king_bar",--
 				"item_wind_waker",--
+				"item_black_king_bar",--
 				"item_ultimate_scepter_2",
+				"item_hurricane_pike",--
 				"item_moon_shard",
 			},
             ['sell_list'] = {
-				"item_magic_wand",
+				"item_magic_wand", "item_ultimate_scepter",
 			},
         },
     },
@@ -108,20 +112,21 @@ local HeroBuild = {
 			
 				"item_arcane_boots",
 				"item_magic_wand",
-				"item_aghanims_shard",
 				"item_glimmer_cape",--
-				"item_force_staff",--
+				"item_aghanims_shard",
+				"item_force_staff",
 				"item_ultimate_scepter",
 				"item_guardian_greaves",--
 				"item_cyclone",
 				"item_refresher",--
-				"item_black_king_bar",--
 				"item_wind_waker",--
+				"item_black_king_bar",--
 				"item_ultimate_scepter_2",
+				"item_hurricane_pike",--
 				"item_moon_shard",
 			},
             ['sell_list'] = {
-				"item_magic_wand",
+				"item_magic_wand", "item_ultimate_scepter",
 			},
         },
     },
@@ -151,6 +156,8 @@ function X.MinionThink( hMinionUnit )
 	then
 		Minion.IllusionThink( hMinionUnit )
 	end
+
+end
 
 end
 
@@ -184,11 +191,11 @@ modifier_witch_doctor_death_ward
 --]]
 
 
-local abilityQ = bot:GetAbilityByName( sAbilityList[1] )
-local abilityW = bot:GetAbilityByName( sAbilityList[2] )
-local abilityE = bot:GetAbilityByName( sAbilityList[3] )
-local abilityAS = bot:GetAbilityByName( sAbilityList[4] )
-local abilityR = bot:GetAbilityByName( sAbilityList[6] )
+local abilityQ = bot:GetAbilityByName('witch_doctor_paralyzing_cask')
+local abilityW = bot:GetAbilityByName('witch_doctor_voodoo_restoration')
+local abilityE = bot:GetAbilityByName('witch_doctor_maledict')
+local abilityAS = bot:GetAbilityByName('witch_doctor_voodoo_switcheroo')
+local abilityR = bot:GetAbilityByName('witch_doctor_death_ward')
 local talent2 = bot:GetAbilityByName( sTalentList[2] )
 local talent6 = bot:GetAbilityByName( sTalentList[6] )
 
@@ -210,6 +217,12 @@ function X.SkillsComplement()
 	X.ConsiderCombo()
 
 	if J.CanNotUseAbility( bot ) or bot:IsInvisible() then return end
+
+	abilityQ = bot:GetAbilityByName('witch_doctor_paralyzing_cask')
+	abilityW = bot:GetAbilityByName('witch_doctor_voodoo_restoration')
+	abilityE = bot:GetAbilityByName('witch_doctor_maledict')
+	abilityAS = bot:GetAbilityByName('witch_doctor_voodoo_switcheroo')
+	abilityR = bot:GetAbilityByName('witch_doctor_death_ward')
 
 	nKeepMana = 400
 	aetherRange = 0
@@ -334,7 +347,7 @@ end
 function X.ConsiderQ()
 
 
-	if not abilityQ:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityQ) then return 0 end
 
 	local nSkillLV = abilityQ:GetLevel()
 	local nCastRange = abilityQ:GetCastRange() + aetherRange
@@ -505,7 +518,7 @@ end
 
 
 function X.ConsiderW()
-	if not abilityW:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityW) then return 0 end
 
 	local nRadius = abilityW:GetSpecialValueInt( 'radius' )
 	local nInRangeEnemy = bot:GetNearbyHeroes(1600, true, BOT_MODE_NONE)
@@ -640,7 +653,7 @@ end
 function X.ConsiderE()
 
 
-	if not abilityE:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityE) then return 0 end
 
 	local nSkillLV = abilityE:GetLevel()
 	local nCastRange = abilityE:GetCastRange() + aetherRange
@@ -684,13 +697,13 @@ end
 
 function X.ConsiderR()
 
-	if not abilityR:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityR) then return 0 end
 
-	if abilityQ:IsFullyCastable()
+	if J.CanCastAbility(abilityQ)
 		and bot:GetMana() > abilityR:GetManaCost() + abilityQ:GetManaCost()
 	then return 0 end
 
-	if abilityE:IsFullyCastable()
+	if J.CanCastAbility(abilityE)
 		and bot:GetMana() > abilityR:GetManaCost() + abilityE:GetManaCost()
 	then return 0 end
 
@@ -751,8 +764,7 @@ end
 
 function X.ConsiderAS()
 
-	if not abilityAS:IsTrained()
-		or not abilityAS:IsFullyCastable() 
+	if not J.CanCastAbility(abilityAS)
 	then
 		return BOT_ACTION_DESIRE_NONE, 0
 	end
@@ -788,7 +800,7 @@ function X.ConsiderAS()
 	
 	
 	
-	if abilityR:IsFullyCastable()
+	if J.CanCastAbility(abilityR)
 	then
 		return BOT_ACTION_DESIRE_NONE
 	end	
@@ -823,5 +835,4 @@ end
 
 
 return X
--- dota2jmz@163.com QQ:2462331592..
 

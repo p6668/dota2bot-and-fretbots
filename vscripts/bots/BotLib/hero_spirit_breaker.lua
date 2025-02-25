@@ -7,9 +7,12 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_spirit_breaker'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
-local sUtility = {"item_lotus_orb", "item_pipe", "item_crimson_guard", "item_heavens_halberd"}
+local sUtility = {"item_crimson_guard", "item_lotus_orb"}
 local sUtilityItem = RI.GetBestUtilityItem(sUtility)
 
 local HeroBuild = {
@@ -29,7 +32,7 @@ local HeroBuild = {
         [1] = {
             ['talent'] = {
                 [1] = {
-                    ['t25'] = {0, 10},
+                    ['t25'] = {10, 0},
                     ['t20'] = {0, 10},
                     ['t15'] = {0, 10},
                     ['t10'] = {0, 10},
@@ -43,30 +46,29 @@ local HeroBuild = {
                 "item_tango",
                 "item_double_branches",
             
-                "item_bottle",
-                "item_bracer",
+                "item_double_bracer",
+                "item_magic_wand",
                 "item_wind_lace",
                 "item_phase_boots",
-                "item_magic_wand",
-                "item_hand_of_midas",
+                "item_blade_mail",
+                "item_cyclone",
+                "item_black_king_bar",--
                 "item_octarine_core",--
                 "item_ultimate_scepter",
-                "item_black_king_bar",--
-                "item_cyclone",
-                "item_ultimate_scepter_2",
-                "item_wind_waker",--
-                "item_travel_boots",
-                "item_heart",--
                 "item_yasha_and_kaya",--
+                "item_wind_waker",--
+                "item_shivas_guard",--
+                "item_ultimate_scepter_2",
                 "item_aghanims_shard",
                 "item_travel_boots_2",--
                 "item_moon_shard",
             },
             ['sell_list'] = {
-                "item_quelling_blade",
-                "item_bracer",
-                "item_magic_wand",
-                "item_hand_of_midas",
+                "item_quelling_blade", "item_blade_mail",
+                "item_magic_wand", "item_black_king_bar",
+                "item_bracer", "item_octarine_core",
+                "item_bracer", "item_ultimate_scepter",
+                "item_blade_mail", "item_yasha_and_kaya",
             },
         },
     },
@@ -74,7 +76,7 @@ local HeroBuild = {
         [1] = {
             ['talent'] = {
                 [1] = {
-                    ['t25'] = {0, 10},
+                    ['t25'] = {10, 0},
                     ['t20'] = {0, 10},
                     ['t15'] = {0, 10},
                     ['t10'] = {0, 10},
@@ -88,29 +90,27 @@ local HeroBuild = {
                 "item_tango",
                 "item_double_branches",
             
-                "item_bracer",
+                "item_double_bracer",
+                "item_magic_wand",
                 "item_wind_lace",
                 "item_phase_boots",
-                "item_magic_wand",
-                "item_hand_of_midas",
-                "item_octarine_core",--
+                "item_heavens_halberd",--
                 "item_black_king_bar",--
                 sUtilityItem,--
                 "item_ultimate_scepter",
                 "item_cyclone",
+                "item_yasha_and_kaya",--
                 "item_ultimate_scepter_2",
                 "item_wind_waker",--
-                "item_travel_boots",
-                "item_yasha_and_kaya",--
-                "item_aghanims_shard",
                 "item_travel_boots_2",--
+                "item_aghanims_shard",
                 "item_moon_shard",
             },
             ['sell_list'] = {
-                "item_quelling_blade",
-                "item_bracer",
-                "item_magic_wand",
-                "item_hand_of_midas",
+                "item_quelling_blade", "item_heavens_halberd",
+                "item_magic_wand", "item_black_king_bar",
+                "item_bracer", sUtilityItem,
+                "item_bracer", "item_ultimate_scepter",
             },
         },
     },
@@ -139,8 +139,8 @@ local HeroBuild = {
                 "item_ancient_janggo",
                 "item_invis_sword",
                 "item_cyclone",
-                "item_octarine_core",--
                 "item_boots_of_bearing",--
+                "item_octarine_core",--
                 "item_ultimate_scepter",
                 "item_black_king_bar",--
                 "item_silver_edge",--
@@ -151,7 +151,7 @@ local HeroBuild = {
                 "item_moon_shard",
             },
             ['sell_list'] = {
-                "item_magic_wand",
+                "item_magic_wand", "item_cyclone",
             },
         },
     },
@@ -180,8 +180,8 @@ local HeroBuild = {
                 "item_mekansm",
                 "item_invis_sword",
                 "item_cyclone",
-                "item_octarine_core",--
                 "item_guardian_greaves",--
+                "item_octarine_core",--
                 "item_ultimate_scepter",
                 "item_black_king_bar",--
                 "item_silver_edge",--
@@ -192,7 +192,7 @@ local HeroBuild = {
                 "item_moon_shard",
             },
             ['sell_list'] = {
-                "item_magic_wand",
+                "item_magic_wand", "item_cyclone",
             },
         },
     },
@@ -219,6 +219,8 @@ function X.MinionThink( hMinionUnit )
 	Minion.MinionThink(hMinionUnit)
 end
 
+end
+
 local ChargeOfDarkness  = bot:GetAbilityByName('spirit_breaker_charge_of_darkness')
 local Bulldoze          = bot:GetAbilityByName('spirit_breaker_bulldoze')
 local GreaterBash       = bot:GetAbilityByName('spirit_breaker_greater_bash')
@@ -235,12 +237,16 @@ if bot.chargeRetreat == nil then bot.chargeRetreat = false end
 function X.SkillsComplement()
 	if J.CanNotUseAbility(bot) then return end
 
+    ChargeOfDarkness  = bot:GetAbilityByName('spirit_breaker_charge_of_darkness')
+    Bulldoze          = bot:GetAbilityByName('spirit_breaker_bulldoze')
+    PlanarPocket      = bot:GetAbilityByName('spirit_breaker_planar_pocket')
+    NetherStrike      = bot:GetAbilityByName('spirit_breaker_nether_strike')
+
     ChargeOfDarknessDesire, ChargeOfDarknessTarget = X.ConsiderChargeOfDarkness()
     if ChargeOfDarknessDesire > 0
     then
         if  ChargeOfDarkness:GetLevel() >= 3
-        and Bulldoze:IsTrained()
-        and Bulldoze:IsFullyCastable()
+        and J.CanCastAbility(Bulldoze)
         then
             bot:Action_UseAbility(Bulldoze)
         end
@@ -272,7 +278,7 @@ function X.SkillsComplement()
 end
 
 function X.ConsiderChargeOfDarkness()
-    if not ChargeOfDarkness:IsFullyCastable()
+    if not J.CanCastAbility(ChargeOfDarkness)
     or bot:HasModifier('modifier_spirit_breaker_charge_of_darkness')
     then
         return BOT_ACTION_DESIRE_NONE, nil
@@ -516,7 +522,7 @@ function X.ConsiderChargeOfDarkness()
 end
 
 function X.ConsiderBulldoze()
-    if not Bulldoze:IsFullyCastable()
+    if not J.CanCastAbility(Bulldoze)
     then
         return BOT_ACTION_DESIRE_NONE
     end
@@ -575,7 +581,7 @@ function X.ConsiderBulldoze()
 end
 
 function X.ConsiderNetherStrike()
-    if not NetherStrike:IsFullyCastable()
+    if not J.CanCastAbility(NetherStrike)
     or bot:HasModifier('modifier_spirit_breaker_charge_of_darkness')
     then
         return BOT_ACTION_DESIRE_NONE, nil
@@ -657,8 +663,7 @@ function X.ConsiderNetherStrike()
 end
 
 function X.ConsiderPlanarPocket()
-    if not PlanarPocket:IsTrained()
-    or not PlanarPocket:IsFullyCastable()
+    if not J.CanCastAbility(PlanarPocket)
     or bot:HasModifier('modifier_spirit_breaker_charge_of_darkness')
     then
         return BOT_ACTION_DESIRE_NONE

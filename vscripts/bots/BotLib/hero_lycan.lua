@@ -7,6 +7,9 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_lycan'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
 local sUtility = {"item_crimson_guard", "item_pipe", "item_lotus_orb", "item_heavens_halberd"}
@@ -29,17 +32,18 @@ local HeroBuild = {
             ['buy_list'] = {
                 "item_tango",
                 "item_double_branches",
+                "item_quelling_blade",
                 "item_double_circlet",
             
-                "item_double_bracer",
-                "item_power_treads",
                 "item_magic_wand",
-                "item_ring_of_basilius",
+                "item_double_wraith_band",
+                "item_power_treads",
                 "item_echo_sabre",
                 "item_manta",--
-                "item_aghanims_shard",
+                "item_orchid",
                 "item_harpoon",--
                 "item_black_king_bar",--
+                "item_aghanims_shard",
                 "item_bloodthorn",--
                 "item_skadi",--
                 "item_travel_boots_2",--
@@ -47,9 +51,10 @@ local HeroBuild = {
                 "item_ultimate_scepter_2",
             },
             ['sell_list'] = {
-                "item_bracer",
-                "item_magic_wand",
-                "item_ring_of_basilius",
+                "item_quelling_blade", "item_manta",
+                "item_magic_wand", "item_orchid",
+                "item_wraith_band", "item_black_king_bar",
+                "item_wraith_band", "item_skadi",
             },
         },
     },
@@ -69,30 +74,30 @@ local HeroBuild = {
             ['buy_list'] = {
                 "item_tango",
                 "item_double_branches",
+                "item_quelling_blade",
                 "item_double_circlet",
             
-                "item_bottle",
-                "item_double_bracer",
-                "item_power_treads",
                 "item_magic_wand",
-                "item_ring_of_basilius",
+                "item_wraith_band",
+                "item_bracer",
+                "item_power_treads",
                 "item_echo_sabre",
                 "item_manta",--
-                "item_aghanims_shard",
+                "item_orchid",
                 "item_harpoon",--
                 "item_black_king_bar",--
+                "item_aghanims_shard",
                 "item_bloodthorn",--
-                "item_travel_boots",
                 "item_skadi",--
                 "item_travel_boots_2",--
                 "item_moon_shard",
                 "item_ultimate_scepter_2",
             },
             ['sell_list'] = {
-                "item_bottle",
-                "item_bracer",
-                "item_magic_wand",
-                "item_ring_of_basilius",
+                "item_quelling_blade", "item_manta",
+                "item_magic_wand", "item_orchid",
+                "item_wraith_band", "item_black_king_bar",
+                "item_bracer", "item_skadi",
             },
         },
     },
@@ -119,21 +124,60 @@ local HeroBuild = {
                 "item_helm_of_the_dominator",
                 "item_ring_of_basilius",
                 "item_helm_of_the_overlord",--
-                "item_vladmir",--
-                "item_ancient_janggo",
-                "item_aghanims_shard",
-                "item_assault",--
+                "item_boots",
                 sUtilityItem,--
+                "item_assault",--
+                "item_aghanims_shard",
+                "item_black_king_bar",--
                 "item_travel_boots",
                 "item_sheepstick",--
                 "item_travel_boots_2",--
-                "item_ultimate_scepter_2",
                 "item_moon_shard",
+                "item_ultimate_scepter_2",
             },
             ['sell_list'] = {
+                "item_quelling_blade", "item_assault",
+                "item_ring_of_basilius", "item_black_king_bar",
+                "item_magic_wand", "item_sheepstick",
+            },
+        },
+        [2] = {
+            ['talent'] = {
+                [1] = {
+                    ['t25'] = {0, 10},
+                    ['t20'] = {0, 10},
+                    ['t15'] = {10, 0},
+                    ['t10'] = {10, 0},
+                }
+            },
+            ['ability'] = {
+                [1] = {1,3,1,3,1,6,1,3,3,2,2,6,2,2,6},
+            },
+            ['buy_list'] = {
+                "item_tango",
+                "item_double_branches",
                 "item_quelling_blade",
+                "item_double_circlet",
+            
                 "item_magic_wand",
-                "item_ancient_janggo",
+                "item_double_bracer",
+                "item_power_treads",
+                "item_orchid",
+                sUtilityItem,--
+                "item_assault",--
+                "item_black_king_bar",--
+                "item_aghanims_shard",
+                "item_bloodthorn",--
+                "item_skadi",--
+                "item_travel_boots_2",--
+                "item_moon_shard",
+                "item_ultimate_scepter_2",
+            },
+            ['sell_list'] = {
+                "item_quelling_blade", sUtilityItem,
+                "item_magic_wand", "item_assault",
+                "item_bracer", "item_black_king_bar",
+                "item_bracer", "item_skadi",
             },
         },
     },
@@ -184,6 +228,8 @@ function X.MinionThink(hMinionUnit)
     Minion.MinionThink(hMinionUnit)
 end
 
+end
+
 local SummonWolves  = bot:GetAbilityByName('lycan_summon_wolves')
 local Howl          = bot:GetAbilityByName('lycan_howl')
 local FeralImpulse  = bot:GetAbilityByName('lycan_feral_impulse')
@@ -197,6 +243,10 @@ local ShapeShiftDesire
 
 function X.SkillsComplement()
     if J.CanNotUseAbility(bot) then return end
+
+    SummonWolves  = bot:GetAbilityByName('lycan_summon_wolves')
+    Howl          = bot:GetAbilityByName('lycan_howl')
+    ShapeShift    = bot:GetAbilityByName('lycan_shapeshift')
 
     ShapeShiftDesire = X.ConsiderShapeShift()
     if ShapeShiftDesire > 0
@@ -223,7 +273,7 @@ function X.SkillsComplement()
 end
 
 function X.ConsiderSummonWolves()
-    if not SummonWolves:IsFullyCastable()
+    if not J.CanCastAbility(SummonWolves)
     then
         return BOT_ACTION_DESIRE_NONE
     end
@@ -316,7 +366,7 @@ function X.ConsiderSummonWolves()
 end
 
 function X.ConsiderHowl()
-    if not Howl:IsFullyCastable()
+    if not J.CanCastAbility(Howl)
     then
         return BOT_ACTION_DESIRE_NONE
     end
@@ -452,7 +502,7 @@ function X.ConsiderHowl()
 end
 
 function X.ConsiderShapeShift()
-    if not ShapeShift:IsFullyCastable()
+    if not J.CanCastAbility(ShapeShift)
     then
         return BOT_ACTION_DESIRE_NONE
     end

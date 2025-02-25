@@ -7,6 +7,9 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_weaver'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
 local sUtility = {"item_nullifier", "item_heavens_halberd"}
@@ -19,7 +22,7 @@ local HeroBuild = {
                 [1] = {
                     ['t25'] = {10, 0},
                     ['t20'] = {0, 10},
-                    ['t15'] = {0, 10},
+                    ['t15'] = {10, 0},
                     ['t10'] = {10, 0},
                 }
             },
@@ -32,26 +35,26 @@ local HeroBuild = {
                 "item_faerie_fire",
             
                 "item_wraith_band",
+                "item_magic_wand",
                 "item_falcon_blade",
                 "item_power_treads",
-                "item_magic_wand",
                 "item_maelstrom",
                 "item_dragon_lance",
-                "item_gungir",--
+                "item_mjollnir",--
                 "item_black_king_bar",--
-                "item_aghanims_shard",
                 "item_greater_crit",--
-                "item_hurricane_pike",--
+                "item_aghanims_shard",
                 "item_satanic",--
+                "item_hurricane_pike",--
                 "item_butterfly",--
                 "item_moon_shard",
                 "item_ultimate_scepter_2",
             },
             ['sell_list'] = {
-                "item_wraith_band",
-                "item_falcon_blade",
-                "item_power_treads",
-                "item_magic_wand",
+                "item_magic_wand", "item_black_king_bar",
+                "item_wraith_band", "item_greater_crit",
+                "item_falcon_blade", "item_satanic",
+                "item_power_treads", "item_butterfly",
             },
         },
     },
@@ -70,42 +73,13 @@ local HeroBuild = {
     ['pos_3'] = {
         [1] = {
             ['talent'] = {
-                [1] = {
-                    ['t25'] = {10, 0},
-                    ['t20'] = {0, 10},
-                    ['t15'] = {0, 10},
-                    ['t10'] = {10, 0},
-                }
+                [1] = {},
             },
             ['ability'] = {
-                [1] = {2,3,2,3,2,6,3,2,3,1,6,1,1,1,6},
+                [1] = {},
             },
-            ['buy_list'] = {
-                "item_tango",
-                "item_enchanted_mango",
-                "item_double_branches",
-                "item_magic_stick",
-
-                "item_double_wraith_band",
-                "item_magic_wand",
-                "item_power_treads",
-                "item_maelstrom",
-                "item_sphere",--
-                "item_desolator",--
-                sUtilityItem,--
-                "item_orchid",
-                "item_gungir",--
-                "item_aghanims_shard",
-                "item_bloodthorn",--
-                "item_satanic",--
-                "item_moon_shard",
-                "item_ultimate_scepter_2",
-            },
-            ['sell_list'] = {
-                "item_magic_wand",
-                "item_wraith_band",
-                "item_power_treads",
-            },
+            ['buy_list'] = {},
+            ['sell_list'] = {},
         },
     },
     ['pos_4'] = {
@@ -126,22 +100,24 @@ local HeroBuild = {
                 "item_double_branches",
                 "item_faerie_fire",
                 "item_circlet",
-
-                "item_spirit_vessel",--
+            
                 "item_magic_wand",
+                "item_spirit_vessel",
                 "item_rod_of_atos",
                 "item_heavens_halberd",--
                 "item_boots_of_bearing",--
                 "item_gungir",--
                 "item_sheepstick",--
-                "item_sphere",--
+                "item_greater_crit",--
+                "item_monkey_king_bar",--
                 "item_ultimate_scepter_2",
                 "item_aghanims_shard",
                 "item_moon_shard",
             },
             ['sell_list'] = {
-                "item_circlet",
-                "item_magic_wand",
+                "item_circlet", "item_heavens_halberd",
+                "item_magic_wand", "item_boots_of_bearing",
+                "item_spirit_vessel", "item_monkey_king_bar",
             },
         },
     },
@@ -163,22 +139,24 @@ local HeroBuild = {
                 "item_double_branches",
                 "item_faerie_fire",
                 "item_circlet",
-
-                "item_spirit_vessel",--
+            
                 "item_magic_wand",
+                "item_spirit_vessel",--
                 "item_rod_of_atos",
                 "item_heavens_halberd",--
                 "item_guardian_greaves",--
                 "item_gungir",--
                 "item_sheepstick",--
-                "item_sphere",--
+                "item_greater_crit",--
+                "item_monkey_king_bar",--
                 "item_ultimate_scepter_2",
                 "item_aghanims_shard",
                 "item_moon_shard",
             },
             ['sell_list'] = {
-                "item_circlet",
-                "item_magic_wand",
+                "item_circlet", "item_heavens_halberd",
+                "item_magic_wand", "item_guardian_greaves",
+                "item_spirit_vessel", "item_monkey_king_bar",
             },
         },
     },
@@ -205,6 +183,8 @@ function X.MinionThink(hMinionUnit)
     Minion.MinionThink(hMinionUnit)
 end
 
+end
+
 local TheSwarm          = bot:GetAbilityByName('weaver_the_swarm')
 local Shukuchi          = bot:GetAbilityByName('weaver_shukuchi')
 -- local GeminateAttack    = bot:GetAbilityByName('weaver_geminate_attack')
@@ -214,12 +194,17 @@ local TheSwarmDesire, TheSwarmLocation
 local ShukuchiDesire
 local TimeLapseDesire
 
-local botTarget
+local botTarget, botName
 
 function X.SkillsComplement()
     if J.CanNotUseAbility(bot) then return end
 
+    TheSwarm          = bot:GetAbilityByName('weaver_the_swarm')
+    Shukuchi          = bot:GetAbilityByName('weaver_shukuchi')
+    TimeLapse         = bot:GetAbilityByName('weaver_time_lapse')
+
     botTarget = J.GetProperTarget(bot)
+    botName = GetBot():GetUnitName()
 
     TimeLapseDesire, Target = X.ConsiderTimeLapse()
     if TimeLapseDesire > 0
@@ -229,6 +214,7 @@ function X.SkillsComplement()
             bot:Action_UseAbility(TimeLapse)
         else
             if bot:HasScepter()
+            and string.find(botName, 'weaver')
             then
                 bot:Action_UseAbilityOnEntity(TimeLapse, Target)
             end
@@ -255,7 +241,7 @@ function X.SkillsComplement()
 end
 
 function X.ConsiderTheSwarm()
-    if not TheSwarm:IsFullyCastable()
+    if not J.CanCastAbility(TheSwarm)
     then
         return BOT_ACTION_DESIRE_NONE, 0
     end
@@ -291,8 +277,15 @@ function X.ConsiderTheSwarm()
     and not J.IsRealInvisible(bot)
     and bot:WasRecentlyDamagedByAnyHero(3.5)
     and bot:GetActiveModeDesire() > 0.75
-    and Shukuchi:GetCooldownTimeRemaining() > 2
 	then
+        if string.find(botName, 'weaver')
+        then
+            if Shukuchi:GetCooldownTimeRemaining() < 2
+            then
+                return BOT_ACTION_DESIRE_NONE, 0
+            end
+        end
+
         if J.IsValidHero(nEnemyHeroes[1])
         and J.IsChasingTarget(nEnemyHeroes[1], bot)
         and not J.IsSuspiciousIllusion(nEnemyHeroes[1])
@@ -355,7 +348,7 @@ function X.ConsiderTheSwarm()
 end
 
 function X.ConsiderShukuchi()
-    if not Shukuchi:IsFullyCastable()
+    if not J.CanCastAbility(Shukuchi)
     or J.IsAttacking(bot)
     then
         return BOT_ACTION_DESIRE_NONE
@@ -513,7 +506,7 @@ function X.ConsiderShukuchi()
 end
 
 function X.ConsiderTimeLapse()
-    if not TimeLapse:IsFullyCastable()
+    if not J.CanCastAbility(TimeLapse)
     or bot:HasModifier('modifier_fountain_aura_buff')
     then
         return BOT_ACTION_DESIRE_NONE, nil
@@ -567,7 +560,7 @@ function X.ConsiderTimeLapse()
         end
     end
 
-	if bot:HasScepter()
+	if bot:HasScepter() and string.find(botName, 'weaver')
 	then
         local nCastRange = J.GetProperCastRange(false, bot, TimeLapse:GetCastRange())
 		for _, allyHero in pairs(nInRangeAlly)

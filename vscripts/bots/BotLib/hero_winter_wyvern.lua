@@ -7,6 +7,9 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_winter_wyvern'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
 local sUtility = {"item_heavens_halberd", "item_pipe", "item_lotus_orb"}
@@ -44,27 +47,25 @@ local HeroBuild = {
                 "item_double_circlet",
             
                 "item_bottle",
-                "item_bracer",
-                "item_wraith_band",
                 "item_magic_wand",
-                "item_boots",
-                "item_mage_slayer",--
+                "item_double_bracer",
+                "item_power_treads",
                 "item_witch_blade",
                 "item_ultimate_scepter",
                 "item_bloodthorn",--
+                "item_black_king_bar",--
                 "item_devastator",--
-                "item_travel_boots",
-                "item_kaya_and_sange",--
                 "item_hurricane_pike",--
-                "item_travel_boots_2",--
+                "item_sphere",--
                 "item_ultimate_scepter_2",
+                "item_travel_boots_2",--
                 "item_moon_shard",
             },
             ['sell_list'] = {
-                "item_bottle",
-                "item_bracer",
-                "item_wraith_band",
-                "item_magic_wand",
+                "item_magic_wand", "item_ultimate_scepter",
+                "item_bottle", "item_bloodthorn",
+                "item_bracer", "item_black_king_bar",
+                "item_bracer", "item_hurricane_pike",
             },
         },
     },
@@ -86,26 +87,23 @@ local HeroBuild = {
                 "item_double_branches",
                 "item_double_circlet",
             
-                "item_bracer",
-                "item_wraith_band",
                 "item_magic_wand",
-                "item_boots",
-                "item_mage_slayer",--
-                "item_witch_blade",
+                "item_double_bracer",
+                "item_power_treads",
                 sUtilityItem,--
                 "item_ultimate_scepter",
                 "item_bloodthorn",--
-                "item_devastator",--
-                "item_travel_boots",
-                "item_kaya_and_sange",--
-                "item_travel_boots_2",--
+                "item_black_king_bar",--
+                "item_hurricane_pike",--
+                "item_sphere",--
                 "item_ultimate_scepter_2",
+                "item_travel_boots_2",--
                 "item_moon_shard",
             },
             ['sell_list'] = {
-                "item_bracer",
-                "item_wraith_band",
-                "item_magic_wand",
+                "item_magic_wand", "item_bloodthorn",
+                "item_bracer", "item_black_king_bar",
+                "item_bracer", "item_hurricane_pike",
             },
         },
     },
@@ -131,21 +129,22 @@ local HeroBuild = {
                 "item_boots",
                 "item_magic_wand",
                 "item_tranquil_boots",
-                "item_blink",
-                "item_force_staff",
-                "item_aether_lens",--
+                "item_glimmer_cape",--
+                "item_aether_lens",
                 "item_boots_of_bearing",--
+                "item_force_staff",
                 "item_shivas_guard",--
                 "item_aghanims_shard",
-                "item_refresher",--
-                "item_arcane_blink",--
+                "item_sheepstick",--
                 "item_hurricane_pike",--
+                "item_ethereal_blade",--
                 "item_moon_shard",
                 "item_ultimate_scepter_2",
             },
             ['sell_list'] = {
-                "item_circlet",
-                "item_magic_wand",
+                "item_circlet", "item_aether_lens",
+                "item_circlet", "item_aether_lens",
+                "item_magic_wand", "item_boots_of_bearing",
             },
         },
     },
@@ -171,21 +170,22 @@ local HeroBuild = {
                 "item_boots",
                 "item_magic_wand",
                 "item_arcane_boots",
-                "item_blink",
-                "item_force_staff",
-                "item_aether_lens",--
+                "item_glimmer_cape",--
+                "item_aether_lens",
                 "item_guardian_greaves",--
+                "item_force_staff",
                 "item_shivas_guard",--
                 "item_aghanims_shard",
-                "item_refresher",--
-                "item_arcane_blink",--
+                "item_sheepstick",--
                 "item_hurricane_pike",--
+                "item_ethereal_blade",--
                 "item_moon_shard",
                 "item_ultimate_scepter_2",
             },
             ['sell_list'] = {
-                "item_circlet",
-                "item_magic_wand",
+                "item_circlet", "item_aether_lens",
+                "item_circlet", "item_aether_lens",
+                "item_magic_wand", "item_guardian_greaves",
             },
         },
     },
@@ -212,6 +212,8 @@ function X.MinionThink(hMinionUnit)
     Minion.MinionThink(hMinionUnit)
 end
 
+end
+
 local ArcticBurn    = bot:GetAbilityByName('winter_wyvern_arctic_burn')
 local SplinterBlast = bot:GetAbilityByName('winter_wyvern_splinter_blast')
 local ColdEmbrace   = bot:GetAbilityByName('winter_wyvern_cold_embrace')
@@ -226,6 +228,11 @@ local botTarget
 
 function X.SkillsComplement()
 	if J.CanNotUseAbility(bot) then return end
+
+    ArcticBurn    = bot:GetAbilityByName('winter_wyvern_arctic_burn')
+    SplinterBlast = bot:GetAbilityByName('winter_wyvern_splinter_blast')
+    ColdEmbrace   = bot:GetAbilityByName('winter_wyvern_cold_embrace')
+    WintersCurse  = bot:GetAbilityByName('winter_wyvern_winters_curse')
 
     botTarget = J.GetProperTarget(bot)
 
@@ -259,7 +266,7 @@ function X.SkillsComplement()
 end
 
 function X.ConsiderArcticBurn()
-    if not ArcticBurn:IsFullyCastable()
+    if not J.CanCastAbility(ArcticBurn)
     then
         return BOT_ACTION_DESIRE_NONE
     end
@@ -409,7 +416,7 @@ function X.ConsiderArcticBurn()
 end
 
 function X.ConsiderSplinterBlast()
-    if not SplinterBlast:IsFullyCastable()
+    if not J.CanCastAbility(SplinterBlast)
     then
         return BOT_ACTION_DESIRE_NONE, nil
     end
@@ -676,7 +683,7 @@ function X.ConsiderSplinterBlast()
 end
 
 function X.ConsiderColdEmbrace()
-    if not ColdEmbrace:IsFullyCastable()
+    if not J.CanCastAbility(ColdEmbrace)
     then
         return BOT_ACTION_DESIRE_NONE, nil
     end
@@ -831,7 +838,7 @@ function X.ConsiderColdEmbrace()
 end
 
 function X.ConsiderWintersCurse()
-    if not WintersCurse:IsFullyCastable()
+    if not J.CanCastAbility(WintersCurse)
     then
         return BOT_ACTION_DESIRE_NONE, nil
     end

@@ -7,6 +7,9 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_treant'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
 local sUtility = {}
@@ -69,22 +72,21 @@ local HeroBuild = {
                 "item_blood_grenade",
                 "item_wind_lace",
             
-                "item_boots",
                 "item_magic_wand",
                 "item_tranquil_boots",
-                "item_aghanims_shard",
+                "item_solar_crest",--
                 "item_blink",
-                "item_force_staff",--
+                "item_aghanims_shard",
                 "item_boots_of_bearing",--
-                "item_pipe",--
+                "item_force_staff",--
+                "item_lotus_orb",--
                 "item_sheepstick",--
-                "item_aeon_disk",--
                 "item_overwhelming_blink",--
                 "item_ultimate_scepter_2",
                 "item_moon_shard",
             },
             ['sell_list'] = {
-                "item_magic_wand",
+                "item_magic_wand", "item_force_staff",
             },
         },
     },
@@ -112,20 +114,20 @@ local HeroBuild = {
                 "item_ring_of_basilius",
                 "item_magic_wand",
                 "item_arcane_boots",
-                "item_aghanims_shard",
+                "item_solar_crest",--
                 "item_blink",
-                "item_glimmer_cape",--
+                "item_aghanims_shard",
                 "item_guardian_greaves",--
-                "item_pipe",--
+                "item_force_staff",--
+                "item_lotus_orb",--
                 "item_sheepstick",--
-                "item_aeon_disk",--
                 "item_overwhelming_blink",--
                 "item_ultimate_scepter_2",
                 "item_moon_shard",
             },
             ['sell_list'] = {
-                "item_magic_wand",
-                "item_wind_lace",
+                "item_wind_lace", "item_force_staff",
+                "item_magic_wand", "item_lotus_orb",
             },
         },
     },
@@ -152,6 +154,8 @@ function X.MinionThink(hMinionUnit)
 	Minion.MinionThink(hMinionUnit)
 end
 
+end
+
 local NaturesGrasp      = bot:GetAbilityByName('treant_natures_grasp')
 local LeechSeed         = bot:GetAbilityByName('treant_leech_seed')
 local LivingArmor       = bot:GetAbilityByName('treant_living_armor')
@@ -165,17 +169,24 @@ local LivingArmorDesire, LivingArmorTarget
 local EyesInTheForestDesire, EyesInTheForestTarget
 local OvergrowthDesire
 
-local Blink
 local BlinkOvergrowthDesire, BlinkLocation
+
+local bLeechSeedGround = false
 
 function X.SkillsComplement()
 	if J.CanNotUseAbility(bot) then return end
+
+    NaturesGrasp      = bot:GetAbilityByName('treant_natures_grasp')
+    LeechSeed         = bot:GetAbilityByName('treant_leech_seed')
+    LivingArmor       = bot:GetAbilityByName('treant_living_armor')
+    EyesInTheForest   = bot:GetAbilityByName('treant_eyes_in_the_forest')
+    Overgrowth        = bot:GetAbilityByName('treant_overgrowth')
 
     BlinkOvergrowthDesire, BlinkLocation = X.ConsiderBlinkOvergrowth()
     if BlinkOvergrowthDesire > 0
     then
         bot:Action_ClearActions(false)
-        bot:ActionQueue_UseAbilityOnLocation(Blink, BlinkLocation)
+        bot:ActionQueue_UseAbilityOnLocation(bot.Blink, BlinkLocation)
         bot:ActionQueue_Delay(0.1)
         bot:ActionQueue_UseAbility(Overgrowth)
         return
@@ -198,7 +209,13 @@ function X.SkillsComplement()
     LeechSeedDesire, LeechSeedTarget = X.ConsiderLeechSeed()
     if LeechSeedDesire > 0
     then
-        bot:Action_UseAbilityOnEntity(LeechSeed, LeechSeedTarget)
+        if bLeechSeedGround then
+            bot:Action_UseAbilityOnLocation(LeechSeed, LeechSeedTarget)
+            bLeechSeedGround = false
+            return
+        else
+            bot:Action_UseAbilityOnEntity(LeechSeed, LeechSeedTarget)
+        end
         return
     end
 
@@ -218,7 +235,7 @@ function X.SkillsComplement()
 end
 
 function X.ConsiderNaturesGrasp()
-    if not NaturesGrasp:IsFullyCastable()
+    if not J.CanCastAbility(NaturesGrasp)
     then
         return BOT_ACTION_DESIRE_NONE, 0
     end
@@ -356,16 +373,29 @@ function X.ConsiderNaturesGrasp()
 end
 
 function X.ConsiderLeechSeed()
-    if not LeechSeed:IsFullyCastable()
+    if not J.CanCastAbility(LeechSeed)
     then
         return BOT_ACTION_DESIRE_NONE, nil
     end
 
     local nCastRange = J.GetProperCastRange(false, bot, LeechSeed:GetCastRange())
+    local nRadius = LeechSeed:GetSpecialValueInt('radius')
     local botTarget = J.GetProperTarget(bot)
 
     if J.IsGoingOnSomeone(bot)
 	then
+        bLeechSeedGround = false
+        if J.IsValidHero(botTarget)
+        and J.CanCastOnNonMagicImmune(botTarget)
+        and not J.IsChasingTarget(bot, botTarget)
+        then
+            local nLocationAoE = bot:FindAoELocation(true, true, botTarget:GetLocation(), 0, nRadius, 0, 0)
+            if nLocationAoE.count >= 2 and GetUnitToLocationDistance(bot, nLocationAoE.targetloc) <= nCastRange then
+                bLeechSeedGround = true
+                return BOT_ACTION_DESIRE_HIGH, nLocationAoE.targetloc
+            end
+        end
+
         local nInRangeEnemy = bot:GetNearbyHeroes(1200, true, BOT_MODE_NONE)
         local target = nil
         local dmg = 0
@@ -431,7 +461,8 @@ function X.ConsiderLeechSeed()
         and J.IsInRange(bot, botTarget, 500)
         and J.IsAttacking(bot)
         then
-            return BOT_ACTION_DESIRE_HIGH, botTarget
+            bLeechSeedGround = true
+            return BOT_ACTION_DESIRE_HIGH, bot:GetLocation()
         end
     end
 
@@ -441,7 +472,8 @@ function X.ConsiderLeechSeed()
         and J.IsInRange(bot, botTarget, 500)
         and J.IsAttacking(bot)
         then
-            return BOT_ACTION_DESIRE_HIGH, botTarget
+            bLeechSeedGround = true
+            return BOT_ACTION_DESIRE_HIGH, bot:GetLocation()
         end
     end
 
@@ -449,7 +481,7 @@ function X.ConsiderLeechSeed()
 end
 
 function X.ConsiderLivingArmor()
-    if not LivingArmor:IsFullyCastable()
+    if not J.CanCastAbility(LivingArmor)
     then
         return BOT_ACTION_DESIRE_NONE, nil
     end
@@ -548,7 +580,7 @@ function X.ConsiderLivingArmor()
 end
 
 function X.ConsiderOvergrowth()
-    if not Overgrowth:IsFullyCastable()
+    if not J.CanCastAbility(Overgrowth)
     then
         return BOT_ACTION_DESIRE_NONE
     end
@@ -571,8 +603,7 @@ function X.ConsiderOvergrowth()
 end
 
 function X.ConsiderEyesInTheForest()
-    if not EyesInTheForest:IsTrained()
-    or not EyesInTheForest:IsFullyCastable()
+    if not J.CanCastAbility(EyesInTheForest)
     then
         return BOT_ACTION_DESIRE_NONE, nil
     end
@@ -606,7 +637,7 @@ function X.ConsiderEyesInTheForest()
 end
 
 function X.ConsiderBlinkOvergrowth()
-    if CanDoBlinkOvergrowth()
+    if X.CanDoBlinkOvergrowth()
     then
         local nRadius = Overgrowth:GetSpecialValueInt('radius')
 
@@ -628,9 +659,9 @@ function X.ConsiderBlinkOvergrowth()
     return BOT_ACTION_DESIRE_NONE
 end
 
-function CanDoBlinkOvergrowth()
-    if  Overgrowth:IsFullyCastable()
-    and HasBlink()
+function X.CanDoBlinkOvergrowth()
+    if  J.CanCastAbility(Overgrowth)
+    and J.CanBlinkDagger(GetBot())
     then
         local nManaCost = Overgrowth:GetManaCost()
 
@@ -642,31 +673,6 @@ function CanDoBlinkOvergrowth()
     end
 
     bot.shouldBlink = false
-    return false
-end
-
-function HasBlink()
-    local blink = nil
-
-    for i = 0, 5
-    do
-		local item = bot:GetItemInSlot(i)
-
-		if  item ~= nil
-        and (item:GetName() == "item_blink" or item:GetName() == "item_overwhelming_blink" or item:GetName() == "item_arcane_blink" or item:GetName() == "item_swift_blink")
-        then
-			blink = item
-			break
-		end
-	end
-
-    if  blink ~= nil
-    and blink:IsFullyCastable()
-	then
-        Blink = blink
-        return true
-	end
-
     return false
 end
 

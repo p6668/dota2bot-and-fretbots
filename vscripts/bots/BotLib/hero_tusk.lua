@@ -7,9 +7,12 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_tusk'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
-local sUtility = {"item_heavens_halberd", "item_crimson_guard", "item_pipe", "item_nullifier"}
+local sUtility = {"item_heavens_halberd", "item_pipe"}
 local sUtilityItem = RI.GetBestUtilityItem(sUtility)
 
 local HeroBuild = {
@@ -47,23 +50,21 @@ local HeroBuild = {
                 "item_bottle",
                 "item_magic_wand",
                 "item_phase_boots",
-                "item_blink",
                 "item_desolator",--
                 "item_black_king_bar",--
-                "item_cyclone",
-                "item_greater_crit",--
-                "item_wind_waker",--
-                "item_travel_boots",
-                "item_arcane_blink",--
-                "item_travel_boots_2",--
+                "item_blink",
+                "item_silver_edge",--
                 "item_aghanims_shard",
+                "item_assault",--
+                "item_overwhelming_blink",--
+                "item_travel_boots_2",--
                 "item_moon_shard",
                 -- "item_ultimate_scepter_2",
             },
             ['sell_list'] = {
-                "item_quelling_blade",
-                "item_bottle",
-                "item_magic_wand",
+                "item_quelling_blade", "item_blink",
+                "item_bottle", "item_assault",
+                "item_magic_wand", "item_silver_edge",
             },
         },
     },
@@ -71,8 +72,8 @@ local HeroBuild = {
         [1] = {
             ['talent'] = {
                 [1] = {
-                    ['t25'] = {0, 10},
-                    ['t20'] = {10, 0},
+                    ['t25'] = {10, 0},
+                    ['t20'] = {0, 10},
                     ['t15'] = {10, 0},
                     ['t10'] = {10, 0},
                 }
@@ -86,25 +87,25 @@ local HeroBuild = {
                 "item_double_branches",
                 "item_faerie_fire",
             
-                "item_bottle",
+                "item_bracer",
                 "item_magic_wand",
                 "item_phase_boots",
                 "item_blink",
-                "item_cyclone",
+                "item_crimson_guard",--
                 "item_black_king_bar",--
-                sUtilityItem,--
+                "item_cyclone",
+                "item_assault",--
                 "item_wind_waker",--
-                "item_sheepstick",--
-                "item_travel_boots",
-                "item_arcane_blink",--
+                "item_overwhelming_blink",--
                 "item_travel_boots_2",--
                 "item_aghanims_shard",
                 "item_moon_shard",
                 -- "item_ultimate_scepter_2",
             },
             ['sell_list'] = {
-                "item_quelling_blade",
-                "item_magic_wand",
+                "item_quelling_blade", "item_black_king_bar",
+                "item_magic_wand", "item_cyclone",
+                "item_bracer", "item_assault",
             },
         },
     },
@@ -127,16 +128,16 @@ local HeroBuild = {
                 "item_blood_grenade",
                 "item_wind_lace",
             
-                "item_tranquil_boots",
                 "item_magic_wand",
+                "item_tranquil_boots",
                 "item_blink",
                 -- "item_ultimate_scepter",
                 "item_solar_crest",--
-                "item_cyclone",
                 "item_boots_of_bearing",--
+                "item_cyclone",
                 "item_aghanims_shard",
-                "item_black_king_bar",--
                 "item_lotus_orb",--
+                "item_black_king_bar",--
                 "item_wind_waker",--
                 -- "item_ultimate_scepter_2",
                 "item_overwhelming_blink",--
@@ -144,7 +145,7 @@ local HeroBuild = {
                 "item_moon_shard",
             },
             ['sell_list'] = {
-                "item_magic_wand",
+                "item_magic_wand", "item_boots_of_bearing",
             },
         },
     },
@@ -167,16 +168,16 @@ local HeroBuild = {
                 "item_blood_grenade",
                 "item_wind_lace",
             
-                "item_arcane_boots",
                 "item_magic_wand",
+                "item_arcane_boots",
                 "item_blink",
                 -- "item_ultimate_scepter",
                 "item_solar_crest",--
-                "item_cyclone",
                 "item_guardian_greaves",--
+                "item_cyclone",
                 "item_aghanims_shard",
-                "item_black_king_bar",--
                 "item_lotus_orb",--
+                "item_black_king_bar",--
                 "item_wind_waker",--
                 -- "item_ultimate_scepter_2",
                 "item_overwhelming_blink",--
@@ -184,7 +185,7 @@ local HeroBuild = {
                 "item_moon_shard",
             },
             ['sell_list'] = {
-                "item_magic_wand",
+                "item_magic_wand", "item_guardian_greaves",
             },
         },
     },
@@ -211,10 +212,13 @@ function X.MinionThink(hMinionUnit)
     Minion.MinionThink(hMinionUnit)
 end
 
+end
+
 local IceShards         = bot:GetAbilityByName('tusk_ice_shards')
 local Snowball          = bot:GetAbilityByName('tusk_snowball')
 local LaunchSnowball    = bot:GetAbilityByName('tusk_launch_snowball')
 local TagTeam           = bot:GetAbilityByName('tusk_tag_team')
+local DrinkingBuddies   = bot:GetAbilityByName('tusk_drinking_buddies')
 local WalrusKick        = bot:GetAbilityByName('tusk_walrus_kick')
 local WalrusPunch       = bot:GetAbilityByName('tusk_walrus_punch')
 
@@ -222,6 +226,7 @@ local IceShardsDesire, IceShardsLocation
 local SnowballDesire, SnowballTarget
 local LaunchSnowballDesire
 local TagTeamDesire
+local DrinkingBuddiesDesire, DrinkingBuddiesTarget
 local WalrusKickDesire, WalrusKickTarget
 local WalrusPunchDesire, WalrusPunchTarget
 
@@ -232,12 +237,26 @@ if bot.snowballHeroRetreat then bot.snowballHeroRetreat = false end
 function X.SkillsComplement()
 	if J.CanNotUseAbility(bot) then return end
 
+    IceShards         = bot:GetAbilityByName('tusk_ice_shards')
+    Snowball          = bot:GetAbilityByName('tusk_snowball')
+    LaunchSnowball    = bot:GetAbilityByName('tusk_launch_snowball')
+    TagTeam           = bot:GetAbilityByName('tusk_tag_team')
+    DrinkingBuddies   = bot:GetAbilityByName('tusk_drinking_buddies')
+    WalrusKick        = bot:GetAbilityByName('tusk_walrus_kick')
+    WalrusPunch       = bot:GetAbilityByName('tusk_walrus_punch')
+
     botTarget = J.GetProperTarget(bot)
 
     TagTeamDesire = X.ConsiderTagTeam()
     if TagTeamDesire > 0
     then
         bot:Action_UseAbility(TagTeam)
+        return
+    end
+
+    DrinkingBuddiesDesire, DrinkingBuddiesTarget = X.ConsiderDrinkingBuddies()
+    if DrinkingBuddiesDesire > 0 then
+        bot:Action_UseAbilityOnEntity(DrinkingBuddies, DrinkingBuddiesTarget)
         return
     end
 
@@ -274,7 +293,7 @@ function X.SkillsComplement()
 end
 
 function X.ConsiderIceShards()
-    if not IceShards:IsFullyCastable()
+    if not J.CanCastAbility(IceShards)
     then
         return BOT_ACTION_DESIRE_NONE, 0
     end
@@ -402,7 +421,7 @@ function X.ConsiderIceShards()
 end
 
 function X.ConsiderSnowball()
-    if not Snowball:IsFullyCastable()
+    if not J.CanCastAbility(Snowball)
     then
         return BOT_ACTION_DESIRE_NONE, nil
     end
@@ -535,8 +554,7 @@ function X.ConsiderSnowball()
 end
 
 function X.ConsiderLaunchSnowball()
-    if LaunchSnowball:IsHidden()
-    or not LaunchSnowball:IsFullyCastable()
+    if not J.CanCastAbility(LaunchSnowball)
     or bot.snowballHeroRetreat
     then
         return BOT_ACTION_DESIRE_NONE
@@ -546,7 +564,7 @@ function X.ConsiderLaunchSnowball()
 end
 
 function X.ConsiderTagTeam()
-    if not TagTeam:IsFullyCastable()
+    if not J.CanCastAbility(TagTeam)
     then
         return BOT_ACTION_DESIRE_NONE
     end
@@ -621,8 +639,115 @@ function X.ConsiderTagTeam()
     return BOT_ACTION_DESIRE_NONE
 end
 
+-- no alt-cast support from the api
+function X.ConsiderDrinkingBuddies()
+    if not J.CanCastAbility(DrinkingBuddies) then
+        return BOT_ACTION_DESIRE_NONE, nil
+    end
+
+    local nCastRange = J.GetProperCastRange(false, bot, DrinkingBuddies:GetCastRange())
+    local nAllyHeroes = J.GetAlliesNearLoc(bot:GetLocation(), nCastRange)
+
+    local hTarget = nil
+	local nMaxDamage = 0
+    for _, allyHero in pairs(nAllyHeroes) do
+        if allyHero ~= bot and J.IsValidHero(allyHero) and not allyHero:IsIllusion() then
+            if J.IsStuck(bot) or J.IsStuck(allyHero) then
+                return BOT_ACTION_DESIRE_HIGH, allyHero
+            end
+
+            if J.IsDoingRoshan(bot)
+            then
+                if  J.IsRoshan(botTarget)
+                and J.CanBeAttacked(botTarget)
+                and J.IsInRange(bot, botTarget, 500)
+                and J.IsAttacking(bot)
+                then
+                    return BOT_ACTION_DESIRE_HIGH, allyHero
+                end
+            end
+
+            if J.IsDoingTormentor(bot)
+            then
+                if  J.IsTormentor(botTarget)
+                and J.IsInRange(bot, botTarget, 500)
+                and J.IsAttacking(bot)
+                then
+                    return BOT_ACTION_DESIRE_HIGH, allyHero
+                end
+            end
+
+            if not J.IsDisabled(allyHero)
+            and (not J.IsWithoutTarget(allyHero))
+            and not allyHero:HasModifier('modifier_necrolyte_reapers_scythe')
+            and not allyHero:HasModifier('modifier_skeleton_king_reincarnation_scepter_active')
+            then
+                local nDamage = allyHero:GetAttackDamage() * allyHero:GetAttackSpeed()
+                if nDamage > nMaxDamage then
+                    hTarget = allyHero
+                    nMaxDamage = nDamage
+                end
+            end
+        end
+    end
+
+    if J.IsGoingOnSomeone(bot) and hTarget ~= nil then
+		if  J.IsValidTarget(botTarget)
+        and J.IsInRange(bot, botTarget, 1000)
+        and J.CanBeAttacked(botTarget)
+        and not J.IsSuspiciousIllusion(botTarget)
+        and not botTarget:HasModifier('modifier_abaddon_borrowed_time')
+        and not botTarget:HasModifier('modifier_dazzle_shallow_grave')
+        and not botTarget:HasModifier('modifier_necrolyte_reapers_scythe')
+        and not botTarget:HasModifier('modifier_templar_assassin_refraction_absorb')
+		then
+            local bBotChasing = J.IsChasingTarget(bot, botTarget)
+            local bAllyChasing = J.IsChasingTarget(hTarget, botTarget)
+            local distbotToTarget = GetUnitToUnitDistance(bot, botTarget)
+            local distAllyToTarget = GetUnitToUnitDistance(hTarget, botTarget)
+            if (not bBotChasing or (bBotChasing and bAllyChasing and distAllyToTarget < distbotToTarget and distAllyToTarget < 500))
+            then
+                return BOT_ACTION_DESIRE_HIGH, hTarget
+            end
+		end
+	end
+
+    local nEnemyHeroes = bot:GetNearbyHeroes(1600, false, BOT_MODE_NONE)
+
+    if J.IsRetreating(bot)
+	and not J.IsRealInvisible(bot)
+	and not bot:HasModifier('modifier_fountain_aura_buff')
+    and #nAllyHeroes > 1
+	then
+        for _, enemyHero in pairs(nEnemyHeroes) do
+            if J.IsValidHero(enemyHero)
+            and J.IsInRange(bot, enemyHero, 800)
+            and J.IsChasingTarget(enemyHero, bot)
+            then
+                if (bot:WasRecentlyDamagedByAnyHero(3.0) and not J.IsSuspiciousIllusion(enemyHero))
+                or (#nAllyHeroes + 2 <= #nEnemyHeroes)
+                then
+                    for _, allyHero in pairs(nAllyHeroes) do
+                        if allyHero ~= bot
+                        and J.IsValidHero(allyHero)
+                        and not allyHero:IsIllusion()
+                        and J.IsRetreating(allyHero)
+                        and GetUnitToUnitDistance(allyHero, enemyHero) > GetUnitToUnitDistance(bot, enemyHero)
+                        and GetUnitToLocationDistance(enemyHero, ((bot:GetLocation() + allyHero:GetLocation()) / 2)) > 500
+                        then
+                            return BOT_ACTION_DESIRE_HIGH, allyHero
+                        end
+                    end
+                end
+            end
+        end
+	end
+
+    return BOT_ACTION_DESIRE_NONE, nil
+end
+
 function X.ConsiderWalrusPunch()
-    if not WalrusPunch:IsFullyCastable()
+    if not J.CanCastAbility(WalrusPunch)
     then
         return BOT_ACTION_DESIRE_NONE, nil
     end

@@ -23,7 +23,7 @@ bot.SecretShop = false
 
 
 local sPurchaseList = BotBuild['sBuyList']
-local sItemSellList = BotBuild['sSellList']
+bot.sItemSellList = BotBuild['sSellList']
 
 
 for i = 1, #sPurchaseList
@@ -58,6 +58,7 @@ local courier = nil
 local t3AlreadyDamaged = false
 local t3Check = -90
 local hasBuyShard = true
+local isBear = false
 
 local function GeneralPurchase()
 
@@ -68,16 +69,6 @@ local function GeneralPurchase()
 		bot:SetNextItemPurchaseValue( GetItemCost( bot.currentComponentToBuy ) )
 		bPurchaseFromSecret = IsItemPurchasedFromSecretShop( bot.currentComponentToBuy )
 		itemCost = GetItemCost( bot.currentComponentToBuy )
-	end
-
-	if bot.currentComponentToBuy == "item_infused_raindrop"
-		or bot.currentComponentToBuy == "item_tome_of_knowledge"
-		or bot.currentComponentToBuy == "item_flask"
-	then
-		if GetItemStockCount( bot.currentComponentToBuy ) <= 0
-		then
-			return	
-		end
 	end
 
 	local cost = itemCost
@@ -177,6 +168,7 @@ local function GeneralPurchase()
 	--达到金钱需要时购物
 	if bot:GetGold() >= cost
 		and bot:GetItemInSlot( 14 ) == nil
+		and not isBear
 	then
 
 		if courier == nil
@@ -232,15 +224,6 @@ local function TurboModeGeneralPurchase()
 		lastItemToBuy = bot.currentComponentToBuy
 	end
 
-	if bot.currentComponentToBuy == "item_infused_raindrop"
-		or bot.currentComponentToBuy == "item_tome_of_knowledge"
-	then
-		if GetItemStockCount( bot.currentComponentToBuy ) <= 0
-		then
-			return
-		end
-	end
-
 	local cost = itemCost
 
 	if lastItemToBuy == 'item_boots'
@@ -277,6 +260,7 @@ local function TurboModeGeneralPurchase()
 
 	if bot:GetGold() >= cost
 		and bot:GetItemInSlot( 14 ) == nil
+		and not isBear
 	then
 		if bot:ActionImmediate_PurchaseItem( bot.currentComponentToBuy ) == PURCHASE_ITEM_SUCCESS
 		then
@@ -311,11 +295,48 @@ function ItemPurchaseThink()
 	if ( GetGameState() ~= GAME_STATE_PRE_GAME and GetGameState() ~= GAME_STATE_GAME_IN_PROGRESS )
 	then return	end
 
-	if bot:HasModifier( 'modifier_arc_warden_tempest_double' )
+	if bot:HasModifier('modifier_arc_warden_tempest_double')
 	or (DotaTime() > 0 and J.IsMeepoClone(bot))
+	or bot:HasModifier('modifier_dazzle_nothl_projection_soul_debuff')
+	or bot:HasModifier('modifier_dazzle_nothl_projection_physical_body_debuff')
 	then
 		bot.itemToBuy = {}
 		return
+	end
+
+	isBear = bot:GetUnitName() == 'npc_dota_hero_lone_druid_bear'
+	if isBear and math.floor(DotaTime()) % 5 == 0 then
+		for i = 1, 5 do
+			local member = GetTeamMember(i)
+			if member ~= nil and member:GetUnitName() == 'npc_dota_hero_lone_druid' then
+				if member.bearItems == nil then member.bearItems = {[0]='',[1]='',[2]='',[3]='',[4]='',[5]='',[6]='',[7]='',[8]=''} end
+				for j = 0, 8 do
+					local hItem = bot:GetItemInSlot(j)
+					if hItem ~= nil then
+						member.bearItems[j] = hItem:GetName()
+					end
+				end
+				break
+			end
+		end
+	end
+
+	if bot.currentComponentToBuy == "item_infused_raindrop"
+		or bot.currentComponentToBuy == "item_tome_of_knowledge"
+		or bot.currentComponentToBuy == "item_flask"
+		or bot.currentComponentToBuy == "item_enchanted_mango"
+		or bot.currentComponentToBuy == "item_ward_observer"
+		or bot.currentComponentToBuy == "item_ward_sentry"
+		or bot.currentComponentToBuy == "item_blood_grenade"
+		or bot.currentComponentToBuy == "item_clarity"
+		or bot.currentComponentToBuy == "item_smoke_of_deceit"
+		or bot.currentComponentToBuy == "item_tango"
+		or bot.currentComponentToBuy == "item_dust"
+	then
+		if GetItemStockCount( bot.currentComponentToBuy ) <= 0
+		then
+			return
+		end
 	end
 
 	--------*******----------------*******----------------*******--------
@@ -340,7 +361,7 @@ function ItemPurchaseThink()
 	end
 
 	--辅助定位英雄购买辅助物品
-	if not J.IsCore(bot)
+	if not J.IsCore(bot) and not isBear
 	then
 		if currentTime > 30 and not hasBuyClarity
 			and botGold >= GetItemCost( "item_clarity" )
@@ -350,13 +371,14 @@ function ItemPurchaseThink()
 			bot:ActionImmediate_PurchaseItem( "item_clarity" )
 			return
 		elseif botLevel >= 5
+			and not J.HasItemInInventory('item_ward_sentry')
+			and not J.HasItemInInventory('item_gem')
 			and Role['invisEnemyExist'] == true
 			and buyBootsStatus == true
 			and botGold >= GetItemCost( "item_dust" )
 			and Item.GetEmptyInventoryAmount( bot ) >= 2
 			and Item.GetItemCharges( bot, "item_dust" ) <= 0
 			and bot:GetCourierValue() == 0
-			and not J.HasItem(bot, 'item_ward_sentry')
 		then
 			bot:ActionImmediate_PurchaseItem( "item_dust" )
 			return
@@ -364,7 +386,7 @@ function ItemPurchaseThink()
 	end
 
 	-- Init Healing Items in Lane; works for now
-	if J.IsInLaningPhase()
+	if J.IsInLaningPhase() and not isBear
 	then
 		if  botLevel < 6
 		and bot:IsAlive()
@@ -447,12 +469,15 @@ function ItemPurchaseThink()
 		end
 	end
 
+	-- don't buy in late game to avoid clutter, since there's no inventory management currently
+
 	-- Observer and Sentry Wards
-	if (J.GetPosition(bot) == 4)
-	then
+	if (J.GetPosition(bot) == 4) and not J.IsLateGame() and not isBear then
 		local wardType = 'item_ward_sentry'
 
-		if  GetItemStockCount(wardType) > 0
+		if not J.HasItemInInventory('item_dust')
+		and not J.HasItemInInventory('item_gem')
+		and GetItemStockCount(wardType) > 0
 		and botGold >= GetItemCost(wardType)
 		and Item.GetEmptyInventoryAmount(bot) >= 1
 		and Item.GetItemCharges(bot, wardType) < 2
@@ -463,7 +488,7 @@ function ItemPurchaseThink()
 		end
 	end
 
-	if (J.GetPosition(bot) == 5)
+	if (J.GetPosition(bot) == 5) and not isBear
 	then
 		local wardType = 'item_ward_observer'
 
@@ -480,6 +505,8 @@ function ItemPurchaseThink()
 
 	-- Smoke of Deceit
 	if  (J.GetPosition(bot) == 4 or J.GetPosition(bot) == 5)
+	and not isBear
+	and not J.IsLateGame()
 	and GetItemStockCount('item_smoke_of_deceit') > 1
 	and botGold >= GetItemCost('item_smoke_of_deceit')
 	and Item.GetEmptyInventoryAmount(bot) >= 3
@@ -508,6 +535,7 @@ function ItemPurchaseThink()
 			end
 		else
 			if not J.IsInLaningPhase()
+			and not J.DoesTeamHaveItem('item_smoke_of_deceit')
 			then
 				bot:ActionImmediate_PurchaseItem('item_smoke_of_deceit')
 				return
@@ -517,6 +545,7 @@ function ItemPurchaseThink()
 
 	-- Blood Grenade
 	if  J.IsInLaningPhase()
+	and not isBear
 	and (J.GetPosition(bot) == 4 or J.GetPosition(bot) == 5)
 	and GetItemStockCount('item_blood_grenade') > 0
 	and botLevel < 6
@@ -531,6 +560,7 @@ function ItemPurchaseThink()
 
 	--为自己购买魔晶
 	if not hasBuyShard
+	and not isBear
 		and GetItemStockCount( "item_aghanims_shard" ) > 0
 		and botGold >= 1400
 	then
@@ -552,8 +582,10 @@ function ItemPurchaseThink()
 
 
 	--死前如果会损失金钱则购买额外TP
-	if botGold >= GetItemCost( "item_tpscroll" )
+	if not isBear
+		and botGold >= GetItemCost( "item_tpscroll" )
 		and bot:IsAlive()
+		and not J.IsMeepoClone(bot)
 		and botGold < ( GetItemCost( "item_tpscroll" ) + botWorth / 40 )
 		and botHP < 0.08
 		and GetGameMode() ~= 23
@@ -606,9 +638,9 @@ function ItemPurchaseThink()
 
 
 
-	if ( GetGameMode() ~= 23 and botLevel > 6 and currentTime > fullInvCheck + 1.0
+	if ( GetGameMode() ~= 23 and botLevel >= 6 and currentTime > fullInvCheck + 1.0
 		and (bot:DistanceFromFountain() <= 200 or bot:DistanceFromSecretShop() <= 200 ))
-		or ( GetGameMode() == 23 and botLevel > 9 and currentTime > fullInvCheck + 1.0 )
+		or ( GetGameMode() == 23 and botLevel >= 6 and currentTime > fullInvCheck + 1.0 )
 	then
 		local emptySlot = Item.GetEmptyInventoryAmount( bot )
 		local slotToSell = nil
@@ -629,21 +661,16 @@ function ItemPurchaseThink()
 			end
 		end
 
-
-		if botWorth > 9999 
-			and bot:GetItemInSlot( 6 ) ~= nil
-			and bot:GetItemInSlot( 7 ) ~= nil
-		then
-			local wand = bot:FindItemSlot( "item_magic_wand" )
-			local assitItem = bot:FindItemSlot( "item_infused_raindrop" )
-			if assitItem < 0 then assitItem = bot:FindItemSlot( "item_bracer" ) end
-			if assitItem < 0 then assitItem = bot:FindItemSlot( "item_null_talisman" ) end
-			if assitItem < 0 then assitItem = bot:FindItemSlot( "item_wraith_band" ) end
-			if assitItem >= 0
-				and wand >= 6
-				and wand <= 8
-			then
-				slotToSell = assitItem
+		if slotToSell == nil and GetGameMode() == 23 and not J.IsInLaningPhase() then
+			for i = 1, #Item['tEarlyItem']
+			do
+				local itemName = Item['tEarlyItem'][i]
+				local itemSlot = bot:FindItemSlot( itemName )
+				if itemSlot >= 6 and itemSlot <= 8
+				then
+					slotToSell = itemSlot
+					break
+				end
 			end
 		end
 
@@ -656,30 +683,32 @@ function ItemPurchaseThink()
 		fullInvCheck = currentTime
 	end
 
-	--出售过度装备
 	if currentTime > sell_time + 0.5
-		and ( bot:GetItemInSlot( 6 ) ~= nil or bot:GetItemInSlot( 7 ) ~= nil or bot:GetItemInSlot( 8 ) ~= nil )
-		and ( J.IsModeTurbo() or (bot:DistanceFromFountain() <= 100 or bot:DistanceFromSecretShop() <= 100 ))
+	and ((( bot:GetItemInSlot( 6 ) ~= nil or bot:GetItemInSlot( 7 ) ~= nil or bot:GetItemInSlot( 8 ) ~= nil )
+			and (bot:DistanceFromFountain() <= 100 or bot:DistanceFromSecretShop() <= 100 ))
+		or J.IsModeTurbo()
+		)
 	then
 		sell_time = currentTime
 
-		-- for i = 2 , #sItemSellList, 2
-		-- do
-		-- 	local nNewSlot = bot:FindItemSlot( sItemSellList[i - 1] )
-		-- 	local nOldSlot = bot:FindItemSlot( sItemSellList[i] )
-		-- 	if nNewSlot >= 0 and nOldSlot >= 0
-		-- 	then
-		-- 		bot:ActionImmediate_SellItem( bot:GetItemInSlot( nOldSlot ) )
-		-- 		return
-		-- 	end
-		-- end
-		for i = 1 , #sItemSellList, 1
-		do
-			local slot = bot:FindItemSlot( sItemSellList[i] )
-			if slot == 6 or slot == 7 or slot == 8
-			then
-				bot:ActionImmediate_SellItem( bot:GetItemInSlot( slot ) )
-				return
+		if bot.sItemSellList ~= nil then
+			for i = #bot.sItemSellList , 2, -2 do
+				local nItemToSellSlot = bot:FindItemSlot( bot.sItemSellList[i - 1] )
+				local nItemToCheckSlot = bot:FindItemSlot( bot.sItemSellList[i] )
+
+				local nItemToCheckSlot_lastComponent = -1
+				local tItemComponent = GetItemComponents(bot.sItemSellList[i])[1]
+				if tItemComponent ~= nil then
+					nItemToCheckSlot_lastComponent = bot:FindItemSlot(tItemComponent[#tItemComponent])
+				end
+
+				if (nItemToCheckSlot >= 0 or nItemToCheckSlot_lastComponent >= 0) and nItemToSellSlot >= 0
+				then
+					bot:ActionImmediate_SellItem( bot:GetItemInSlot( nItemToSellSlot ) )
+					table.remove(bot.sItemSellList, i)
+					table.remove(bot.sItemSellList, i - 1)
+					return
+				end
 			end
 		end
 
@@ -699,15 +728,25 @@ function ItemPurchaseThink()
 		if  Item.HasItem(bot, 'item_mask_of_madness')
 		and Item.HasItem(bot, 'item_satanic')
 		then
-			bot:ActionImmediate_SellItem(bot:GetItemInSlot(bot:FindItemSlot('item_mask_of_madness')))
+			local slot = bot:FindItemSlot('item_mask_of_madness')
+			bot:ActionImmediate_SellItem(bot:GetItemInSlot(slot))
 			return
+		end
+
+		if J.IsLateGame() then
+			local smokeSlot = bot:FindItemSlot('item_smoke_of_deceit')
+			if smokeSlot >= 6 then
+				bot:ActionImmediate_SellItem(bot:GetItemInSlot(smokeSlot))
+				return
+			end
 		end
 	end
 
-	if bot:GetLevel() >= 6
+	if bot:GetLevel() >= 6 and not isBear
 	then
 		if botGold >= GetItemCost( "item_tpscroll" )
 		and bot:IsAlive()
+		and not J.IsMeepoClone(bot)
 		and Item.GetItemCharges( bot, 'item_tpscroll' ) <= 1
 		then
 			bot:ActionImmediate_PurchaseItem( "item_tpscroll" )
@@ -719,6 +758,7 @@ function ItemPurchaseThink()
 		and buyTP == false
 		and bot:GetCourierValue() == 0
 		and botGold >= GetItemCost( "item_tpscroll" )
+		and not J.IsMeepoClone(bot)
 		and not Item.HasItem( bot, 'item_travel_boots' )
 		and not Item.HasItem( bot, 'item_travel_boots_2' )
 	then

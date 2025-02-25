@@ -7,6 +7,9 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_viper'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
 local sUtility = {"item_heavens_halberd", "item_lotus_orb", "item_pipe"}
@@ -41,31 +44,31 @@ local HeroBuild = {
             ['buy_list'] = {
 				"item_tango",
 				"item_faerie_fire",
-				"item_clarity",
 				"item_double_branches",
 				"item_circlet",
 				"item_slippers",
 			
 				"item_bottle",
-				"item_wraith_band",
 				"item_magic_wand",
+				"item_wraith_band",
 				"item_power_treads",
-				"item_mage_slayer",--
+				"item_mage_slayer",
 				"item_dragon_lance",
 				"item_manta",--
 				"item_hurricane_pike",--
 				"item_aghanims_shard",
-				"item_kaya_and_sange",--
-				"item_travel_boots",
+				"item_assault",--
 				"item_shivas_guard",--
+				"item_greater_crit",--
 				"item_travel_boots_2",--
 				"item_ultimate_scepter_2",
 				"item_moon_shard",
 			},
             ['sell_list'] = {
-				"item_bottle",
-				"item_wraith_band",
-				"item_magic_wand",
+				"item_magic_wand", "item_manta",
+				"item_bottle", "item_assault",
+				"item_wraith_band", "item_shivas_guard",
+				"item_mage_slayer", "item_greater_crit",
 			},
         },
     },
@@ -76,7 +79,7 @@ local HeroBuild = {
 					['t25'] = {0, 10},
 					['t20'] = {10, 0},
 					['t15'] = {10, 0},
-					['t10'] = {10, 0},
+					['t10'] = {0, 10},
 				}
             },
             ['ability'] = {
@@ -88,24 +91,26 @@ local HeroBuild = {
 				"item_enchanted_mango",
 				"item_double_circlet",
 			
-				"item_double_wraith_band",
-				"item_boots",
 				"item_magic_wand",
+				"item_double_wraith_band",
 				"item_power_treads",
-				"item_mage_slayer",--
+				"item_mage_slayer",
 				"item_dragon_lance",
 				sUtilityItem,--
 				"item_black_king_bar",--
 				"item_aghanims_shard",
 				"item_hurricane_pike",--
 				"item_sheepstick",--
+				"item_butterfly",--
 				"item_travel_boots_2",--
 				"item_ultimate_scepter_2",
 				"item_moon_shard",
 			},
             ['sell_list'] = {
-				"item_wraith_band",
-				"item_magic_wand",
+				"item_magic_wand", sUtilityItem,
+				"item_wraith_band", "item_black_king_bar",
+				"item_wraith_band", "item_sheepstick",
+				"item_mage_slayer", "item_butterfly",
 			},
         },
     },
@@ -157,6 +162,8 @@ function X.MinionThink(hMinionUnit)
 	Minion.MinionThink(hMinionUnit)
 end
 
+end
+
 local PoisonAttack = bot:GetAbilityByName('viper_poison_attack')
 local NetherToxin = bot:GetAbilityByName('viper_nethertoxin')
 -- local CorrosiveSkin = bot:GetAbilityByName('viper_corrosive_skin')
@@ -173,47 +180,34 @@ local botTarget
 function X.SkillsComplement()
 	if J.CanNotUseAbility( bot ) or bot:IsInvisible() then return end
 
+	PoisonAttack = bot:GetAbilityByName('viper_poison_attack')
+	NetherToxin = bot:GetAbilityByName('viper_nethertoxin')
+	Nosedive = bot:GetAbilityByName( 'viper_nose_dive' )
+	ViperStrike = bot:GetAbilityByName('viper_viper_strike')
+
 	botTarget = J.GetProperTarget(bot)
 
 	ViperStrikeDesire, ViperStrikeTarget = X.ConsiderViperStrike()
 	if ViperStrikeDesire > 0
 	then
-		if J.HasPowerTreads(bot)
-		then
-			J.SetQueuePtToINT(bot, true)
-			bot:ActionQueue_UseAbilityOnEntity(ViperStrike, ViperStrikeTarget)
-		else
-			bot:Action_UseAbilityOnEntity(ViperStrike, ViperStrikeTarget)
-		end
-
+		J.SetQueuePtToINT(bot, true)
+		bot:ActionQueue_UseAbilityOnEntity(ViperStrike, ViperStrikeTarget)
 		return
 	end
 
 	NosediveDesire, NosediveLocation = X.ConsiderNosedive()
 	if NosediveDesire > 0
 	then
-		if J.HasPowerTreads(bot)
-		then
-			J.SetQueuePtToINT(bot, true)
-			bot:ActionQueue_UseAbilityOnLocation(Nosedive, NosediveLocation)
-		else
-			bot:Action_UseAbilityOnLocation(Nosedive, NosediveLocation)
-		end
-
+		J.SetQueuePtToINT(bot, true)
+		bot:ActionQueue_UseAbilityOnLocation(Nosedive, NosediveLocation)
 		return
 	end
 
 	NetherToxinDesire, NetherToxinLocation = X.ConsiderNetherToxin()
 	if NetherToxinDesire > 0
 	then
-		if J.HasPowerTreads(bot)
-		then
-			J.SetQueuePtToINT(bot, true)
-			bot:ActionQueue_UseAbilityOnLocation(NetherToxin, NetherToxinLocation)
-		else
-			bot:Action_UseAbilityOnLocation(NetherToxin, NetherToxinLocation)
-		end
-
+		J.SetQueuePtToINT(bot, true)
+		bot:ActionQueue_UseAbilityOnLocation(NetherToxin, NetherToxinLocation)
 		return
 	end
 
@@ -226,7 +220,7 @@ function X.SkillsComplement()
 end
 
 function X.ConsiderPoisonAttack()
-	if not PoisonAttack:IsFullyCastable()
+	if not J.CanCastAbility(PoisonAttack)
 	then
 		return BOT_ACTION_DESIRE_NONE, nil
 	end
@@ -268,7 +262,7 @@ function X.ConsiderPoisonAttack()
 
             if  nInRangeAlly ~= nil and nInRangeEnemy ~= nil
             and #nInRangeAlly >= #nInRangeEnemy
-			and J.GetManaAfter(PoisonAttack:GetManaCost()) * bot:GetMana() > ViperStrike:GetManaCost()
+			and J.GetManaAfter(PoisonAttack:GetManaCost()) > 0.2
             then
                 if  J.IsInRange(bot, botTarget, nAttackRange)
 				and not botTarget:IsAttackImmune()
@@ -391,7 +385,7 @@ function X.ConsiderPoisonAttack()
 end
 
 function X.ConsiderNetherToxin()
-	if not NetherToxin:IsFullyCastable()
+	if not J.CanCastAbility(NetherToxin)
 	then
 		return BOT_ACTION_DESIRE_NONE, 0
 	end
@@ -463,7 +457,7 @@ function X.ConsiderNetherToxin()
     end
 
 	if  J.IsFarming(bot)
-	and J.GetManaAfter(NetherToxin:GetManaCost()) * bot:GetMana() > ViperStrike:GetManaCost()
+	and J.GetManaAfter(NetherToxin:GetManaCost()) > 0.35
 	and nAbilityLevel >= 2
     then
 		if J.IsAttacking(bot)
@@ -472,7 +466,6 @@ function X.ConsiderNetherToxin()
 			local nCreepCount = J.GetNearbyAroundLocationUnitCount(true, false, nRadius, J.GetCenterOfUnits(nNeutralCreeps))
 
 			if  nNeutralCreeps ~= nil and #nNeutralCreeps >= 1
-			and J.GetManaAfter(NetherToxin:GetManaCost()) * bot:GetMana() > ViperStrike:GetManaCost()
 			then
 				if J.IsBigCamp(nNeutralCreeps)
 				or nNeutralCreeps[1]:IsAncientCreep()
@@ -528,7 +521,7 @@ function X.ConsiderNetherToxin()
 end
 
 function X.ConsiderViperStrike()
-	if not ViperStrike:IsFullyCastable()
+	if not J.CanCastAbility(ViperStrike)
 	then
 		return BOT_ACTION_DESIRE_NONE, nil
 	end
@@ -645,8 +638,7 @@ function X.ConsiderViperStrike()
 end
 
 function X.ConsiderNosedive()
-	if not Nosedive:IsTrained()
-	or not Nosedive:IsFullyCastable()
+	if not J.CanCastAbility(Nosedive)
 	then
 		return BOT_ACTION_DESIRE_NONE, 0
 	end

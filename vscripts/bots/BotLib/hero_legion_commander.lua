@@ -7,9 +7,12 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_legion_commander'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
-local sUtility = {"item_crimson_guard", "item_pipe", "item_heavens_halberd"}
+local sUtility = {"item_pipe", "item_heavens_halberd"}
 local sUtilityItem = RI.GetBestUtilityItem(sUtility)
 
 local HeroBuild = {
@@ -55,26 +58,26 @@ local HeroBuild = {
 				"item_double_branches",
 				"item_quelling_blade",
 			
+				"item_magic_wand",
 				"item_bracer",
 				"item_phase_boots",
-				"item_magic_wand",
 				"item_blade_mail",
 				"item_blink",
+				"item_crimson_guard",--
 				"item_black_king_bar",--
 				sUtilityItem,--
-				"item_assault",--
 				"item_greater_crit",--
 				"item_overwhelming_blink",--
 				"item_travel_boots_2",--
-				"item_moon_shard",
-				"item_aghanims_shard",
 				"item_ultimate_scepter_2",
+				"item_aghanims_shard",
+				"item_moon_shard",
 			},
             ['sell_list'] = {
-				"item_quelling_blade",
-				"item_bracer",
-				"item_magic_wand",
-				"item_blade_mail",
+				"item_quelling_blade", "item_crimson_guard",
+				"item_magic_wand", "item_black_king_bar",
+				"item_bracer", sUtilityItem,
+				"item_blade_mail", "item_greater_crit",
 			},
         },
     },
@@ -130,6 +133,8 @@ function X.MinionThink( hMinionUnit )
 
 end
 
+end
+
 --[[
 
 npc_dota_hero_legion_commander
@@ -159,10 +164,10 @@ modifier_legion_commander_duel
 
 --]]
 
-local abilityQ = bot:GetAbilityByName( sAbilityList[1] )
-local abilityW = bot:GetAbilityByName( sAbilityList[2] )
-local abilityE = bot:GetAbilityByName( sAbilityList[3] )
-local abilityR = bot:GetAbilityByName( sAbilityList[6] )
+local abilityQ = bot:GetAbilityByName('legion_commander_overwhelming_odds')
+local abilityW = bot:GetAbilityByName('legion_commander_press_the_attack')
+local abilityE = bot:GetAbilityByName('legion_commander_moment_of_courage')
+local abilityR = bot:GetAbilityByName('legion_commander_duel')
 local talent2 = bot:GetAbilityByName( sTalentList[2] )
 local talent5 = bot:GetAbilityByName( sTalentList[5] )
 
@@ -178,6 +183,10 @@ local aetherRange = 0
 function X.SkillsComplement()
 
 	if J.CanNotUseAbility( bot ) or bot:IsInvisible() then return end
+
+	abilityQ = bot:GetAbilityByName('legion_commander_overwhelming_odds')
+	abilityW = bot:GetAbilityByName('legion_commander_press_the_attack')
+	abilityR = bot:GetAbilityByName('legion_commander_duel')
 
 	nKeepMana = 400
 	aetherRange = 0
@@ -201,22 +210,21 @@ function X.SkillsComplement()
 		--J.SetQueuePtToINT( bot, true )
 		
 		--释放强攻给自己
-		if abilityW:IsTrained() and false
-			and abilityW:IsFullyCastable()
-			and bot:GetMana() > abilityW:GetManaCost() + abilityR:GetManaCost()
-		then
-			if talent5:IsTrained()
-			then
-				bot:ActionQueue_UseAbilityOnLocation( abilityW, bot:GetLocation() )
-			else
-				bot:ActionQueue_UseAbilityOnEntity( abilityW, bot )
-			end		
-		end
+		-- if abilityW:IsTrained() and false
+		-- 	and abilityW:IsFullyCastable()
+		-- 	and bot:GetMana() > abilityW:GetManaCost() + abilityR:GetManaCost()
+		-- then
+		-- 	if talent5:IsTrained()
+		-- 	then
+		-- 		bot:ActionQueue_UseAbilityOnLocation( abilityW, bot:GetLocation() )
+		-- 	else
+		-- 		bot:ActionQueue_UseAbilityOnEntity( abilityW, bot )
+		-- 	end		
+		-- end
 			
 		--释放刃甲
 		local abilityBM = J.IsItemAvailable( "item_blade_mail" )
-		if abilityBM ~= nil 
-			and abilityBM:IsFullyCastable()
+		if J.CanCastAbility(abilityBM)
 			and bot:GetMana() > abilityBM:GetManaCost() + abilityR:GetManaCost()
 		then
 			bot:ActionQueue_UseAbility( abilityBM )
@@ -261,7 +269,7 @@ end
 function X.ConsiderQ()
 
 
-	if not abilityQ:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityQ) then return 0 end
 
 	local nSkillLV = abilityQ:GetLevel()
 	local nCastRange = 600
@@ -411,7 +419,7 @@ end
 function X.ConsiderW()
 
 
-	if not abilityW:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityW) then return 0 end
 
 	local nSkillLV = abilityW:GetLevel()
 	local nCastRange = abilityW:GetCastRange()
@@ -502,7 +510,7 @@ end
 function X.ConsiderR()
 
 
-	if not abilityR:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityR) then return 0 end
 
 	local nSkillLV = abilityR:GetLevel()
 	local nCastRange = abilityR:GetCastRange()
@@ -553,7 +561,8 @@ function X.ConsiderR()
 	do 
 		
 		--打断施法
-		if npcEnemy:IsChanneling()
+		if J.IsValidHero(npcEnemy)
+		and npcEnemy:IsChanneling()
 			and not npcEnemy:IsMagicImmune()
 			and npcEnemy:IsBot()
 		then

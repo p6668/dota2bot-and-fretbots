@@ -7,6 +7,9 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_meepo'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
 local sUtility = {}
@@ -24,7 +27,7 @@ local HeroBuild = {
                 }
             },
             ['ability'] = {
-                [1] = {2,3,6,1,2,2,2,3,3,6,3,1,1,1,6,6},
+                [1] = {2,3,1,6,2,2,2,3,3,6,3,1,1,1,6},
             },
             ['buy_list'] = {
                 "item_tango",
@@ -32,27 +35,25 @@ local HeroBuild = {
                 "item_quelling_blade",
             
                 "item_wraith_band",
-                "item_boots",
                 "item_magic_wand",
                 "item_power_treads",
                 "item_diffusal_blade",
                 "item_blink",
                 "item_ultimate_scepter",
                 "item_aghanims_shard",
-                "item_disperser",--
                 "item_skadi",--
+                "item_disperser",--
                 "item_basher",
+                "item_swift_blink",--
                 "item_sheepstick",--
                 "item_ultimate_scepter_2",
                 "item_abyssal_blade",--
-                "item_swift_blink",--
-                "item_travel_boots_2",--
                 "item_moon_shard",
             },
             ['sell_list'] = {
-                "item_quelling_blade",
-                "item_wraith_band",
-                "item_magic_wand",
+                "item_quelling_blade", "item_ultimate_scepter",
+                "item_magic_wand", "item_skadi",
+                "item_wraith_band", "item_basher",
             },
         },
     },
@@ -67,7 +68,7 @@ local HeroBuild = {
                 }
             },
             ['ability'] = {
-                [1] = {2,3,6,1,2,2,2,3,3,6,3,1,1,1,6,6},
+                [1] = {2,3,1,6,2,2,2,3,3,6,3,1,1,1,6},
             },
             ['buy_list'] = {
                 "item_tango",
@@ -75,26 +76,24 @@ local HeroBuild = {
                 "item_quelling_blade",
             
                 "item_wraith_band",
-                "item_boots",
                 "item_magic_wand",
                 "item_power_treads",
                 "item_diffusal_blade",
                 "item_blink",
                 "item_ultimate_scepter",
                 "item_aghanims_shard",
-                "item_disperser",--
                 "item_skadi",--
                 "item_sheepstick",--
+                "item_disperser",--
                 "item_ultimate_scepter_2",
-                "item_nullifier",--
+                "item_bloodthorn",--
                 "item_swift_blink",--
-                "item_travel_boots_2",--
                 "item_moon_shard",
             },
             ['sell_list'] = {
-                "item_quelling_blade",
-                "item_wraith_band",
-                "item_magic_wand",
+                "item_quelling_blade", "item_ultimate_scepter",
+                "item_magic_wand", "item_skadi",
+                "item_wraith_band", "item_sheepstick",
             },
         },
     },
@@ -157,6 +156,8 @@ function X.MinionThink(hMinionUnit)
     Minion.MinionThink(hMinionUnit)
 end
 
+end
+
 local EarthBind         = bot:GetAbilityByName('meepo_earthbind')
 local Poof              = bot:GetAbilityByName('meepo_poof')
 -- local Ransack           = bot:GetAbilityByName('meepo_ransack')
@@ -176,13 +177,19 @@ local Meepos = {}
 function X.SkillsComplement()
     if J.CanNotUseAbility(bot) then return end
 
+    EarthBind         = bot:GetAbilityByName('meepo_earthbind')
+    Poof              = bot:GetAbilityByName('meepo_poof')
+    Dig               = bot:GetAbilityByName('meepo_petrify')
+    MegaMeepo         = bot:GetAbilityByName('meepo_megameepo')
+    MegaMeepoFling    = bot:GetAbilityByName('meepo_megameepo_fling')
+
     Meepos = J.GetMeepos()
 
     PoofDesire, PoofTarget = X.ConsiderPoof()
     if PoofDesire > 0
     then
         J.SetQueuePtToINT(bot, true)
-        bot:Action_UseAbilityOnEntity(Poof, PoofTarget)
+        bot:ActionQueue_UseAbilityOnEntity(Poof, PoofTarget)
         return
     end
 
@@ -204,7 +211,7 @@ function X.SkillsComplement()
     if EarthBindDesire > 0
     then
         J.SetQueuePtToINT(bot, true)
-        bot:Action_UseAbilityOnLocation(EarthBind, EarthBindLocation)
+        bot:ActionQueue_UseAbilityOnLocation(EarthBind, EarthBindLocation)
         return
     end
 
@@ -217,7 +224,7 @@ function X.SkillsComplement()
 end
 
 function X.ConsiderEarthBind()
-    if not EarthBind:IsFullyCastable()
+    if not J.CanCastAbility(EarthBind)
     then
         return BOT_ACTION_DESIRE_NONE, 0
     end
@@ -328,7 +335,7 @@ function X.ConsiderEarthBind()
 end
 
 function X.ConsiderPoof()
-    if not Poof:IsFullyCastable()
+    if not J.CanCastAbility(Poof)
     then
         return BOT_ACTION_DESIRE_NONE, nil
     end
@@ -567,8 +574,7 @@ function X.ConsiderPoof()
 end
 
 function X.ConsiderDig()
-    if not Dig:IsTrained()
-    or not Dig:IsFullyCastable()
+    if not J.CanCastAbility(Dig)
     then
         return BOT_ACTION_DESIRE_NONE
     end
@@ -582,8 +588,7 @@ function X.ConsiderDig()
 end
 
 function X.ConsiderMegaMeepo()
-    if not MegaMeepo:IsTrained()
-    or not MegaMeepo:IsFullyCastable()
+    if not J.CanCastAbility(MegaMeepo)
     or bot:HasModifier('modifier_meepo_petrify')
     then
         return BOT_ACTION_DESIRE_NONE
@@ -617,8 +622,7 @@ function X.ConsiderMegaMeepo()
 end
 
 function X.ConsiderMegaMeepoFling()
-    if MegaMeepoFling:IsHidden()
-    or not MegaMeepoFling:IsFullyCastable()
+    if not J.CanCastAbility(MegaMeepoFling)
     then
         return BOT_ACTION_DESIRE_NONE
     end

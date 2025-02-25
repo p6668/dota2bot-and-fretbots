@@ -7,6 +7,9 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_nyx_assassin'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
 local sUtility = {}
@@ -70,11 +73,12 @@ local HeroBuild = {
                 "item_tranquil_boots",
                 "item_magic_wand",
                 "item_dagon_2",
+                "item_force_staff",--
+                "item_ancient_janggo",
                 "item_aghanims_shard",
                 "item_blink",
-                "item_force_staff",--
                 "item_boots_of_bearing",--
-                "item_octarine_core",--
+                "item_lotus_orb",--
                 "item_ultimate_scepter",
                 "item_dagon_5",--
                 "item_swift_blink",--
@@ -83,7 +87,7 @@ local HeroBuild = {
                 "item_moon_shard",
             },
             ['sell_list'] = {
-                "item_magic_wand",
+                "item_magic_wand", "item_ancient_janggo",
             },
         },
     },
@@ -108,11 +112,12 @@ local HeroBuild = {
                 "item_arcane_boots",
                 "item_magic_wand",
                 "item_dagon_2",
+                "item_force_staff",--
+                "item_mekansm",
                 "item_aghanims_shard",
                 "item_blink",
-                "item_force_staff",--
                 "item_guardian_greaves",--
-                "item_octarine_core",--
+                "item_lotus_orb",--
                 "item_ultimate_scepter",
                 "item_dagon_5",--
                 "item_swift_blink",--
@@ -121,7 +126,7 @@ local HeroBuild = {
                 "item_moon_shard",
             },
             ['sell_list'] = {
-                "item_magic_wand",
+                "item_magic_wand", "item_mekansm",
             },
         },
     },
@@ -148,6 +153,8 @@ function X.MinionThink(hMinionUnit)
     Minion.MinionThink(hMinionUnit)
 end
 
+end
+
 local Impale            = bot:GetAbilityByName('nyx_assassin_impale')
 local Mindflare         = bot:GetAbilityByName('nyx_assassin_jolt')
 local SpikedCarapace    = bot:GetAbilityByName('nyx_assassin_spiked_carapace')
@@ -167,6 +174,13 @@ if bot.vendettaTarget == nil then bot.vendettaTarget = nil end
 
 function X.SkillsComplement()
 	if J.CanNotUseAbility(bot) then return end
+
+    Impale            = bot:GetAbilityByName('nyx_assassin_impale')
+    Mindflare         = bot:GetAbilityByName('nyx_assassin_jolt')
+    SpikedCarapace    = bot:GetAbilityByName('nyx_assassin_spiked_carapace')
+    Burrow            = bot:GetAbilityByName('nyx_assassin_burrow')
+    UnBurrow          = bot:GetAbilityByName('nyx_assassin_unburrow')
+    Vendetta          = bot:GetAbilityByName('nyx_assassin_vendetta')
 
     VendettaDesire = X.ConsiderVendetta()
     if VendettaDesire > 0
@@ -212,7 +226,7 @@ function X.SkillsComplement()
 end
 
 function X.ConsiderImpale()
-    if not Impale:IsFullyCastable()
+    if not J.CanCastAbility(Impale)
     or bot:HasModifier('modifier_nyx_assassin_vendetta')
     then
         return BOT_ACTION_DESIRE_NONE, 0
@@ -399,7 +413,7 @@ function X.ConsiderImpale()
 end
 
 function X.ConsiderMindflare()
-    if not Mindflare:IsFullyCastable()
+    if not J.CanCastAbility(Mindflare)
     or bot:HasModifier('modifier_nyx_assassin_vendetta')
     then
         return BOT_ACTION_DESIRE_NONE, nil
@@ -450,7 +464,7 @@ function X.ConsiderMindflare()
 end
 
 function X.ConsiderSpikedCarapace()
-    if not SpikedCarapace:IsFullyCastable()
+    if not J.CanCastAbility(SpikedCarapace)
     or bot:HasModifier('modifier_nyx_assassin_vendetta')
     then
         return BOT_ACTION_DESIRE_NONE
@@ -474,7 +488,7 @@ function X.ConsiderSpikedCarapace()
 end
 
 function X.ConsiderBurrow()
-    if not Burrow:IsFullyCastable()
+    if not J.CanCastAbility(Burrow)
     then
         return BOT_ACTION_DESIRE_NONE
     end
@@ -495,8 +509,7 @@ function X.ConsiderBurrow()
 end
 
 function X.ConsiderUnborrow()
-    if UnBurrow:IsHidden()
-    or not UnBurrow:IsFullyCastable()
+    if not J.CanCastAbility(UnBurrow)
     then
         return BOT_ACTION_DESIRE_NONE
     end
@@ -512,7 +525,7 @@ function X.ConsiderUnborrow()
 end
 
 function X.ConsiderVendetta()
-    if not Vendetta:IsFullyCastable()
+    if not J.CanCastAbility(Vendetta)
     or bot:HasModifier('modifier_nyx_assassin_burrow')
     or J.IsRealInvisible(bot)
     then

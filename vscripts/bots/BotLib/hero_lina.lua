@@ -7,6 +7,9 @@ local sTalentList = J.Skill.GetTalentList( bot )
 local sAbilityList = J.Skill.GetAbilityList( bot )
 local sRole = J.Item.GetRoleItemsBuyList( bot )
 
+if GetBot():GetUnitName() == 'npc_dota_hero_lina'
+then
+
 local RI = require(GetScriptDirectory()..'/FunLib/util_role_item')
 
 local sUtility = {}
@@ -32,24 +35,22 @@ local HeroBuild = {
 				"item_magic_stick",
 			
 				"item_magic_wand",
-				"item_falcon_blade",
-				"item_boots",
+				"item_arcane_boots",
 				"item_maelstrom",
-				"item_travel_boots",
-				"item_gungir",--
 				"item_dragon_lance",
 				"item_black_king_bar",--
+				"item_mjollnir",--
 				"item_greater_crit",--
-				"item_satanic",--
+				"item_travel_boots",
 				"item_hurricane_pike",--
-				"item_aghanims_shard",
-				"item_moon_shard",
+				"item_satanic",--
 				"item_travel_boots_2",--
+				"item_moon_shard",
+				"item_aghanims_shard",
 				"item_ultimate_scepter_2",
 			},
             ['sell_list'] = {
-				"item_magic_wand",
-				"item_falcon_blade",
+				"item_magic_wand", "item_satanic",
 			},
         },
     },
@@ -72,27 +73,27 @@ local HeroBuild = {
 				"item_faerie_fire",
 			
 				"item_bottle",
+				"item_magic_wand",
 				"item_null_talisman",
 				"item_boots",
-				"item_magic_wand",
-				"item_travel_boots",
 				"item_kaya",
-				"item_aghanims_shard",
+				"item_travel_boots",
 				"item_ultimate_scepter",
-				"item_black_king_bar",--
 				"item_yasha_and_kaya",--
+				"item_aghanims_shard",
+				"item_black_king_bar",--
 				"item_cyclone",
 				"item_octarine_core",--
-				"item_sheepstick",--
 				"item_wind_waker",--
+				"item_sheepstick",--
 				"item_ultimate_scepter_2",
 				"item_travel_boots_2",--
 				"item_moon_shard",
 			},
             ['sell_list'] = {
-				"item_bottle",
-				"item_null_talisman",
-				"item_magic_wand",
+				"item_magic_wand", "item_black_king_bar",
+				"item_bottle", "item_cyclone",
+				"item_null_talisman", "item_octarine_core",
 			},
         },
 		[2] = {
@@ -110,27 +111,27 @@ local HeroBuild = {
             ['buy_list'] = {
 				"item_tango",
 				"item_double_branches",
-				"item_faerie_fire",
+				"item_magic_stick",
 			
 				"item_bottle",
-				"item_null_talisman",
-				"item_boots",
 				"item_magic_wand",
-				"item_gungir",--
-				"item_travel_boots",
+				"item_arcane_boots",
+				"item_maelstrom",
+				"item_dragon_lance",
 				"item_black_king_bar",--
+				"item_mjollnir",--
 				"item_greater_crit",--
-				"item_aghanims_shard",
+				"item_travel_boots",
+				"item_hurricane_pike",--
 				"item_satanic",--
-				"item_sheepstick",--
 				"item_travel_boots_2",--
 				"item_moon_shard",
+				"item_aghanims_shard",
 				"item_ultimate_scepter_2",
 			},
             ['sell_list'] = {
-				"item_bottle",
-				"item_null_talisman",
-				"item_magic_wand",
+				"item_magic_wand", "item_greater_crit",
+				"item_bottle", "item_satanic",
 			},
         },
     },
@@ -150,8 +151,8 @@ local HeroBuild = {
         [1] = {
             ['talent'] = {
 				[1] = {
-					['t25'] = {10, 0},
-					['t20'] = {10, 0},
+					['t25'] = {0, 10},
+					['t20'] = {0, 10},
 					['t15'] = {10, 0},
 					['t10'] = {10, 0},
 				}
@@ -165,26 +166,25 @@ local HeroBuild = {
 				"item_double_circlet",
 				"item_double_branches",
 			
-				"item_tranquil_boots",
 				"item_magic_wand",
+				"item_tranquil_boots",
 				"item_aether_lens",
 				"item_cyclone",
 				"item_aghanims_shard",
-				"item_ultimate_scepter",
+				"item_rod_of_atos",
 				"item_boots_of_bearing",--
-				"item_ghost",
-				"item_maelstrom",
-				"item_ethereal_blade",--
-				"item_wind_waker",--
+				"item_glimmer_cape",--
 				"item_gungir",--
+				"item_wind_waker",--
 				"item_sheepstick",--
-				"item_hurricane_pike",--
+				"item_ethereal_blade",--
 				"item_ultimate_scepter_2",
 				"item_moon_shard",
 			},
             ['sell_list'] = {
-				"item_circlet",
-				"item_magic_wand",
+				"item_circlet", "item_cyclone",
+				"item_circlet", "item_rod_of_atos",
+				"item_magic_wand", "item_boots_of_bearing",
 			},
         },
     },
@@ -192,8 +192,8 @@ local HeroBuild = {
         [1] = {
             ['talent'] = {
 				[1] = {
-					['t25'] = {10, 0},
-					['t20'] = {10, 0},
+					['t25'] = {0, 10},
+					['t20'] = {0, 10},
 					['t15'] = {10, 0},
 					['t10'] = {10, 0},
 				}
@@ -207,26 +207,25 @@ local HeroBuild = {
 				"item_double_circlet",
 				"item_double_branches",
 			
-				"item_arcane_boots",
 				"item_magic_wand",
+				"item_arcane_boots",
 				"item_aether_lens",
 				"item_cyclone",
 				"item_aghanims_shard",
-				"item_ultimate_scepter",
+				"item_rod_of_atos",
 				"item_guardian_greaves",--
-				"item_ghost",
-				"item_maelstrom",
-				"item_ethereal_blade",--
-				"item_wind_waker",--
+				"item_glimmer_cape",--
 				"item_gungir",--
+				"item_wind_waker",--
 				"item_sheepstick",--
-				"item_hurricane_pike",--
+				"item_ethereal_blade",--
 				"item_ultimate_scepter_2",
 				"item_moon_shard",
 			},
             ['sell_list'] = {
-				"item_circlet",
-				"item_magic_wand",
+				"item_circlet", "item_cyclone",
+				"item_circlet", "item_rod_of_atos",
+				"item_magic_wand", "item_guardian_greaves",
 			},
         },
     },
@@ -259,11 +258,13 @@ function X.MinionThink( hMinionUnit )
 
 end
 
-local abilityQ = bot:GetAbilityByName( sAbilityList[1] )
-local abilityW = bot:GetAbilityByName( sAbilityList[2] )
-local abilityE = bot:GetAbilityByName( sAbilityList[3] )
-local abilityR = bot:GetAbilityByName( sAbilityList[6] )
-local FlameCloak = bot:GetAbilityByName( 'lina_flame_cloak' )
+end
+
+local abilityQ = bot:GetAbilityByName('lina_dragon_slave')
+local abilityW = bot:GetAbilityByName('lina_light_strike_array')
+local abilityE = bot:GetAbilityByName('lina_fiery_soul')
+local FlameCloak = bot:GetAbilityByName('lina_flame_cloak')
+local abilityR = bot:GetAbilityByName('lina_laguna_blade')
 local talent2 = bot:GetAbilityByName( sTalentList[2] )
 local talent4 = bot:GetAbilityByName( sTalentList[4] )
 local talent7 = bot:GetAbilityByName( sTalentList[7] )
@@ -274,7 +275,7 @@ local castRDesire, castRTarget
 local FlameCloakDesire
 
 
-local nKeepMana, nMP, nHP, nLV, hEnemyList, hAllyList, botTarget, sMotive
+local nKeepMana, nMP, nHP, nLV, hEnemyList, hAllyList, botTarget, sMotive, botName
 local aetherRange = 0
 local talent4Damage = 0
 
@@ -285,6 +286,10 @@ function X.SkillsComplement()
 
 	if J.CanNotUseAbility( bot ) or bot:IsInvisible() then return end
 
+	abilityQ = bot:GetAbilityByName('lina_dragon_slave')
+	abilityW = bot:GetAbilityByName('lina_light_strike_array')
+	FlameCloak = bot:GetAbilityByName('lina_flame_cloak')
+	abilityR = bot:GetAbilityByName('lina_laguna_blade')
 
 	nKeepMana = 400
 	aetherRange = 0
@@ -295,13 +300,18 @@ function X.SkillsComplement()
 	botTarget = J.GetProperTarget( bot )
 	hEnemyList = bot:GetNearbyHeroes( 1600, true, BOT_MODE_NONE )
 	hAllyList = J.GetAlliesNearLoc( bot:GetLocation(), 1600 )
+	botName = GetBot():GetUnitName()
 
 
 
 	local aether = J.IsItemAvailable( "item_aether_lens" )
 	if aether ~= nil then aetherRange = 250 end
 --	if talent2:IsTrained() then aetherRange = aetherRange + talent2:GetSpecialValueInt( "value" ) end
-	if talent4:IsTrained() then talent4Damage = talent4Damage + talent4:GetSpecialValueInt( "value" ) end
+
+	if string.find(botName, 'lina')
+	then
+		if talent4:IsTrained() then talent4Damage = talent4Damage + talent4:GetSpecialValueInt( "value" ) end
+	end
 
 	FlameCloakDesire = X.ConsiderFlameCloak()
 	if (FlameCloakDesire > 0)
@@ -349,7 +359,7 @@ end
 function X.ConsiderQ()
 
 
-	if not abilityQ:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityQ) then return 0 end
 
 	local nSkillLV = abilityQ:GetLevel()
 	local nCastRange = abilityQ:GetCastRange() + aetherRange
@@ -511,9 +521,20 @@ function X.ConsiderQ()
 	then
 		if J.IsRoshan( botTarget ) and J.GetHP( botTarget ) > 0.15
 			and J.IsInRange( botTarget, bot, nCastRange )
+			and J.IsAttacking(bot)
 		then
 			nTargetLocation = botTarget:GetLocation()
 			return BOT_ACTION_DESIRE_HIGH, nTargetLocation, 'Q肉山'
+		end
+	end
+
+	if J.IsDoingTormentor(bot)
+	then
+		if J.IsTormentor(botTarget)
+		and J.IsInRange(bot, botTarget, 800)
+		and J.IsAttacking(bot)
+		then
+			return BOT_ACTION_DESIRE_HIGH, botTarget:GetLocation(), ''
 		end
 	end
 
@@ -548,7 +569,7 @@ end
 function X.ConsiderW()
 
 
-	if not abilityW:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityW) then return 0 end
 
 	local nSkillLV = abilityW:GetLevel()
 	local nCastRange = abilityW:GetCastRange() + aetherRange
@@ -734,9 +755,20 @@ function X.ConsiderW()
 	then
 		if J.IsRoshan( botTarget ) and J.GetHP( botTarget ) > 0.3
 			and J.IsInRange( botTarget, bot, nCastRange )
+			and J.IsAttacking(bot)
 		then
 			nTargetLocation = botTarget:GetLocation()
 			return BOT_ACTION_DESIRE_HIGH, nTargetLocation, 'W肉山'
+		end
+	end
+
+	if J.IsDoingTormentor(bot)
+	then
+		if J.IsTormentor(botTarget)
+		and J.IsInRange(bot, botTarget, 800)
+		and J.IsAttacking(bot)
+		then
+			return BOT_ACTION_DESIRE_HIGH, botTarget:GetLocation(), ''
 		end
 	end
 
@@ -750,7 +782,7 @@ end
 function X.ConsiderR()
 
 
-	if not abilityR:IsFullyCastable() then return 0 end
+	if not J.CanCastAbility(abilityR) then return 0 end
 
 	local nSkillLV = abilityR:GetLevel()
 	local nCastRange = abilityR:GetCastRange() + aetherRange
@@ -846,8 +878,7 @@ function X.CanCastAbilityROnTarget( nTarget )
 end
 
 function X.ConsiderFlameCloak()
-	if not FlameCloak:IsTrained()
-	or not FlameCloak:IsFullyCastable()
+	if not J.CanCastAbility(FlameCloak)
 	then
 		return BOT_ACTION_DESIRE_NONE
 	end
@@ -866,8 +897,6 @@ function X.ConsiderFlameCloak()
 	if J.IsGoingOnSomeone(bot)
 	and (nEnemyHeroes ~= nil and #nEnemyHeroes >= 2)
 	then
-		local botTarget = bot:GetTarget()
-
 		if J.IsValidTarget(botTarget)
 		and J.CanCastOnNonMagicImmune(botTarget)
 		then
