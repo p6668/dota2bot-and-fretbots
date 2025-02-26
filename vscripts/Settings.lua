@@ -129,7 +129,7 @@ function Settings:DifficultySelectTimer()
 	end
 	-- If voting not yet open, display directions
 	if not isVotingOpen then
-		local msg = 'Fret Bots! Snow Version: '..version..'\n'
+		local msg = 'Fret Bots! CalCulated/Snow Version: '..version..'\n'
 		Utilities:Print(msg, MSG_GOOD)
 	  msg = 'Difficulty voting is now open!'..' Default difficulty is currently: '..tostring(noVoteDifficulty)
 		Utilities:Print(msg, MSG_GOOD)
