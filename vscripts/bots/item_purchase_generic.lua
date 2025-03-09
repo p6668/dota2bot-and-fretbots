@@ -503,45 +503,45 @@ function ItemPurchaseThink()
 		end
 	end
 
-	-- Smoke of Deceit
-	if  (J.GetPosition(bot) == 4 or J.GetPosition(bot) == 5)
-	and not isBear
-	and not J.IsLateGame()
-	and GetItemStockCount('item_smoke_of_deceit') > 1
-	and botGold >= GetItemCost('item_smoke_of_deceit')
-	and Item.GetEmptyInventoryAmount(bot) >= 3
-	and Item.GetItemCharges(bot, 'item_smoke_of_deceit') == 0
-	and bot:GetCourierValue() == 0
-	then
-		if  DotaTime() < 0
-		and not initSmoke
-		then
-			local hasSmoke = false
-			for _, allyHero in pairs(GetUnitList(UNIT_LIST_ALLIED_HEROES))
-			do
-				if  J.IsValidHero(allyHero)
-				and J.IsNotSelf(bot, allyHero)
-				and J.HasItem(allyHero, 'item_smoke_of_deceit')
-				then
-					hasSmoke = true
-					break
-				end
-			end
+	-- -- Smoke of Deceit
+	-- if  (J.GetPosition(bot) == 4 or J.GetPosition(bot) == 5)
+	-- and not isBear
+	-- and not J.IsLateGame()
+	-- and GetItemStockCount('item_smoke_of_deceit') > 1
+	-- and botGold >= GetItemCost('item_smoke_of_deceit')
+	-- and Item.GetEmptyInventoryAmount(bot) >= 3
+	-- and Item.GetItemCharges(bot, 'item_smoke_of_deceit') == 0
+	-- and bot:GetCourierValue() == 0
+	-- then
+	-- 	if  DotaTime() < 0
+	-- 	and not initSmoke
+	-- 	then
+	-- 		local hasSmoke = false
+	-- 		for _, allyHero in pairs(GetUnitList(UNIT_LIST_ALLIED_HEROES))
+	-- 		do
+	-- 			if  J.IsValidHero(allyHero)
+	-- 			and J.IsNotSelf(bot, allyHero)
+	-- 			and J.HasItem(allyHero, 'item_smoke_of_deceit')
+	-- 			then
+	-- 				hasSmoke = true
+	-- 				break
+	-- 			end
+	-- 		end
 
-			if not hasSmoke
-			then
-				bot:ActionImmediate_PurchaseItem('item_smoke_of_deceit')
-				return
-			end
-		else
-			if not J.IsInLaningPhase()
-			and not J.DoesTeamHaveItem('item_smoke_of_deceit')
-			then
-				bot:ActionImmediate_PurchaseItem('item_smoke_of_deceit')
-				return
-			end
-		end
-	end
+	-- 		if not hasSmoke
+	-- 		then
+	-- 			bot:ActionImmediate_PurchaseItem('item_smoke_of_deceit')
+	-- 			return
+	-- 		end
+	-- 	else
+	-- 		if not J.IsInLaningPhase()
+	-- 		and not J.DoesTeamHaveItem('item_smoke_of_deceit')
+	-- 		then
+	-- 			bot:ActionImmediate_PurchaseItem('item_smoke_of_deceit')
+	-- 			return
+	-- 		end
+	-- 	end
+	-- end
 
 	-- Blood Grenade
 	if  J.IsInLaningPhase()
