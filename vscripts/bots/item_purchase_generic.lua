@@ -298,7 +298,6 @@ function ItemPurchaseThink()
 	if bot:HasModifier('modifier_arc_warden_tempest_double')
 	or (DotaTime() > 0 and J.IsMeepoClone(bot))
 	or bot:HasModifier('modifier_dazzle_nothl_projection_soul_debuff')
-	or bot:HasModifier('modifier_dazzle_nothl_projection_physical_body_debuff')
 	then
 		bot.itemToBuy = {}
 		return
@@ -503,45 +502,45 @@ function ItemPurchaseThink()
 		end
 	end
 
-	-- -- Smoke of Deceit
-	-- if  (J.GetPosition(bot) == 4 or J.GetPosition(bot) == 5)
-	-- and not isBear
-	-- and not J.IsLateGame()
-	-- and GetItemStockCount('item_smoke_of_deceit') > 1
-	-- and botGold >= GetItemCost('item_smoke_of_deceit')
-	-- and Item.GetEmptyInventoryAmount(bot) >= 3
-	-- and Item.GetItemCharges(bot, 'item_smoke_of_deceit') == 0
-	-- and bot:GetCourierValue() == 0
-	-- then
-	-- 	if  DotaTime() < 0
-	-- 	and not initSmoke
-	-- 	then
-	-- 		local hasSmoke = false
-	-- 		for _, allyHero in pairs(GetUnitList(UNIT_LIST_ALLIED_HEROES))
-	-- 		do
-	-- 			if  J.IsValidHero(allyHero)
-	-- 			and J.IsNotSelf(bot, allyHero)
-	-- 			and J.HasItem(allyHero, 'item_smoke_of_deceit')
-	-- 			then
-	-- 				hasSmoke = true
-	-- 				break
-	-- 			end
-	-- 		end
+	-- Smoke of Deceit
+	if  (J.GetPosition(bot) == 4 or J.GetPosition(bot) == 5)
+	and not isBear
+	and not J.IsLateGame()
+	and GetItemStockCount('item_smoke_of_deceit') > 1
+	and botGold >= GetItemCost('item_smoke_of_deceit')
+	and Item.GetEmptyInventoryAmount(bot) >= 3
+	and Item.GetItemCharges(bot, 'item_smoke_of_deceit') == 0
+	and bot:GetCourierValue() == 0
+	then
+		if  DotaTime() < 0
+		and not initSmoke
+		then
+			local hasSmoke = false
+			for _, allyHero in pairs(GetUnitList(UNIT_LIST_ALLIED_HEROES))
+			do
+				if  J.IsValidHero(allyHero)
+				and J.IsNotSelf(bot, allyHero)
+				and J.HasItem(allyHero, 'item_smoke_of_deceit')
+				then
+					hasSmoke = true
+					break
+				end
+			end
 
-	-- 		if not hasSmoke
-	-- 		then
-	-- 			bot:ActionImmediate_PurchaseItem('item_smoke_of_deceit')
-	-- 			return
-	-- 		end
-	-- 	else
-	-- 		if not J.IsInLaningPhase()
-	-- 		and not J.DoesTeamHaveItem('item_smoke_of_deceit')
-	-- 		then
-	-- 			bot:ActionImmediate_PurchaseItem('item_smoke_of_deceit')
-	-- 			return
-	-- 		end
-	-- 	end
-	-- end
+			if not hasSmoke
+			then
+				bot:ActionImmediate_PurchaseItem('item_smoke_of_deceit')
+				return
+			end
+		else
+			if not J.IsInLaningPhase()
+			and not J.DoesTeamHaveItem('item_smoke_of_deceit')
+			then
+				bot:ActionImmediate_PurchaseItem('item_smoke_of_deceit')
+				return
+			end
+		end
+	end
 
 	-- Blood Grenade
 	if  J.IsInLaningPhase()
@@ -684,7 +683,7 @@ function ItemPurchaseThink()
 	end
 
 	if currentTime > sell_time + 0.5
-	and ((( bot:GetItemInSlot( 6 ) ~= nil or bot:GetItemInSlot( 7 ) ~= nil or bot:GetItemInSlot( 8 ) ~= nil )
+	and ((( bot:GetItemInSlot( 6 ) ~= nil or bot:GetItemInSlot( 7 ) ~= nil or bot:GetItemInSlot( 8 ) ~= nil or (not J.IsModeTurbo() and bot:GetUnitName() == 'npc_dota_hero_lone_druid'))
 			and (bot:DistanceFromFountain() <= 100 or bot:DistanceFromSecretShop() <= 100 ))
 		or J.IsModeTurbo()
 		)
