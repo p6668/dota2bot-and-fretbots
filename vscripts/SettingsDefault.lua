@@ -328,7 +328,7 @@
 			magicResist 	= 0,
 			levels 				= 10,
 			neutral 			= 1200,
-			stats 				= 30,
+			stats 				= 50,
     },		
     -- Settings for dynamically adjusting difficulty
     dynamicDifficulty = 
