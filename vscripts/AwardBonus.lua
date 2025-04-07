@@ -72,7 +72,7 @@ function AwardBonus:stats(bot, bonus)
 	  stat = bot:GetBaseAgility()
 	  bot:SetBaseAgility(stat + bonus)
 	  stat = bot:GetBaseIntellect()
-	  bot:SetBaseIntellect(stat + bonus * 0.5) -- reduce int stats due to 7.33 update giving magic resist
+	  bot:SetBaseIntellect(stat + bonus * 0.1) -- reduce int stats due to 7.33 update giving magic resist
 	  bot.stats.awards.stats = bot.stats.awards.stats + bonus
 	  --Debug:Print('Awarding stats to '..bot.stats.name..'.')
 	  return true
