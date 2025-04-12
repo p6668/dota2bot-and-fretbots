@@ -278,12 +278,12 @@
 			-- Awards multiplied by this (per role) if enabled
 			scale = 
 			{
-				gold 					= {1.1, 1.1, 1.0, 0.8, 0.6},
-				armor 				= {1.2, 1.1, 1.0, 0.4, 0.2},
-				magicResist 	= {1.2, 1.1, 1.0, 0.4, 0.2},
-				levels 				= {1.1, 1.1, 1.0, 0.8, 0.6},
-				neutral 			= {1.1, 1.1, 1.0, 0.8, 0.6},
-				stats 				= {1.0, 1.0, 1.0, 0.8, 0.6}
+				gold 					= {1.1, 1.1, 1.0, 0.8, 0.8},
+				armor 				= {1.2, 1.1, 1.0, 0.4, 0.4},
+				magicResist 	= {1.2, 1.1, 1.0, 0.4, 0.4},
+				levels 				= {1.1, 1.1, 1.0, 0.8, 0.8},
+				neutral 			= {1.1, 1.1, 1.0, 0.8, 0.8},
+				stats 				= {1.0, 1.0, 1.0, 0.8, 0.8}
 			},	  
 			-- Enable role scaling?  
 			scaleEnabled = 
@@ -326,9 +326,9 @@
  			gold 					= 30000,
 			armor 				= 0,
 			magicResist 	= 0,
-			levels 				= 10,
+			levels 				= 15,
 			neutral 			= 1200,
-			stats 				= 50,
+			stats 				= 100,
     },		
     -- Settings for dynamically adjusting difficulty
     dynamicDifficulty = 
