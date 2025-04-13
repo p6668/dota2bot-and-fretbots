@@ -100,7 +100,8 @@
 			variance 			= {1, 1},
 			clamp 				= {0, 25},
 			clampOverride = false,
-			scale 				= {1.2, 1.1, 1.0, 0.8, 0.8},
+			-- scale 				= {1.2, 1.1, 1.0, 0.8, 0.8},
+			scale 				= {1.3, 1.2, 1.1, 0.9, 0.9},
 			perMinuteScale = 0.5
 		},
 		deathBonus = 
@@ -326,7 +327,7 @@
  			gold 					= 30000,
 			armor 				= 0,
 			magicResist 	= 0,
-			levels 				= 15,
+			levels 				= 25,
 			neutral 			= 1200,
 			stats 				= 50,
     },		
