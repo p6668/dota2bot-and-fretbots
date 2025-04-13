@@ -89,7 +89,7 @@
 			-- ignore clamps?
 			clampOverride = false,
 			-- scales (per role) for multipliers if necessary
-			scale 				= {1.2, 1.1, 1.0, 0.8, 0.6},
+			scale 				= {1.2, 1.1, 1.0, 0.8, 0.8},
 			-- Add this to the max clamp per minute
 			perMinuteScale = 0.5
 		},
@@ -100,7 +100,7 @@
 			variance 			= {1, 1},
 			clamp 				= {0, 25},
 			clampOverride = false,
-			scale 				= {1.2, 1.1, 1.0, 0.8, 0.6},
+			scale 				= {1.2, 1.1, 1.0, 0.8, 0.8},
 			perMinuteScale = 0.5
 		},
 		deathBonus = 
@@ -328,7 +328,7 @@
 			magicResist 	= 0,
 			levels 				= 15,
 			neutral 			= 1200,
-			stats 				= 100,
+			stats 				= 50,
     },		
     -- Settings for dynamically adjusting difficulty
     dynamicDifficulty = 
@@ -366,7 +366,7 @@
 	    },    	
     	xpm = 
     	{
-	    	enabled							= false,
+	    	enabled							= true,
 	    	advantageThreshold 	= 2,
 	    	incrementEvery 			= 1,
 	    	base								= 10,
@@ -376,7 +376,7 @@
 	    },    	 
     	levels = 
     	{
-	    	enabled							= false,
+	    	enabled							= true,
 	    	advantageThreshold	= 10,
 	    	incrementEvery			= 2,
 	    	base								= 1,

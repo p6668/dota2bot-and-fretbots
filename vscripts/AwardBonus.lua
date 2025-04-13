@@ -68,7 +68,7 @@ function AwardBonus:stats(bot, bonus)
 	if bot.stats.awards.stats < Settings.awardCap.stats and bonus > 0 then
 		local stat
 	  stat = bot:GetBaseStrength()
-	  bot:SetBaseStrength(stat + bonus*0.7)
+	  bot:SetBaseStrength(stat + bonus)
 	  stat = bot:GetBaseAgility()
 	  bot:SetBaseAgility(stat + bonus)
 	  stat = bot:GetBaseIntellect()

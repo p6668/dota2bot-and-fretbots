@@ -106,7 +106,7 @@ local sHeroList = {										-- pos  1, 2, 3, 4, 5
 	{name = 'npc_dota_hero_phantom_lancer', 			role = {100, 0, 0, 0, 0}},
 	{name = 'npc_dota_hero_phantom_assassin', 			role = {100, 0, 0, 0, 0}},
 	{name = 'npc_dota_hero_phoenix', 					role = {0, 0, 0, 100, 100}},
-	{name = 'npc_dota_hero_primal_beast', 				role = {0, 100, 50, 0, 0}},
+	-- {name = 'npc_dota_hero_primal_beast', 				role = {0, 100, 50, 0, 0}},
 	{name = 'npc_dota_hero_puck', 						role = {0, 100, 0, 0, 0}},
 	{name = 'npc_dota_hero_pudge', 						role = {0, 100, 100, 5, 5}},
 	{name = 'npc_dota_hero_pugna', 						role = {0, 50, 0, 100, 100}},
