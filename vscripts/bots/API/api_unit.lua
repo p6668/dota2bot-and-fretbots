@@ -190,6 +190,18 @@ end
 -- int GetActiveMode()
 
 -- Get the bots currently active mode. This may not track modes in complete takeover bots.
+local o_GetActiveMode = CDOTA_Bot_Script.GetActiveMode
+function CDOTA_Bot_Script:GetActiveMode()
+    if self then
+        if self:GetActiveModeDesire() > 0 then
+            return o_GetActiveMode(self)
+        else
+            return BOT_MODE_NONE
+        end
+    end
+    return BOT_MODE_NONE
+end
+
 -- float GetActiveModeDesire()
 
 -- Gets the desire of the currently active mode.
@@ -590,6 +602,14 @@ end
 -- hUnit GetTarget()
 
 -- Gets the target that's been set for a unit.
+local o_GetTarget = CDOTA_Bot_Script.GetTarget
+function CDOTA_Bot_Script:GetTarget()
+    if self ~= nil and self:CanBeSeen() and self:IsHero() then
+        return o_GetTarget(self)
+    end
+    return nil
+end
+
 -- SetNextItemPurchaseValue( nGold )
 
 -- Sets the value of the next item to purchase. Doesn't actually execute anything, just potentially useful for communicating a purchase target for modes like Farm.
@@ -652,9 +672,51 @@ end
 -- { hUnit, ... } GetNearbyLaneCreeps( nRadius, bEnemies )
 
 -- Returns a table of lane creeps, sorted closest-to-furthest. nRadius must be less than 1600.
+local o_GetNearbyLaneCreeps = CDOTA_Bot_Script.GetNearbyLaneCreeps
+function CDOTA_Bot_Script:GetNearbyLaneCreeps(nRadius, bEnemies)
+    if self ~= nil and self == GetBot() and self:CanBeSeen() then
+        local distFromTop = GetUnitToLocationDistance(self, GetLaneFrontLocation(GetTeam(), LANE_TOP, 0))
+        local distFromMid = GetUnitToLocationDistance(self, GetLaneFrontLocation(GetTeam(), LANE_MID, 0))
+        local distFromBot = GetUnitToLocationDistance(self, GetLaneFrontLocation(GetTeam(), LANE_BOT, 0))
+
+        local selfActiveMode = self:GetActiveMode()
+
+        -- help with special units; lazy
+        if (   (selfActiveMode == BOT_MODE_DEFEND_TOWER_TOP and distFromTop < 1600)
+            or (selfActiveMode == BOT_MODE_DEFEND_TOWER_MID and distFromMid < 1600)
+            or (selfActiveMode == BOT_MODE_DEFEND_TOWER_BOT and distFromBot < 1600))
+        or (   (selfActiveMode == BOT_MODE_PUSH_TOWER_TOP and distFromTop < 1600)
+            or (selfActiveMode == BOT_MODE_PUSH_TOWER_MID and distFromMid < 1600)
+            or (selfActiveMode == BOT_MODE_PUSH_TOWER_BOT and distFromBot < 1600))
+        then
+            local creepListNearby = self:GetNearbyCreeps(nRadius, true)
+            local creepList = {}
+            for _, creep in ipairs(creepListNearby) do
+                if creep and creep:CanBeSeen() and creep:GetTeam() ~= TEAM_NEUTRAL then
+                    table.insert(creepList, creep)
+                end
+            end
+            return creepList
+        end
+    end
+
+    return o_GetNearbyLaneCreeps(self, nRadius, bEnemies)
+end
+
 -- { hUnit, ... } GetNearbyNeutralCreeps( nRadius )
 
 -- Returns a table of neutral creeps, sorted closest-to-furthest. nRadius must be less than 1600.
+local o_GetNearbyNeutralCreeps = CDOTA_Bot_Script.GetNearbyNeutralCreeps
+function CDOTA_Bot_Script:GetNearbyNeutralCreeps(nRadius)
+    if self ~= nil and self:CanBeSeen() then
+        if self:GetActiveMode() == BOT_MODE_FARM then
+            return self:GetNearbyCreeps(nRadius, true)
+        end
+    end
+
+    return o_GetNearbyNeutralCreeps(self, nRadius)
+end
+
 -- { hUnit, ... } GetNearbyTowers( nRadius, bEnemies )
 
 -- Returns a table of towers, sorted closest-to-furthest. nRadius must be less than 1600.

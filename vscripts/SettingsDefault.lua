@@ -18,7 +18,7 @@
   	-- game state in which voting should end
   	voteEndState = DOTA_GAMERULES_STATE_PRE_GAME,
   	-- voting ends when this amount of time has passed since voting began
-  	voteEndTime = 30,  	
+  	voteEndTime = 10,  	
   	-- Warning timings for vote ending
   	voteWarnTimes = {10,5},
   	-- are multipliers multiplicative, or additive 
@@ -37,11 +37,11 @@
 			-- percentages, by role (1, 2, 3, 4, 5).  A random number is chosen between the clamps
 			variance = 
 			{
+				{1.4, 1.5},
 				{1.3, 1.5},
-				{1.3, 1.5},
-				{1.1, 1.5},
-				{1.1, 1.5},
-				{1.1, 1.5}
+				{1.2, 1.5},
+				{1.1, 1.4},
+				{1.1, 1.4}
 			},
 			-- Warns players that the bot is very strong if they are over this threshold
 			warningThreshold = 1.2,
@@ -63,11 +63,11 @@
 			-- make it negative to cause errors, probably.  If you want slower items just change the timings)
 			tierOffset = 0,
 			-- game time (seconds) at which awards are given.
-			timings = {0, 420, 1020, 2020, 3600},
+			timings = {0, 420, 1020, 1620, 2220},
 			-- default dota values, see NeutralItems:GetTimingDifficultyScaleShift()
-			timingsDefault = {420, 1020, 1620, 2020, 3600},
+			timingsDefault = {420, 1020, 1620, 2220, 3600},
 			-- variance for timings (this number of seconds added to base timing per bot)
-			variance = {30, 240},
+			variance = {30, 120},
 			-- if true, announce awards to chat
 			announce = true,
 			-- Assign randomly, or roll specific per role down the line? (former is easier)
@@ -100,8 +100,7 @@
 			variance 			= {1, 1},
 			clamp 				= {0, 25},
 			clampOverride = false,
-			-- scale 				= {1.2, 1.1, 1.0, 0.8, 0.8},
-			scale 				= {1.3, 1.2, 1.1, 0.9, 0.9},
+			scale 				= {1.2, 1.1, 1.0, 0.8, 0.8},
 			perMinuteScale = 0.5
 		},
 		deathBonus = 
@@ -327,9 +326,9 @@
  			gold 					= 30000,
 			armor 				= 0,
 			magicResist 	= 0,
-			levels 				= 25,
+			levels 				= 20,
 			neutral 			= 1200,
-			stats 				= 50,
+			stats 				= 30,
     },		
     -- Settings for dynamically adjusting difficulty
     dynamicDifficulty = 
@@ -382,7 +381,7 @@
 	    	incrementEvery			= 2,
 	    	base								= 1,
 	    	increment 					= 1,
-	    	cap 								= 3,
+	    	cap 								= 2,
 	    	announce 						= false,
 	    	-- chanceAdjust is optional and will adjust the base chance for 
 	    	-- death awards for each knob. 

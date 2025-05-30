@@ -53,7 +53,7 @@ function GetDesire()
 	then
 		if J.IsModeTurbo() and DotaTime() > -45 or DotaTime() > -60
 		then
-			bot:ActionImmediate_Chat("Modified version of dota2bot by CalCulated and Snow for version 7.38.", true)
+			bot:ActionImmediate_Chat("Modified version of dota2bot by CalCulated and Snow for version 7.39.", true)
 			bot:ActionImmediate_Chat("Check out the GitHub page to get the latest files: https://github.com/p6668/dota2bot-and-fretbots.", true)
 			isWelcomeMessageDone = true
 		end

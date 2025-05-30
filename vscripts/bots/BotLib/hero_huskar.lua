@@ -19,13 +19,43 @@ local HeroBuild = {
     ['pos_1'] = {
         [1] = {
             ['talent'] = {
-                [1] = {},
+				[1] = {
+					['t25'] = {0, 10},
+					['t20'] = {0, 10},
+					['t15'] = {10, 0},
+					['t10'] = {0, 10},
+				},
             },
             ['ability'] = {
-                [1] = {},
+				[1] = {2,3,3,2,3,6,3,1,2,2,1,6,1,1,6},
             },
-            ['buy_list'] = {},
-            ['sell_list'] = {},
+            ['buy_list'] = {
+				"item_tango",
+				"item_faerie_fire",
+				"item_double_gauntlets",
+				"item_double_branches",
+			
+				"item_magic_wand",
+				"item_boots",
+				"item_armlet",
+				"item_phase_boots",
+				"item_sange_and_yasha",--
+				"item_black_king_bar",--
+				"item_ultimate_scepter",
+				"item_satanic",--
+				"item_aghanims_shard",
+				"item_assault",--
+				"item_ultimate_scepter_2",
+				"item_hurricane_pike",--
+				"item_travel_boots_2",--
+				"item_moon_shard",
+			},
+            ['sell_list'] = {
+				"item_gauntlets", "item_black_king_bar",
+				"item_gauntlets", "item_ultimate_scepter",
+				"item_magic_wand", "item_satanic",
+				"item_armlet", "item_hurricane_pike",
+			},
         },
     },
     ['pos_2'] = {
@@ -175,6 +205,7 @@ local abilityR = bot:GetAbilityByName('huskar_life_break')
 
 local castQDesire
 local castWDesire, castWTarget
+local BerserkersBloodDesire
 local castRDesire, castRTarget
 
 local botTarget
@@ -210,8 +241,15 @@ function X.SkillsComplement()
 	castWDesire, castWTarget = X.ConsiderW()
 	if ( castWDesire > 0 )
 	then
-		bot:Action_ClearActions( true )
+		bot:Action_ClearActions( false )
 		bot:ActionQueue_UseAbilityOnEntity( abilityW, castWTarget )
+		return
+	end
+
+	BerserkersBloodDesire = X.ConsiderBerserkersBlood()
+	if BerserkersBloodDesire > 0 then
+		bot:Action_ClearActions( false )
+		bot:ActionQueue_UseAbility(abilityE)
 		return
 	end
 end
@@ -561,6 +599,29 @@ function X.ConsiderW()
 	return BOT_ACTION_DESIRE_NONE
 end
 
+function X.ConsiderBerserkersBlood()
+	if not J.CanCastAbility(abilityE) then
+		return BOT_ACTION_DESIRE_NONE
+	end
+
+	local nActivationCost = bot:GetHealth() * 0.30 -- <- should be; but in-game shows the wrong number/cost (?)
+	local nHealthAfter = J.GetHealthAfter(nActivationCost)
+
+	if nHealthAfter > 0.2 then
+		if bot:IsRooted()
+		or bot:IsDisarmed()
+		or (bot:IsSilenced() and not bot:HasModifier('modifier_item_mask_of_madness_berserk'))
+		or bot:HasModifier('modifier_item_spirit_vessel_damage')
+		or bot:HasModifier('modifier_dragonknight_breathefire_reduction')
+		or bot:HasModifier('modifier_slardar_amplify_damage')
+		or bot:HasModifier('modifier_item_dustofappearance')
+		then
+			return BOT_ACTION_DESIRE_HIGH
+		end
+	end
+
+	return BOT_ACTION_DESIRE_NONE
+end
 
 function X.ConsiderR()
 	if not J.CanCastAbility(abilityR) then return 0 end

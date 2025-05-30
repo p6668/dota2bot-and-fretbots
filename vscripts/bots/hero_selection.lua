@@ -20,7 +20,7 @@ end
 
 require(GetScriptDirectory()..'/API/api_global')
 
-local MU   = require( GetScriptDirectory()..'/FunLib/aba_matchups' )
+local matchups = require( GetScriptDirectory()..'/Buff/script/matchups_data' )
 local U    = require( GetScriptDirectory()..'/FunLib/lua_util' )
 local N    = require( GetScriptDirectory()..'/FunLib/bot_names' )
 local Role = require( GetScriptDirectory()..'/FunLib/aba_role' )
@@ -31,7 +31,7 @@ local sHeroList = {										-- pos  1, 2, 3, 4, 5
 	{name = 'npc_dota_hero_abaddon', 					role = {10, 5, 80, 5, 100}},
 	{name = 'npc_dota_hero_abyssal_underlord', 			role = {0, 0, 100, 0, 0}},
 	{name = 'npc_dota_hero_alchemist', 					role = {100, 100, 30, 0, 0}},
-	{name = 'npc_dota_hero_ancient_apparition', 		role = {0, 5, 0, 5, 100}},
+	{name = 'npc_dota_hero_ancient_apparition', 		role = {0, 5, 0, 85, 100}},
 	{name = 'npc_dota_hero_antimage', 					role = {100, 0, 25, 0, 0}},
 	{name = 'npc_dota_hero_arc_warden', 				role = {100, 100, 0, 0, 0}},
 	{name = 'npc_dota_hero_axe',	 					role = {0, 50, 100, 0, 0}},
@@ -49,17 +49,17 @@ local sHeroList = {										-- pos  1, 2, 3, 4, 5
 	{name = 'npc_dota_hero_clinkz', 					role = {100, 50, 0, 50, 5}},
 	{name = 'npc_dota_hero_crystal_maiden', 			role = {0, 0, 0, 100, 100}},
 	{name = 'npc_dota_hero_dark_seer', 					role = {0, 0, 100, 0, 0}},
-	{name = 'npc_dota_hero_dark_willow', 				role = {0, 0, 0, 100, 50}},
+	{name = 'npc_dota_hero_dark_willow', 				role = {0, 0, 0, 75, 25}},
 	{name = 'npc_dota_hero_dawnbreaker', 				role = {0, 5, 100, 50, 50}},
 	{name = 'npc_dota_hero_dazzle', 					role = {0, 50, 0, 100, 100}},
 	{name = 'npc_dota_hero_disruptor', 					role = {0, 0, 0, 100, 100}},
 	{name = 'npc_dota_hero_death_prophet', 				role = {0, 100, 100, 0, 0}},
 	{name = 'npc_dota_hero_doom_bringer', 				role = {0, 80, 100, 0, 0}},
-	{name = 'npc_dota_hero_dragon_knight', 				role = {50, 100, 100, 0, 0}},
+	{name = 'npc_dota_hero_dragon_knight', 				role = {100, 100, 100, 0, 0}},
 	{name = 'npc_dota_hero_drow_ranger', 				role = {100, 80, 0, 0, 0}},
 	{name = 'npc_dota_hero_earth_spirit', 				role = {0, 100, 50, 100, 5}},
-	{name = 'npc_dota_hero_earthshaker', 				role = {0, 50, 100, 100, 0}},
-	{name = 'npc_dota_hero_elder_titan', 				role = {0, 0, 50, 40, 80}},
+	{name = 'npc_dota_hero_earthshaker', 				role = {0, 75, 100, 100, 0}},
+	{name = 'npc_dota_hero_elder_titan', 				role = {0, 0, 25, 25, 50}},
 	{name = 'npc_dota_hero_ember_spirit', 				role = {0, 100, 0, 0, 0}},
 	{name = 'npc_dota_hero_enchantress', 				role = {0, 0, 100, 0, 100}},
 	{name = 'npc_dota_hero_enigma', 					role = {0, 0, 50, 80, 100}},
@@ -67,32 +67,32 @@ local sHeroList = {										-- pos  1, 2, 3, 4, 5
 	{name = 'npc_dota_hero_furion', 					role = {100, 0, 100, 5, 100}},
 	{name = 'npc_dota_hero_grimstroke', 				role = {0, 0, 0, 100, 100}},
 	{name = 'npc_dota_hero_gyrocopter', 				role = {100, 100, 0, 100, 100}},
-	{name = 'npc_dota_hero_hoodwink', 					role = {0, 0, 0, 100, 80}},
-	-- {name = 'npc_dota_hero_huskar', 					role = {0, 100, 100, 0, 0}},
-	{name = 'npc_dota_hero_invoker', 					role = {0, 100, 0, 0, 0}},
+	{name = 'npc_dota_hero_hoodwink', 					role = {0, 0, 0, 75, 25}},
+	-- {name = 'npc_dota_hero_huskar', 					role = {100, 100, 100, 0, 0}},
+	-- {name = 'npc_dota_hero_invoker', 					role = {0, 100, 0, 0, 0}},
 	{name = 'npc_dota_hero_jakiro', 					role = {0, 15, 0, 100, 100}},
 	{name = 'npc_dota_hero_juggernaut', 				role = {100, 0, 0, 0, 0}},
 	{name = 'npc_dota_hero_keeper_of_the_light', 		role = {0, 50, 0, 100, 25}},
-	-- {name = 'npc_dota_hero_kez', 						role = {100, 100, 0, 0, 0}},
-	{name = 'npc_dota_hero_kunkka', 					role = {0, 100, 100, 0, 0}},
+	-- {name = 'npc_dota_hero_kez', 						role = {50, 100, 0, 0, 0}},
+	{name = 'npc_dota_hero_kunkka', 					role = {50, 100, 100, 0, 0}},
 	{name = 'npc_dota_hero_legion_commander', 			role = {0, 0, 100, 0, 0}},
 	{name = 'npc_dota_hero_leshrac', 					role = {0, 100, 50, 0, 0}},
 	{name = 'npc_dota_hero_lich', 						role = {0, 0, 0, 5, 100}},
 	{name = 'npc_dota_hero_life_stealer', 				role = {100, 0, 0, 0, 0}},
 	{name = 'npc_dota_hero_lina', 						role = {100, 100, 0, 100, 5}},
 	{name = 'npc_dota_hero_lion', 						role = {0, 0, 0, 100, 100}},
-	-- {name = 'npc_dota_hero_lone_druid', 				role = {100, 100, 0, 0, 0}},
+	-- {name = 'npc_dota_hero_lone_druid', 				role = {75, 75, 0, 0, 0}},
 	{name = 'npc_dota_hero_luna', 						role = {100, 0, 0, 0, 0}},
 	{name = 'npc_dota_hero_lycan', 						role = {50, 100, 100, 0, 0}},
-	{name = 'npc_dota_hero_magnataur', 					role = {0, 0, 100, 0, 0}},
-	-- {name = 'npc_dota_hero_marci',	 					role = {50, 100, 50, 0, 0}},
+	{name = 'npc_dota_hero_magnataur', 					role = {50, 75, 100, 0, 0}},
+	-- {name = 'npc_dota_hero_marci',	 					role = {25, 50, 25, 0, 0}},
 	{name = 'npc_dota_hero_mars', 						role = {0, 100, 100, 0, 0}},
 	{name = 'npc_dota_hero_medusa', 					role = {100, 50, 0, 0, 0}},
 	{name = 'npc_dota_hero_meepo', 						role = {100, 100, 0, 0, 0}},
-	{name = 'npc_dota_hero_mirana', 					role = {0, 0, 0, 50, 100}},
+	{name = 'npc_dota_hero_mirana', 					role = {0, 75, 0, 50, 100}},
 	{name = 'npc_dota_hero_monkey_king', 				role = {100, 100, 0, 0, 0}},
 	{name = 'npc_dota_hero_morphling', 					role = {100, 5, 0, 0, 0}},
-	{name = 'npc_dota_hero_muerta', 				    role = {100, 0, 0, 0, 0}},
+	-- {name = 'npc_dota_hero_muerta', 				    role = {100, 0, 0, 0, 0}},
 	{name = 'npc_dota_hero_naga_siren', 				role = {100, 0, 0, 0, 0}},
 	{name = 'npc_dota_hero_necrolyte', 					role = {0, 100, 100, 0, 0}},
 	{name = 'npc_dota_hero_nevermore', 					role = {100, 100, 0, 0, 0}},
@@ -106,7 +106,7 @@ local sHeroList = {										-- pos  1, 2, 3, 4, 5
 	{name = 'npc_dota_hero_phantom_lancer', 			role = {100, 0, 0, 0, 0}},
 	{name = 'npc_dota_hero_phantom_assassin', 			role = {100, 0, 0, 0, 0}},
 	{name = 'npc_dota_hero_phoenix', 					role = {0, 0, 0, 100, 100}},
-	-- {name = 'npc_dota_hero_primal_beast', 				role = {0, 100, 50, 0, 0}},
+	-- {name = 'npc_dota_hero_primal_beast', 				role = {0, 75, 50, 0, 0}},
 	{name = 'npc_dota_hero_puck', 						role = {0, 100, 0, 0, 0}},
 	{name = 'npc_dota_hero_pudge', 						role = {0, 100, 100, 5, 5}},
 	{name = 'npc_dota_hero_pugna', 						role = {0, 50, 0, 100, 100}},
@@ -128,7 +128,7 @@ local sHeroList = {										-- pos  1, 2, 3, 4, 5
 	{name = "npc_dota_hero_snapfire", 					role = {0, 100, 0, 100, 100}},
 	{name = 'npc_dota_hero_sniper', 					role = {100, 100, 0, 0, 0}},
 	{name = 'npc_dota_hero_spectre', 					role = {100, 0, 0, 0, 0}},
-	{name = 'npc_dota_hero_spirit_breaker', 			role = {0, 5, 100, 100, 0}},
+	-- {name = 'npc_dota_hero_spirit_breaker', 			role = {0, 5, 100, 100, 0}},
 	{name = 'npc_dota_hero_storm_spirit', 				role = {0, 100, 0, 0, 0}},
 	{name = 'npc_dota_hero_sven', 						role = {100, 0, 0, 0, 0}},
 	{name = 'npc_dota_hero_techies', 					role = {0, 50, 0, 100, 100}},
@@ -144,14 +144,14 @@ local sHeroList = {										-- pos  1, 2, 3, 4, 5
 	{name = 'npc_dota_hero_ursa', 						role = {100, 0, 50, 0, 0}},
 	{name = 'npc_dota_hero_vengefulspirit', 			role = {50, 80, 0, 100, 100}},
 	{name = 'npc_dota_hero_venomancer', 				role = {0, 0, 0, 100, 100}},
-	{name = 'npc_dota_hero_viper', 						role = {0, 100, 100, 0, 0}},
+	{name = 'npc_dota_hero_viper', 						role = {80, 100, 100, 0, 0}},
 	{name = 'npc_dota_hero_visage', 					role = {0, 50, 100, 0, 0}},
 	{name = 'npc_dota_hero_void_spirit', 				role = {0, 100, 0, 0, 0}},
 	{name = 'npc_dota_hero_warlock', 					role = {0, 0, 0, 50, 100}},
 	{name = 'npc_dota_hero_weaver', 					role = {100, 0, 0, 100, 100}},
 	{name = 'npc_dota_hero_windrunner', 				role = {80, 100, 5, 70, 5}},
 	{name = 'npc_dota_hero_winter_wyvern', 				role = {0, 25, 15, 100, 100}},
-	{name = 'npc_dota_hero_wisp', 						role = {0, 0, 0, 10, 90}},
+	{name = 'npc_dota_hero_wisp', 						role = {0, 0, 0, 10, 50}},
 	{name = 'npc_dota_hero_witch_doctor', 				role = {0, 0, 0, 100, 100}},
 	{name = 'npc_dota_hero_zuus', 						role = {0, 100, 0, 50, 25}},
 }
@@ -389,6 +389,9 @@ function X.GetRandomNameList( sStarList )
 	return sNameList
 end
 
+local tIDs = U.shuffleWeighted({1,2,3,4,5}, {1,1.5,3,6,6})
+print(tIDs[1],tIDs[2],tIDs[3],tIDs[4],tIDs[5], GetTeam())
+print('====')
 function Think()
 	if GetGameState() == GAME_STATE_HERO_SELECTION then
 		InstallChatCallback( function ( tChat ) X.SetChatHeroBan( tChat.string ) end )
@@ -435,66 +438,68 @@ function Think()
 	local nOwnTeam = X.GetCurrentTeam(GetTeam())
 	local nEnmTeam = X.GetCurrentTeam(GetOpposingTeam())
 
-	-- If in Turbo, the game randomly picks remaining bots who's yet to pick their heroes if a human chooses their hero.
-	-- So a human must always pick last in Turbo. <^ This isn't the case in All Pick.
+	local IDMap = {
+		[1] = 3,
+		[2] = 1,
+		[3] = 2,
+		[4] = 5,
+		[5] = 4,
+	}
 
-	-- Alternate; Cores pick firsts
-	-- if #nOwnTeam <= #nEnmTeam -- 7.38 bug with a bot not getting assigned a name, so this fails; will change below later
-	-- then
-		for i, id in pairs(nIDs)
-		do
-			sSelectHero = X.GetNotRepeatHero(tSelectPoolList[i])
-			if IsPlayerBot(id) and GetSelectedHeroName(id) == ""
-			then
-				if RandomInt(1, 2) == 1 then
-					local forCounter = RandomInt(1, 2) == 1
+	-- if #nOwnTeam <= #nEnmTeam then
+		for i = 1, #nIDs do
+			local botID = nIDs[IDMap[tIDs[i]]]
+			local poolID = IDMap[tIDs[i]]
 
-					if #nOwnTeam == 0 and #nEnmTeam == 0
-					then
-						sSelectHero = X.GetNotRepeatHero(tSelectPoolList[i])
-					else
-						local didCounter = false
-						local didExhaust = false
+			if IsPlayerBot(botID) and GetSelectedHeroName(botID) == '' then
+				if (#nOwnTeam == 0 and #nEnmTeam == 0) then
+					sSelectHero = X.GetNotRepeatHero(tSelectPoolList[poolID])
+				else
+					local hSelectionTable = {}
+					local topHeroes = {}
+					for _, sName in ipairs(tSelectPoolList[poolID]) do
+						if not X.IsRepeatHero(sName) then
+							local score = 0
+							if not hSelectionTable[sName] then hSelectionTable[sName] = 0 end
 
-						if  forCounter
-						and #X.GetCurrEnmCores(nEnmTeam) >= 1
-						then
-							-- Pick a random core in the current enemy comp to counter
-							local nCurrEnmCores = X.GetCurrEnmCores(nEnmTeam)
-							local nHeroToCounter = nCurrEnmCores[RandomInt(1, #nCurrEnmCores)]
-							local sPoolList = U.deepCopy(tSelectPoolList[i])
-
-							for j = 1, #tSelectPoolList[i], 1
-							do
-								local idx = RandomInt(1, #sPoolList)
-								local heroName = sPoolList[idx]
-								if  MU.IsCounter(heroName, nHeroToCounter) -- so it's not 'samey'; since bots don't really put pressure like a human would
-								and not X.IsRepeatHero(heroName)
-								then
-									print(heroName, nHeroToCounter)
-									didCounter = true
-									sSelectHero = heroName
-									break
+							for m = 1, #nEnmTeam do
+								if matchups[sName] and matchups[sName][nEnmTeam[m]] then
+									score = score + matchups[sName][nEnmTeam[m]] * -1
 								end
-
-								table.remove(sPoolList, idx)
-								if j == #tSelectPoolList[i] or #sPoolList == 0 then didExhaust = true end
 							end
-						else
-							if not forCounter
-							or (didExhaust and not didCounter)
-							then
-								local heroName = X.GetBestHeroFromPool(i, nOwnTeam)
-								if heroName ~= nil
-								then
-									sSelectHero = heroName
-								end
+
+							table.insert(topHeroes, {name = sName, score = score})
+							table.sort(topHeroes, function (a, b) return a.score > b.score end)
+							if #topHeroes > 3 then
+								table.remove(topHeroes)
 							end
 						end
 					end
+
+					-- print
+					for q = 1, #topHeroes do
+						print(q, topHeroes[q].score, topHeroes[q].name)
+					end
+					print('====')
+
+					-- 'fuzz'
+					if #topHeroes >= 1 then
+						local roll = (RandomInt(0, 100) / 100)
+						if roll <= 0.5 then
+							sSelectHero = topHeroes[1].name
+						elseif roll <= 0.75 and topHeroes[2] then
+							sSelectHero = topHeroes[2].name
+						elseif topHeroes[3] then
+							sSelectHero = topHeroes[3].name
+						else
+							sSelectHero = topHeroes[1].name
+						end
+					else
+						sSelectHero = 'npc_dota_hero_tiny'
+					end
 				end
 
-				SelectHero(id, sSelectHero)
+				SelectHero(botID, sSelectHero)
 				if Role["bLobbyGame"] == false then Role["bLobbyGame"] = true end
 				fLastSlectTime = GameTime()
 				fLastRand = RandomInt( 8, 28 )/10
@@ -504,77 +509,12 @@ function Think()
 	-- end
 end
 
-function X.GetBestHeroFromPool(i, nTeamList)
-	local sBestHero = ''
-	local nHeroes = {}
-
-	for j = 1, #nTeamList
-	do
-		local hName = nTeamList[j].name
-		for _, sName in pairs(tSelectPoolList[i])
-		do
-			if  (MU.IsSynergy(hName, sName) or MU.IsSynergy(sName, hName))
-			and not X.IsRepeatHero(sName)
-			then
-				if nHeroes[sName] == nil then nHeroes[sName] = {} end
-				if nHeroes[sName]['count'] == nil then nHeroes[sName]['count'] = 1 end
-				nHeroes[sName]['count'] = nHeroes[sName]['count'] + 1
-			end
-		end
-	end
-
-	local c = -1
-	for k1, v1 in pairs(nHeroes)
-	do
-		for k2, v2 in pairs(nHeroes[k1])
-		do
-			if not X.IsRepeatHero(k1)
-			then
-				if  v2 > 0 and c > 0 and v2 == c
-				and RandomInt(1, 2) == 1
-				then
-					sBestHero = k1
-				end
-
-				if v2 > c
-				then
-					c = v2
-					sBestHero = k1
-				end
-			end
-		end
-	end
-
-	if sBestHero ~= ''
-	then
-		print('synergy ', sBestHero)
-		return sBestHero
-	else
-		return X.GetNotRepeatHero(tSelectPoolList[i])
-	end
-end
-
-function X.GetCurrEnmCores(nEnmTeam)
-	local nCurrCores = {}
-	for i = 1, #nEnmTeam
-	do
-		if nEnmTeam[i].pos >= 1 and nEnmTeam[i].pos <= 3
-		then
-			table.insert(nCurrCores, nEnmTeam[i].name)
-		end
-	end
-
-	return nCurrCores
-end
-
 function X.GetCurrentTeam(nTeam)
 	local nHeroList = {}
-	for i, id in pairs(GetTeamPlayers(nTeam))
-	do
+	for _, id in pairs(GetTeamPlayers(nTeam)) do
 		local hName = GetSelectedHeroName(id)
-		if hName ~= nil and hName ~= ''
-		then
-			table.insert(nHeroList, {name=hName, pos=i}) -- since the script chooses cores first; might change in the future
+		if hName ~= nil and hName ~= '' then
+			table.insert(nHeroList, hName)
 		end
 	end
 

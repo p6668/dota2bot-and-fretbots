@@ -19,6 +19,66 @@ if NeutralItems == nil then
   NeutralItems = {}
 end
 
+-- Enhancements
+local TierEnhancements = {
+    [1] = {
+        "item_enhancement_alert",
+        "item_enhancement_brawny",
+        "item_enhancement_mystical",
+        "item_enhancement_quickened",
+        "item_enhancement_tough",
+    },
+    [2] = {
+        "item_enhancement_alert",
+        "item_enhancement_brawny",
+        "item_enhancement_mystical",
+        "item_enhancement_quickened",
+        "item_enhancement_tough",
+
+        "item_enhancement_vast",
+        "item_enhancement_greedy",
+        "item_enhancement_keen_eyed",
+        "item_enhancement_vampiric",
+    },
+    [3] = {
+        "item_enhancement_alert",
+        "item_enhancement_brawny",
+        "item_enhancement_mystical",
+        "item_enhancement_quickened",
+        "item_enhancement_tough",
+
+        "item_enhancement_vast",
+        "item_enhancement_greedy",
+        "item_enhancement_keen_eyed",
+        "item_enhancement_vampiric",
+    },
+    [4] = {
+        "item_enhancement_alert",
+        "item_enhancement_brawny",
+        "item_enhancement_mystical",
+        "item_enhancement_quickened",
+        "item_enhancement_tough",
+
+        "item_enhancement_vampiric",
+
+        "item_enhancement_timeless",
+        "item_enhancement_titanic",
+        "item_enhancement_crude",
+    },
+    [5] = {
+        "item_enhancement_timeless",
+        "item_enhancement_titanic",
+        "item_enhancement_crude",
+
+        "item_enhancement_feverish",
+        "item_enhancement_fleetfooted",
+        "item_enhancement_audacious",
+        "item_enhancement_evolved",
+        "item_enhancement_boundless",
+        "item_enhancement_wise",
+    }
+}
+
 -- Gives a neutral item to a unit, returns name of previous item
 -- if there was one.
 function NeutralItems:GiveToUnit(unit, item)
@@ -33,7 +93,16 @@ function NeutralItems:GiveToUnit(unit, item)
 			Debug:Print(unit.stats.name..': Replacing: '..replacedItem)
 			unit:RemoveItem(currentItem)
 		end
-		NeutralItems:CreateAndInsert(unit, item.name, item.tier)
+
+		local sItemName = ''
+    	local heroData_neutral = neutrals_data[unit:GetUnitName()]['neutral']
+    	if heroData_neutral and heroData_neutral[item.tier] then
+        	sItemName = NeutralItems.SelectItem(heroData_neutral[item.tier])
+    	else
+        	sItemName = item.name
+    	end
+
+		NeutralItems:CreateAndInsert(unit, sItemName, item.tier)
 		return replacedItem	
 	end
 	return nil
@@ -45,6 +114,45 @@ function NeutralItems:CreateAndInsert(bot, itemName, tier)
   	local item = CreateItem(itemName, bot, bot)
     item:SetPurchaseTime(0)
     bot:AddItem(item)
+
+    -- give enhancement
+    if bot then
+		local itemEnhancement = bot:GetItemInSlot(17)
+    	if itemEnhancement then bot:RemoveItem(itemEnhancement) end
+    end
+    local eList = TierEnhancements[tier]
+    if eList then
+        local eName = eList[RandomInt(1, #eList)]
+        local heroData_enhancement = neutrals_data[bot:GetUnitName()]['enhancement']
+        if heroData_enhancement and heroData_enhancement[tier] then
+            eName = NeutralItems.SelectItem(heroData_enhancement[tier])
+        end
+
+        if eName ~= nil then
+            item = CreateItem(eName, bot, bot)
+
+            -- check if this enhancement is available in lower tiers
+            -- if it does, upgrade it n times
+            local nCount = 0
+            for i = 1, tier - 1 do
+                if TierEnhancements[i] then
+                    for _, prev in pairs(TierEnhancements[i]) do
+                        if prev == eName then
+                            nCount = nCount + 1
+                        end
+                    end
+                end
+            end
+
+            for _ = 1, nCount do
+                item:UpgradeAbility(true)
+            end
+
+            item:SetPurchaseTime(0)
+            bot:AddItem(item)
+        end
+    end
+
     bot.stats.neutralTier = tier
     -- Special handling if it's royal jelly	
     if itemName == "item_royal_jelly" then		
@@ -63,6 +171,35 @@ function NeutralItems:CreateAndInsert(bot, itemName, tier)
     return true
   end
   return false
+end
+
+-- do a simple weighted random selection
+function NeutralItems.SelectItem(hNeutralItemList)
+    local items = {}
+    local weights = {}
+    for item, weight in pairs(hNeutralItemList) do
+        table.insert(items,item)
+        table.insert(weights,weight)
+    end
+
+    local totalWeight = 0
+    for _, weight in pairs(weights) do
+        totalWeight = totalWeight + weight
+    end
+
+    local randVal = (RandomInt(0, 100) / 100) * totalWeight
+    local accumWeight = 0
+    local selectedItem = ''
+
+    for i, weight in ipairs(weights) do
+        accumWeight = accumWeight + weight
+        if randVal <= accumWeight then
+            selectedItem = items[i]
+            break
+        end
+    end
+
+    return selectedItem
 end
 
 -- Updates a bot's stats so it knows it doesn't have an item

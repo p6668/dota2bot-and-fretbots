@@ -62,14 +62,17 @@ function GetDesire()
 				wisdomRuneInfo[3] = false
 			end
 
+
 			local tEnemyTowers = bot:GetNearbyTowers(700, true)
 			local tEnemyHeroes = J.GetEnemiesNearLoc(bot:GetLocation(), 1200)
 			if (#tEnemyTowers > 0 and bot:WasRecentlyDamagedByTower(1.0) and J.GetHP(bot) < 0.3)
-			or #tEnemyHeroes > 0 then
+			or (#tEnemyHeroes > 0 and not J.IsRealInvisible(bot))
+			then
 				return 0
 			end
 
 			local runeSpot = X.GetWisdomRuneSpot()
+
 			if runeSpot ~= nil
 			and bot.wisdom ~= nil
 			and bot.wisdom[timeInMin][runeSpot] == false
@@ -92,7 +95,9 @@ function GetDesire()
     minute = math.floor(DotaTime() / 60)
     second = DotaTime() % 60
 
-    if not X.IsSuitableToPickRune() then
+	ClosestRune, ClosestDistance = X.GetBotClosestRune()
+
+    if not X.IsSuitableToPickRune(ClosestRune) then
         return BOT_MODE_DESIRE_NONE
     end
 
@@ -110,8 +115,6 @@ function GetDesire()
         MAX_DIST = 1600
     end
 
-    ClosestRune, ClosestDistance = X.GetBotClosestRune()
-
 	if ClosestRune ~= -1 and ClosestDistance < 6000 then
 		local botPos = J.GetPosition(bot)
 		local nRuneType = GetRuneType(ClosestRune)
@@ -119,7 +122,9 @@ function GetDesire()
         if ClosestRune == RUNE_BOUNTY_1 or ClosestRune == RUNE_BOUNTY_2 then
 			nRuneStatus = GetRuneStatus(ClosestRune)
 
-            if nRuneStatus == RUNE_STATUS_AVAILABLE then
+            if nRuneStatus == RUNE_STATUS_AVAILABLE
+			and (X.IsTeamMustSaveRune(ClosestRune) or DotaTime() > 585)
+			then
 				if ((botPos == 1 or botPos == 3) and J.IsInLaningPhase() and ClosestDistance > 2000)
 				or X.IsEnemyPickRune(ClosestRune)
 				then
@@ -233,6 +238,10 @@ function Think()
 	end
 
     if DotaTime() < 0 then
+		if J.IsModeTurbo() and DotaTime() < -50 then
+			return
+		end
+
         if DotaTime() < -25 then
             local vGoOutLocation = X.GetGoOutLocation()
 
@@ -315,13 +324,14 @@ function Think()
 	end
  end
 
-function X.IsSuitableToPickRune()
+function X.IsSuitableToPickRune(nRuneLoc)
     if X.IsNearRune(bot) then return true end
 
 	local nEnemyHeroes = J.GetEnemiesNearLoc(bot:GetLocation(), 1200)
 
 	if (J.IsRetreating(bot) and bot:GetActiveModeDesire() > BOT_MODE_DESIRE_HIGH)
     or (#nEnemyHeroes >= 1 and X.IsIBecameTheTarget(nEnemyHeroes))
+	or (nRuneLoc ~= nil and J.IsEnemyHeroAroundLocation(GetRuneSpawnLocation(nRuneLoc), 1200))
     or (bot:WasRecentlyDamagedByAnyHero(3.0) and J.IsRetreating(bot))
     or (GetUnitToUnitDistance(bot, GetAncient(GetTeam())) < 2500 and DotaTime() > 0)
     or GetUnitToUnitDistance(bot, GetAncient(GetOpposingTeam())) < 4000
@@ -461,7 +471,7 @@ function X.IsPingedByHumanPlayer(vLocation, nRadius)
             if ping ~= nil then
                 if not ping.normal_ping
                 and J.GetDistance(ping.location, vLocation) <= 600
-                and DotaTime() - ping.time < pingTimeDelta
+                and GameTime() - ping.time < pingTimeDelta
                 and thisBotDistFromLocation < nRadius
                 and botActiveMode == BOT_MODE_RUNE
                 then
@@ -508,7 +518,7 @@ function X.IsEnemyPickRune(nRune)
 
 	for _, enemy in pairs(nEnemyHeroes) do
         if J.IsValidHero(enemy)
-        and (enemy:IsFacingLocation(vRuneLocation, 30) or GetUnitToLocationDistance(enemy, vRuneLocation) < 600)
+        and (enemy:IsFacingLocation(vRuneLocation, 30) or enemy:IsFacingLocation(bot:GetLocation(), 30) or GetUnitToLocationDistance(enemy, vRuneLocation) < 600)
         and (GetUnitToLocationDistance(enemy, vRuneLocation) < GetUnitToLocationDistance(bot, vRuneLocation) + 300)
         then
             return true
@@ -572,6 +582,20 @@ function X.CouldBlink(vLocation)
 	end
 
 	return false
+end
+
+function X.IsTeamMustSaveRune(nRune)
+	if GetTeam() == TEAM_DIRE then
+		return nRune == RUNE_BOUNTY_1
+			or nRune == RUNE_POWERUP_2
+			or (DotaTime() > 1 * 60 + 45 and nRune == RUNE_POWERUP_1)
+			or (DotaTime() > 10 * 60 + 45 and nRune == RUNE_BOUNTY_2)
+	else
+		return nRune == RUNE_BOUNTY_2
+			or nRune == RUNE_POWERUP_1
+			or (DotaTime() > 1 * 60 + 45 and nRune == RUNE_POWERUP_2)
+			or (DotaTime() > 10 * 60 + 45 and nRune == RUNE_BOUNTY_1)
+	end
 end
 
 -- Wisdom Rune

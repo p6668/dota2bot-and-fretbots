@@ -44,6 +44,7 @@ end
 
 -- neutral item drop settings
 AllNeutrals = dofile('SettingsNeutralItemTable')
+neutrals_data = dofile('neutrals_data')
 
 -- cheat command list
 local cheats = dofile('CheatList') 
