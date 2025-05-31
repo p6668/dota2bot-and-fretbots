@@ -446,60 +446,62 @@ function Think()
 		[5] = 4,
 	}
 
-	-- if #nOwnTeam <= #nEnmTeam then
-		for i = 1, #nIDs do
-			local botID = nIDs[IDMap[tIDs[i]]]
-			local poolID = IDMap[tIDs[i]]
+-- if #nOwnTeam <= #nEnmTeam -- 7.38 bug with a bot not getting assigned a name, so this fails; will change below laterMore actions
+	-- then
+		for i, id in pairs(nIDs)
+		do
+			sSelectHero = X.GetNotRepeatHero(tSelectPoolList[i])
+			if IsPlayerBot(id) and GetSelectedHeroName(id) == ""
+			then
+				if RandomInt(1, 2) == 1 then
+					local forCounter = RandomInt(1, 2) == 1
 
-			if IsPlayerBot(botID) and GetSelectedHeroName(botID) == '' then
-				if (#nOwnTeam == 0 and #nEnmTeam == 0) then
-					sSelectHero = X.GetNotRepeatHero(tSelectPoolList[poolID])
-				else
-					local hSelectionTable = {}
-					local topHeroes = {}
-					for _, sName in ipairs(tSelectPoolList[poolID]) do
-						if not X.IsRepeatHero(sName) then
-							local score = 0
-							if not hSelectionTable[sName] then hSelectionTable[sName] = 0 end
+					if #nOwnTeam == 0 and #nEnmTeam == 0
+					then
+						sSelectHero = X.GetNotRepeatHero(tSelectPoolList[i])
+					else
+						local didCounter = false
+						local didExhaust = false
 
-							for m = 1, #nEnmTeam do
-								if matchups[sName] and matchups[sName][nEnmTeam[m]] then
-									score = score + matchups[sName][nEnmTeam[m]] * -1
+						if  forCounter
+						and #X.GetCurrEnmCores(nEnmTeam) >= 1
+						then
+							-- Pick a random core in the current enemy comp to counter
+							local nCurrEnmCores = X.GetCurrEnmCores(nEnmTeam)
+							local nHeroToCounter = nCurrEnmCores[RandomInt(1, #nCurrEnmCores)]
+							local sPoolList = U.deepCopy(tSelectPoolList[i])
+
+							for j = 1, #tSelectPoolList[i], 1
+							do
+								local idx = RandomInt(1, #sPoolList)
+								local heroName = sPoolList[idx]
+								if  MU.IsCounter(heroName, nHeroToCounter) -- so it's not 'samey'; since bots don't really put pressure like a human would
+								and not X.IsRepeatHero(heroName)
+								then
+									print(heroName, nHeroToCounter)
+									didCounter = true
+									sSelectHero = heroName
+									break
+								end
+
+								table.remove(sPoolList, idx)
+								if j == #tSelectPoolList[i] or #sPoolList == 0 then didExhaust = true end
+							end
+						else
+							if not forCounter
+							or (didExhaust and not didCounter)
+							then
+								local heroName = X.GetBestHeroFromPool(i, nOwnTeam)
+								if heroName ~= nil
+								then
+									sSelectHero = heroName
 								end
 							end
-
-							table.insert(topHeroes, {name = sName, score = score})
-							table.sort(topHeroes, function (a, b) return a.score > b.score end)
-							if #topHeroes > 3 then
-								table.remove(topHeroes)
-							end
 						end
-					end
-
-					-- print
-					for q = 1, #topHeroes do
-						print(q, topHeroes[q].score, topHeroes[q].name)
-					end
-					print('====')
-
-					-- 'fuzz'
-					if #topHeroes >= 1 then
-						local roll = (RandomInt(0, 100) / 100)
-						if roll <= 0.5 then
-							sSelectHero = topHeroes[1].name
-						elseif roll <= 0.75 and topHeroes[2] then
-							sSelectHero = topHeroes[2].name
-						elseif topHeroes[3] then
-							sSelectHero = topHeroes[3].name
-						else
-							sSelectHero = topHeroes[1].name
-						end
-					else
-						sSelectHero = 'npc_dota_hero_tiny'
 					end
 				end
 
-				SelectHero(botID, sSelectHero)
+				SelectHero(id, sSelectHero)
 				if Role["bLobbyGame"] == false then Role["bLobbyGame"] = true end
 				fLastSlectTime = GameTime()
 				fLastRand = RandomInt( 8, 28 )/10
