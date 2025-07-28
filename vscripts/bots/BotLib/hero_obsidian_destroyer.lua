@@ -61,6 +61,7 @@ local HeroBuild = {
                 "item_devastator",--
                 "item_black_king_bar",--
                 "item_sheepstick",--
+                "item_veil_of_discord",--
                 "item_shivas_guard",--
                 "item_moon_shard",
                 "item_ultimate_scepter_2",
