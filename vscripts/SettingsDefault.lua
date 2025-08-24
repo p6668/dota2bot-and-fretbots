@@ -38,13 +38,13 @@
 			variance = 
 			{
 				{1.4, 1.5},
+				{1.4, 1.5},
 				{1.3, 1.5},
-				{1.2, 1.5},
-				{1.1, 1.4},
-				{1.1, 1.4}
+				{1.2, 1.4},
+				{1.2, 1.4}
 			},
 			-- Warns players that the bot is very strong if they are over this threshold
-			warningThreshold = 1.2,
+			warningThreshold = 1.3,
 			-- disable warnings altogether here
 			isWarn = true
 		},
@@ -107,9 +107,10 @@
 		{	
 		  -- Order awards are given (useful when maxAwards is less than number of types)
   	  -- this also defines the names of the types (used to index tables for other settings)
-      order = {'neutral', 'levels', 'stats', 'armor', 'magicResist', 'gold'},
+      -- order = {'neutral', 'levels', 'stats', 'armor', 'magicResist', 'gold'},
+      order = {'neutral','levels', 'stats','gold', 'armor', 'magicResist'},
       --The maximum number of awards per death
-      maxAwards = 2,
+      maxAwards = 3,
 			-- individual bonus enables 
 			enabled = 
 			{
@@ -258,12 +259,12 @@
       -- is this award always loud?
       isLoud = 
 			{
-				gold 					= false,
+				gold 					= true,
 				armor 				= false,
 				magicResist 	= false,
 				levels 				= true,
 				neutral 			= true,
-				stats 				= false
+				stats 				= true
 			},	 
       -- is this award loud if it gets clamped on the high side?
       isClampLoud = 
@@ -323,10 +324,10 @@
    	-- caps for awards per game
 		awardCap = 
     {
- 			gold 					= 30000,
+ 			gold 					= 40000,
 			armor 				= 0,
 			magicResist 	= 0,
-			levels 				= 20,
+			levels 				= 25,
 			neutral 			= 1200,
 			stats 				= 30,
     },		
@@ -378,10 +379,10 @@
     	{
 	    	enabled							= true,
 	    	advantageThreshold	= 10,
-	    	incrementEvery			= 2,
+	    	incrementEvery			= 1,
 	    	base								= 1,
 	    	increment 					= 1,
-	    	cap 								= 2,
+	    	cap 								= 1,
 	    	announce 						= false,
 	    	-- chanceAdjust is optional and will adjust the base chance for 
 	    	-- death awards for each knob. 
