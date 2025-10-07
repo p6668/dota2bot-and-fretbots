@@ -12,6 +12,10 @@ local bUserMode = false
 local bLaneAssignActive = true
 local bLineupReserve = false
 
+local CorrectRadiantAssignedLanes = false
+local CorrectDireAssignedLanes = false
+local CorrectDirePlayerIndexToLaneIndex = { }
+
 local nDireFirstLaneType = 1
 if pcall( require,  'game/bot_dire_first_lane_type' )
 then
@@ -19,141 +23,155 @@ then
 end
 
 require(GetScriptDirectory()..'/API/api_global')
-
-local matchups = require( GetScriptDirectory()..'/Buff/script/matchups_data' )
 local U    = require( GetScriptDirectory()..'/FunLib/lua_util' )
 local N    = require( GetScriptDirectory()..'/FunLib/bot_names' )
 local Role = require( GetScriptDirectory()..'/FunLib/aba_role' )
 local Chat = require( GetScriptDirectory()..'/FunLib/aba_chat' )
+local Localization = require( GetScriptDirectory()..'/FunLib/localization' )
 local HeroSet = {}
 
+local tDefaultLaningRadiant = {
+	[1] = LANE_BOT,
+	[2] = LANE_MID,
+	[3] = LANE_TOP,
+	[4] = LANE_TOP,
+	[5] = LANE_BOT,
+}
+local tDefaultLaningDire = {
+	[1] = LANE_TOP,
+	[2] = LANE_MID,
+	[3] = LANE_BOT,
+	[4] = LANE_BOT,
+	[5] = LANE_TOP,
+}
+
 local sHeroList = {										-- pos  1, 2, 3, 4, 5
-	{name = 'npc_dota_hero_abaddon', 					role = {10, 5, 80, 5, 100}},
-	{name = 'npc_dota_hero_abyssal_underlord', 			role = {0, 0, 100, 0, 0}},
-	{name = 'npc_dota_hero_alchemist', 					role = {100, 100, 30, 0, 0}},
-	{name = 'npc_dota_hero_ancient_apparition', 		role = {0, 50, 0, 85, 100}},
-	{name = 'npc_dota_hero_antimage', 					role = {100, 0, 25, 0, 0}},
-	{name = 'npc_dota_hero_arc_warden', 				role = {100, 100, 0, 0, 0}},
-	{name = 'npc_dota_hero_axe',	 					role = {0, 50, 100, 0, 0}},
-	{name = 'npc_dota_hero_bane', 						role = {0, 10, 0, 100, 100}},
-	{name = 'npc_dota_hero_batrider', 					role = {0, 25, 5, 100, 100}},
-	{name = 'npc_dota_hero_beastmaster', 				role = {0, 100, 100, 0, 0}},
-	{name = 'npc_dota_hero_bloodseeker', 				role = {100, 25, 50, 0, 0}},
-	{name = 'npc_dota_hero_bounty_hunter', 				role = {0, 50, 10, 100, 5}},
-	{name = 'npc_dota_hero_brewmaster', 				role = {0, 0, 100, 0, 0}},
-	{name = 'npc_dota_hero_bristleback', 				role = {80, 80, 100, 0, 0}},
-	{name = 'npc_dota_hero_broodmother', 				role = {100, 100, 100, 0, 0}},
-	{name = 'npc_dota_hero_centaur', 					role = {0, 40, 100, 0, 0}},
-	{name = 'npc_dota_hero_chaos_knight', 				role = {100, 20, 50, 0, 0}},
-	{name = 'npc_dota_hero_chen', 						role = {0, 0, 0, 0, 100}},
-	{name = 'npc_dota_hero_clinkz', 					role = {100, 50, 0, 50, 5}},
-	{name = 'npc_dota_hero_crystal_maiden', 			role = {0, 0, 0, 100, 100}},
-	{name = 'npc_dota_hero_dark_seer', 					role = {0, 0, 100, 0, 0}},
-	{name = 'npc_dota_hero_dark_willow', 				role = {0, 0, 0, 75, 25}, weak = true},
-	{name = 'npc_dota_hero_dawnbreaker', 				role = {0, 5, 100, 50, 50}},
-	{name = 'npc_dota_hero_dazzle', 					role = {0, 50, 0, 100, 100}},
-	{name = 'npc_dota_hero_disruptor', 					role = {0, 0, 0, 100, 100}},
-	{name = 'npc_dota_hero_death_prophet', 				role = {0, 100, 100, 100, 100}},
-	{name = 'npc_dota_hero_doom_bringer', 				role = {80, 100, 100, 0, 0}},
-	{name = 'npc_dota_hero_dragon_knight', 				role = {100, 100, 100, 0, 0}},
-	{name = 'npc_dota_hero_drow_ranger', 				role = {100, 80, 0, 0, 0}},
-	{name = 'npc_dota_hero_earth_spirit', 				role = {0, 100, 50, 100, 5}},
-	{name = 'npc_dota_hero_earthshaker', 				role = {0, 75, 100, 100, 0}},
-	{name = 'npc_dota_hero_elder_titan', 				role = {0, 0, 25, 25, 50}, weak = true},
-	{name = 'npc_dota_hero_ember_spirit', 				role = {0, 100, 0, 0, 0}},
-	{name = 'npc_dota_hero_enchantress', 				role = {0, 0, 100, 0, 100}},
-	{name = 'npc_dota_hero_enigma', 					role = {0, 0, 50, 80, 100}},
-	{name = 'npc_dota_hero_faceless_void', 				role = {100, 0, 0, 0, 0}},
-	{name = 'npc_dota_hero_furion', 					role = {100, 0, 100, 5, 100}},
-	{name = 'npc_dota_hero_grimstroke', 				role = {0, 0, 0, 100, 100}},
-	{name = 'npc_dota_hero_gyrocopter', 				role = {100, 100, 0, 100, 100}},
-	-- {name = 'npc_dota_hero_hoodwink', 					role = {0, 0, 0, 75, 25}, weak = true},
-	-- {name = 'npc_dota_hero_huskar', 					role = {100, 100, 100, 0, 0}},
-	-- {name = 'npc_dota_hero_invoker', 					role = {0, 100, 0, 0, 0}},
-	{name = 'npc_dota_hero_jakiro', 					role = {0, 15, 0, 100, 100}},
-	{name = 'npc_dota_hero_juggernaut', 				role = {100, 0, 0, 0, 0}},
-	{name = 'npc_dota_hero_keeper_of_the_light', 		role = {0, 50, 0, 100, 25}},
-	-- {name = 'npc_dota_hero_kez', 						role = {50, 100, 0, 0, 0}, weak = true},
-	{name = 'npc_dota_hero_kunkka', 					role = {50, 100, 100, 0, 0}},
-	{name = 'npc_dota_hero_legion_commander', 			role = {0, 0, 100, 0, 0}},
-	{name = 'npc_dota_hero_leshrac', 					role = {0, 100, 50, 0, 0}},
-	{name = 'npc_dota_hero_lich', 						role = {0, 0, 0, 5, 100}},
-	{name = 'npc_dota_hero_life_stealer', 				role = {100, 0, 0, 0, 0}},
-	{name = 'npc_dota_hero_lina', 						role = {100, 100, 0, 100, 5}},
-	{name = 'npc_dota_hero_lion', 						role = {0, 0, 0, 100, 100}},
-	-- {name = 'npc_dota_hero_lone_druid', 				role = {75, 75, 0, 0, 0}},
-	{name = 'npc_dota_hero_luna', 						role = {100, 0, 0, 0, 0}},
-	{name = 'npc_dota_hero_lycan', 						role = {50, 100, 100, 0, 0}},
-	{name = 'npc_dota_hero_magnataur', 					role = {50, 75, 100, 0, 0}},
-	-- {name = 'npc_dota_hero_marci',	 					role = {25, 50, 25, 0, 0}, weak = true},
-	{name = 'npc_dota_hero_mars', 						role = {0, 100, 100, 0, 0}},
-	{name = 'npc_dota_hero_medusa', 					role = {100, 50, 0, 0, 0}},
-	{name = 'npc_dota_hero_meepo', 						role = {100, 100, 0, 0, 0}},
-	{name = 'npc_dota_hero_mirana', 					role = {0, 75, 0, 50, 100}},
-	{name = 'npc_dota_hero_monkey_king', 				role = {100, 100, 0, 0, 0}},
-	{name = 'npc_dota_hero_morphling', 					role = {100, 5, 0, 0, 0}},
-	-- {name = 'npc_dota_hero_muerta', 				    role = {100, 0, 0, 0, 0}, weak = true},
-	{name = 'npc_dota_hero_naga_siren', 				role = {100, 0, 0, 0, 0}},
-	{name = 'npc_dota_hero_necrolyte', 					role = {0, 100, 100, 0, 0}},
-	{name = 'npc_dota_hero_nevermore', 					role = {100, 100, 0, 0, 0}},
-	{name = 'npc_dota_hero_night_stalker', 				role = {0, 0, 100, 0, 0}},
-	{name = 'npc_dota_hero_nyx_assassin', 				role = {0, 0, 0, 100, 5}},
-	{name = 'npc_dota_hero_obsidian_destroyer', 		role = {0, 100, 0, 0, 0}},
-	{name = 'npc_dota_hero_ogre_magi', 					role = {0, 80, 100, 30, 100}},
-	{name = 'npc_dota_hero_omniknight', 				role = {0, 5, 100, 0, 100}},
-	{name = 'npc_dota_hero_oracle', 					role = {0, 0, 0, 5, 100}},
-	{name = 'npc_dota_hero_pangolier', 					role = {0, 100, 100, 0, 0}},
-	{name = 'npc_dota_hero_phantom_lancer', 			role = {100, 0, 0, 0, 0}},
-	{name = 'npc_dota_hero_phantom_assassin', 			role = {100, 0, 0, 0, 0}},
-	{name = 'npc_dota_hero_phoenix', 					role = {0, 0, 0, 100, 100}},
-	-- {name = 'npc_dota_hero_primal_beast', 				role = {0, 75, 50, 0, 0}, weak = true},
-	{name = 'npc_dota_hero_puck', 						role = {0, 100, 0, 0, 0}},
-	{name = 'npc_dota_hero_pudge', 						role = {0, 100, 100, 5, 5}},
-	{name = 'npc_dota_hero_pugna', 						role = {0, 50, 0, 100, 100}},
-	{name = 'npc_dota_hero_queenofpain', 				role = {0, 100, 0, 0, 0}},
-	{name = 'npc_dota_hero_rattletrap', 				role = {0, 0, 0, 100, 100}},
-	{name = 'npc_dota_hero_razor', 						role = {100, 100, 100, 0, 0}},
-	{name = 'npc_dota_hero_riki', 						role = {100, 100, 0, 0, 0}},
-	{name = 'npc_dota_hero_ringmaster', 				role = {0, 0, 0, 100, 25}},
-	{name = 'npc_dota_hero_rubick', 					role = {0, 50, 0, 100, 100}},
-	{name = 'npc_dota_hero_sand_king', 					role = {0, 100, 100, 0, 0}},
-	{name = 'npc_dota_hero_shadow_demon', 				role = {0, 0, 0, 100, 100}},
-	{name = 'npc_dota_hero_shadow_shaman', 				role = {0, 0, 0, 100, 100}},
-	{name = 'npc_dota_hero_shredder', 					role = {0, 100, 100, 0, 0}},
-	{name = 'npc_dota_hero_silencer', 					role = {80, 80, 0, 100, 100}},
-	{name = 'npc_dota_hero_skeleton_king', 				role = {100, 0, 40, 0, 0}},
-	{name = 'npc_dota_hero_skywrath_mage', 				role = {0, 0, 0, 100, 100}},
-	{name = 'npc_dota_hero_slardar', 					role = {0, 50, 100, 0, 0}},
-	{name = 'npc_dota_hero_slark', 						role = {100, 0, 50, 0, 0}},
-	{name = "npc_dota_hero_snapfire", 					role = {0, 100, 0, 100, 100}},
-	{name = 'npc_dota_hero_sniper', 					role = {100, 100, 0, 0, 0}},
-	{name = 'npc_dota_hero_spectre', 					role = {100, 0, 0, 0, 0}},
-	-- {name = 'npc_dota_hero_spirit_breaker', 			role = {0, 5, 100, 100, 0}},
-	{name = 'npc_dota_hero_storm_spirit', 				role = {0, 100, 0, 0, 0}},
-	{name = 'npc_dota_hero_sven', 						role = {100, 0, 0, 0, 0}},
-	{name = 'npc_dota_hero_techies', 					role = {0, 50, 0, 100, 100}},
-	{name = 'npc_dota_hero_terrorblade', 				role = {100, 0, 0, 0, 0}},
-	{name = 'npc_dota_hero_templar_assassin', 			role = {100, 100, 0, 0, 0}},
-	{name = 'npc_dota_hero_tidehunter', 				role = {0, 0, 100, 0, 0}},
-	{name = 'npc_dota_hero_tinker', 					role = {0, 20, 0, 100, 100}},
-	{name = 'npc_dota_hero_tiny', 						role = {100, 100, 50, 100, 5}},
-	{name = 'npc_dota_hero_treant', 					role = {0, 0, 0, 80, 100}},
-	{name = 'npc_dota_hero_troll_warlord', 				role = {100, 0, 0, 0, 0}},
-	{name = 'npc_dota_hero_tusk', 						role = {0, 50, 100, 100, 5}},
-	{name = 'npc_dota_hero_undying', 					role = {0, 0, 75, 0, 100}},
-	{name = 'npc_dota_hero_ursa', 						role = {100, 0, 50, 0, 0}},
-	{name = 'npc_dota_hero_vengefulspirit', 			role = {100, 100, 0, 100, 100}},
-	{name = 'npc_dota_hero_venomancer', 				role = {0, 0, 0, 100, 100}},
-	{name = 'npc_dota_hero_viper', 						role = {80, 100, 100, 0, 0}},
-	{name = 'npc_dota_hero_visage', 					role = {0, 50, 100, 0, 0}},
-	{name = 'npc_dota_hero_void_spirit', 				role = {0, 100, 0, 0, 0}},
-	{name = 'npc_dota_hero_warlock', 					role = {0, 0, 0, 50, 100}},
-	{name = 'npc_dota_hero_weaver', 					role = {100, 0, 0, 100, 100}},
-	-- {name = 'npc_dota_hero_windrunner', 				role = {80, 100, 5, 70, 5}},
-	{name = 'npc_dota_hero_winter_wyvern', 				role = {0, 25, 15, 100, 100}},
-	{name = 'npc_dota_hero_wisp', 						role = {0, 0, 0, 10, 50}, weak = true},
-	{name = 'npc_dota_hero_witch_doctor', 				role = {0, 0, 0, 100, 100}},
-	{name = 'npc_dota_hero_zuus', 						role = {0, 100, 0, 50, 25}},
+	{name = 'npc_dota_hero_abaddon', 					role = {100, 100, 100, 100, 100},	weak = false},
+	{name = 'npc_dota_hero_abyssal_underlord', 			role = {  0,   0, 100,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_alchemist', 					role = {100,  90,  95,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_ancient_apparition', 		role = {  0,  80,   0,  95, 100},	weak = false},
+	{name = 'npc_dota_hero_antimage', 					role = {100,   0,  85,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_arc_warden', 				role = {100, 100,   0,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_axe',	 					role = {  0, 100, 100,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_bane', 						role = {  0,  80,   0, 100, 100},	weak = false},
+	{name = 'npc_dota_hero_batrider', 					role = {  0,  90,  85, 100, 100},	weak = false},
+	{name = 'npc_dota_hero_beastmaster', 				role = {  0, 100, 100,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_bloodseeker', 				role = {100,  95,  90,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_bounty_hunter', 				role = { 80, 100,  95, 100, 100},	weak = false},
+	{name = 'npc_dota_hero_brewmaster', 				role = {  0,   0, 100,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_bristleback', 				role = { 95,  85, 100,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_broodmother', 				role = { 90,  95, 100,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_centaur', 					role = {  0,  85, 100,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_chaos_knight', 				role = {100,  80,  90,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_chen', 						role = {  0,   0,   0,   0, 100},	weak = false},
+	{name = 'npc_dota_hero_clinkz', 					role = {100, 100,   0,  85,  80},	weak = false},
+	{name = 'npc_dota_hero_crystal_maiden', 			role = {  0,   0,   0, 100, 100},	weak = false},
+	{name = 'npc_dota_hero_dark_seer', 					role = {  0,   0, 100,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_dark_willow', 				role = {  0,   0,   0, 100,  80},	weak = true },
+	{name = 'npc_dota_hero_dawnbreaker', 				role = { 85,  85, 100, 100,  90},	weak = false},
+	{name = 'npc_dota_hero_dazzle', 					role = {  0,  95,   0, 100, 100},	weak = false},
+	{name = 'npc_dota_hero_disruptor', 					role = {  0,   0,   0, 100, 100},	weak = false},
+	{name = 'npc_dota_hero_death_prophet', 				role = {  0, 100, 100, 100, 100},	weak = false},
+	{name = 'npc_dota_hero_doom_bringer', 				role = { 90,  95, 100,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_dragon_knight', 				role = {100, 100,  90,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_drow_ranger', 				role = {100,  80,   0,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_earth_spirit', 				role = {  0, 100,  90, 100,  85},	weak = false},
+	{name = 'npc_dota_hero_earthshaker', 				role = {  0, 100,  90, 100,   0},	weak = false},
+	{name = 'npc_dota_hero_elder_titan', 				role = {  0,   0,  80,  90, 100},	weak = true },
+	{name = 'npc_dota_hero_ember_spirit', 				role = { 95, 100,   0,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_enchantress', 				role = {  0,   0,  90,  90, 100},	weak = false},
+	{name = 'npc_dota_hero_enigma', 					role = {  0,   0,  90,  90, 100},	weak = false},
+	{name = 'npc_dota_hero_faceless_void', 				role = {100,   0,   0,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_furion', 					role = {100, 100,  90,  85, 100},	weak = false},
+	{name = 'npc_dota_hero_grimstroke', 				role = {  0,   0,   0, 100, 100},	weak = false},
+	{name = 'npc_dota_hero_gyrocopter', 				role = {100,  90,   0,  95,  90},	weak = false},
+	-- {name = 'npc_dota_hero_hoodwink', 					role = {  0,  80,   0, 100,  85},	weak = true },
+	-- {name = 'npc_dota_hero_huskar', 					role = { 90, 100,  95,   0,   0},	weak = false},
+	-- {name = 'npc_dota_hero_invoker', 					role = {  0, 100,   0,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_jakiro', 					role = {  0,  85,   0, 100, 100},	weak = false},
+	{name = 'npc_dota_hero_juggernaut', 				role = {100,   0,   0,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_keeper_of_the_light', 		role = {  0,  90,   0, 100,  85},	weak = false},
+	-- {name = 'npc_dota_hero_kez', 						role = { 85, 100,   0,   0,   0},	weak = true },
+	{name = 'npc_dota_hero_kunkka', 					role = { 90, 100, 100,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_legion_commander', 			role = { 95,   0, 100,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_leshrac', 					role = {  0, 100,  90,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_lich', 						role = {  0,   0,   0,  90, 100},	weak = false},
+	{name = 'npc_dota_hero_life_stealer', 				role = {100,   0,   0,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_lina', 						role = {100, 100,   0, 100, 100},	weak = false},
+	{name = 'npc_dota_hero_lion', 						role = {  0,   0,   0, 100, 100},	weak = false},
+	-- {name = 'npc_dota_hero_lone_druid', 				role = { 85, 100,   0,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_luna', 						role = {100,   0,   0,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_lycan', 						role = {100, 100, 100,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_magnataur', 					role = { 90,  85, 100,   0,   0},	weak = false},
+	-- {name = 'npc_dota_hero_marci',	 					role = { 80,  80, 100,   0,   0},	weak = true },
+	{name = 'npc_dota_hero_mars', 						role = {  0, 100, 100,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_medusa', 					role = {100,  90,   0,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_meepo', 						role = {100, 100,   0,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_mirana', 					role = { 90, 100,   0,  90,  95},	weak = false},
+	{name = 'npc_dota_hero_monkey_king', 				role = {100, 100,   0,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_morphling', 					role = {100,  95,   0,   0,   0},	weak = false},
+	-- {name = 'npc_dota_hero_muerta', 				    role = {100,   0,   0,   0,   0},	weak = true },
+	{name = 'npc_dota_hero_naga_siren', 				role = {100,   0,  90,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_necrolyte', 					role = {  0, 100, 100,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_nevermore', 					role = {100, 100,   0,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_night_stalker', 				role = {  0,   0, 100,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_nyx_assassin', 				role = {  0,   0,   0, 100,  85},	weak = false},
+	{name = 'npc_dota_hero_obsidian_destroyer', 		role = {  0, 100,   0,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_ogre_magi', 					role = {  0,  85, 100,  90, 100},	weak = false},
+	{name = 'npc_dota_hero_omniknight', 				role = {  0,  85, 100,  90, 100},	weak = false},
+	{name = 'npc_dota_hero_oracle', 					role = {  0,   0,   0,  95, 100},	weak = false},
+	{name = 'npc_dota_hero_pangolier', 					role = {  0, 100, 100,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_phantom_lancer', 			role = {100,   0,   0,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_phantom_assassin', 			role = {100,   0,   0,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_phoenix', 					role = {  0,   0,   0, 100, 100},	weak = false},
+	-- {name = 'npc_dota_hero_primal_beast', 				role = {  0, 100,  90,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_puck', 						role = {  0, 100,   0,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_pudge', 						role = {  0, 100,  90,  95,  85},	weak = false},
+	{name = 'npc_dota_hero_pugna', 						role = {  0,  90,   0, 100, 100},	weak = false},
+	{name = 'npc_dota_hero_queenofpain', 				role = {  0, 100,   0,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_rattletrap', 				role = {  0,   0,   0,  95, 100},	weak = false},
+	{name = 'npc_dota_hero_razor', 						role = {100, 100, 100,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_riki', 						role = {100, 100,   0,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_ringmaster', 				role = {  0,   0,   0, 100, 100},	weak = false},
+	{name = 'npc_dota_hero_rubick', 					role = {  0,  85,   0, 100, 100},	weak = false},
+	{name = 'npc_dota_hero_sand_king', 					role = {  0, 100, 100,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_shadow_demon', 				role = {  0,   0,   0, 100, 100},	weak = false},
+	{name = 'npc_dota_hero_shadow_shaman', 				role = {  0,   0,   0, 100, 100},	weak = false},
+	{name = 'npc_dota_hero_shredder', 					role = {  0, 100, 100,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_silencer', 					role = { 85,  95,   0,  95, 100},	weak = false},
+	{name = 'npc_dota_hero_skeleton_king', 				role = {100,   0,  90,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_skywrath_mage', 				role = {  0,   0,   0, 100, 100},	weak = false},
+	{name = 'npc_dota_hero_slardar', 					role = {  0,  95, 100,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_slark', 						role = {100,   0,  85,   0,   0},	weak = false},
+	{name = "npc_dota_hero_snapfire", 					role = {  0, 100,   0,  95, 100},	weak = false},
+	{name = 'npc_dota_hero_sniper', 					role = {100, 100,   0,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_spectre', 					role = {100,   0,   0,   0,   0},	weak = false},
+	-- {name = 'npc_dota_hero_spirit_breaker', 			role = {  0,  90,  95, 100,  90},	weak = false},
+	{name = 'npc_dota_hero_storm_spirit', 				role = {  0, 100,   0,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_sven', 						role = {100,   0,   0,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_techies', 					role = {  0,  85,   0, 100,  95},	weak = false},
+	{name = 'npc_dota_hero_terrorblade', 				role = {100,   0,   0,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_templar_assassin', 			role = {100, 100,   0,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_tidehunter', 				role = {  0,   0, 100,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_tinker', 					role = {  0,  90,   0,  95, 100},	weak = false},
+	{name = 'npc_dota_hero_tiny', 						role = {100, 100,  90, 100,  95},	weak = false},
+	{name = 'npc_dota_hero_treant', 					role = {  0,   0,   0,  95, 100},	weak = false},
+	{name = 'npc_dota_hero_troll_warlord', 				role = {100,   0,   0,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_tusk', 						role = {  0,  90,  85, 100, 100},	weak = false},
+	{name = 'npc_dota_hero_undying', 					role = {  0,   0,  90,  85, 100},	weak = false},
+	{name = 'npc_dota_hero_ursa', 						role = {100,   0,  85,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_vengefulspirit', 			role = { 90,  90,   0,  95, 100},	weak = false},
+	{name = 'npc_dota_hero_venomancer', 				role = {  0,   0,   0, 100, 100},	weak = false},
+	{name = 'npc_dota_hero_viper', 						role = { 85, 100, 100,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_visage', 					role = {  0,  90, 100,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_void_spirit', 				role = {  0, 100,   0,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_warlock', 					role = {  0,   0,   0, 100, 100},	weak = false},
+	{name = 'npc_dota_hero_weaver', 					role = {100,   0,   0,  95,  95},	weak = false},
+	-- {name = 'npc_dota_hero_windrunner', 				role = {100, 100,  85,  95,  90},	weak = false},
+	{name = 'npc_dota_hero_winter_wyvern', 				role = {  0,  80,  80, 100, 100},	weak = false},
+	{name = 'npc_dota_hero_wisp', 						role = {  0,   0,   0,  90, 100},	weak = true },
+	{name = 'npc_dota_hero_witch_doctor', 				role = {  0,   0,   0, 100, 100},	weak = false},
+	{name = 'npc_dota_hero_zuus', 						role = {  0, 100,   0,  95,  95},	weak = false},
 }
 
 local function GetHeroList(pos)
@@ -201,6 +219,14 @@ local sPos2List = GetAdjustedPool(2)
 local sPos3List = GetAdjustedPool(3)
 local sPos4List = GetAdjustedPool(4)
 local sPos5List = GetAdjustedPool(5)
+
+local function GetAllHeroNames(heroPosMap)
+    local heroNames = {}
+    for heroName, _ in pairs(heroPosMap) do
+        table.insert(heroNames, heroName)
+    end
+    return heroNames
+end
 
 tSelectPoolList = {
 	[1] = sPos2List,
@@ -394,7 +420,8 @@ print(tIDs[1],tIDs[2],tIDs[3],tIDs[4],tIDs[5], GetTeam())
 print('====')
 function Think()
 	if GetGameState() == GAME_STATE_HERO_SELECTION then
-		InstallChatCallback( function ( tChat ) X.SetChatHeroBan( tChat.string ) end )
+		-- InstallChatCallback( function ( tChat ) X.SetChatHeroBan( tChat.string ) end )
+		InstallChatCallback(function (attr) SelectHeroChatCallback(attr.player_id, attr.string, attr.team_only); end);
 	end
 
 	if ( GameTime() < 3.0 and not bLineupReserve )
@@ -557,17 +584,200 @@ function GetBotNames()
 	return N.GetBotNames()
 end
 
-local bPvNLaneAssignDone = false
+-- local bPvNLaneAssignDone = false
+-- function UpdateLaneAssignments()
+
+-- 	if DotaTime() > 0
+-- 		and nHumanCount == 0
+-- 		and Role.IsPvNMode()
+-- 		and not bLaneAssignActive
+-- 		and not bPvNLaneAssignDone
+-- 	then
+-- 		if RandomInt( 1, 8 ) > 4 then tLaneAssignList[4] = LANE_MID else tLaneAssignList[5] = LANE_MID end
+-- 		bPvNLaneAssignDone = true
+-- 	end
+
+-- 	return tLaneAssignList
+-- end
+
+--==============================================================================
+--functions for custom hero selection
+
+--==============================================================================
+-- Human chat helper: map human input to unit name
+--==============================================================================
+local allBotHeroes = {
+	'npc_dota_hero_dawnbreaker',
+	'npc_dota_hero_hoodwink',
+    'npc_dota_hero_snapfire',
+	'npc_dota_hero_void_spirit',
+	'npc_dota_hero_mars',
+	'npc_dota_hero_pangolier',
+	'npc_dota_hero_dark_willow',
+	'npc_dota_hero_ember_spirit',
+	'npc_dota_hero_earth_spirit',
+	'npc_dota_hero_phoenix',
+	'npc_dota_hero_terrorblade',
+	'npc_dota_hero_morphling',
+	'npc_dota_hero_shredder',
+	'npc_dota_hero_broodmother',
+	'npc_dota_hero_antimage',
+	'npc_dota_hero_dark_seer',
+	'npc_dota_hero_weaver',
+	'npc_dota_hero_obsidian_destroyer',
+	'npc_dota_hero_batrider',
+	'npc_dota_hero_lone_druid',
+    'npc_dota_hero_wisp',
+    'npc_dota_hero_chen',
+	'npc_dota_hero_troll_warlord',
+	'npc_dota_hero_alchemist',
+	'npc_dota_hero_tinker',
+	'npc_dota_hero_furion',
+	'npc_dota_hero_templar_assassin',
+	'npc_dota_hero_rubick',
+	'npc_dota_hero_keeper_of_the_light',
+	'npc_dota_hero_ancient_apparition',
+	'npc_dota_hero_mirana',
+	'npc_dota_hero_medusa',
+	'npc_dota_hero_spectre',
+	'npc_dota_hero_enigma',
+	'npc_dota_hero_visage',
+	'npc_dota_hero_riki',
+	'npc_dota_hero_lycan',
+	'npc_dota_hero_clinkz',
+	'npc_dota_hero_techies',
+	'npc_dota_hero_winter_wyvern',
+	'npc_dota_hero_pugna',
+	'npc_dota_hero_queenofpain',
+	'npc_dota_hero_silencer',
+	'npc_dota_hero_leshrac',
+	'npc_dota_hero_enchantress',
+	'npc_dota_hero_nyx_assassin',
+	'npc_dota_hero_storm_spirit',
+	'npc_dota_hero_abaddon',
+	'npc_dota_hero_abyssal_underlord',
+	'npc_dota_hero_arc_warden',
+	'npc_dota_hero_spirit_breaker',
+        'npc_dota_hero_axe',
+        'npc_dota_hero_bane',
+	'npc_dota_hero_beastmaster',
+        'npc_dota_hero_bloodseeker',
+        'npc_dota_hero_bounty_hunter',
+	'npc_dota_hero_brewmaster',
+        'npc_dota_hero_bristleback',
+	'npc_dota_hero_centaur',
+        'npc_dota_hero_chaos_knight',
+        'npc_dota_hero_crystal_maiden',
+        'npc_dota_hero_dazzle',
+        'npc_dota_hero_death_prophet',
+	'npc_dota_hero_disruptor',
+	'npc_dota_hero_doom_bringer',
+        'npc_dota_hero_dragon_knight',
+        'npc_dota_hero_drow_ranger',
+        'npc_dota_hero_earthshaker',
+	'npc_dota_hero_elder_titan',
+	'npc_dota_hero_faceless_void',
+	'npc_dota_hero_grimstroke',
+	'npc_dota_hero_gyrocopter',
+	'npc_dota_hero_huskar',
+    'npc_dota_hero_invoker',
+        'npc_dota_hero_jakiro',
+        'npc_dota_hero_juggernaut',
+        'npc_dota_hero_kunkka',
+	'npc_dota_hero_legion_commander',
+        'npc_dota_hero_lich',
+	'npc_dota_hero_life_stealer',
+        'npc_dota_hero_lina',
+        'npc_dota_hero_lion',
+        'npc_dota_hero_luna',
+	'npc_dota_hero_magnataur',
+    'npc_dota_hero_meepo',
+	'npc_dota_hero_monkey_king',
+	'npc_dota_hero_naga_siren',
+        'npc_dota_hero_necrolyte',
+        'npc_dota_hero_nevermore',
+	'npc_dota_hero_night_stalker',
+	'npc_dota_hero_ogre_magi',
+        'npc_dota_hero_omniknight',
+        'npc_dota_hero_oracle',
+        'npc_dota_hero_phantom_assassin',
+	'npc_dota_hero_phantom_lancer',
+    'npc_dota_hero_puck',
+        'npc_dota_hero_pudge',
+    'npc_dota_hero_rattletrap',
+        'npc_dota_hero_razor',
+        'npc_dota_hero_sand_king',
+	'npc_dota_hero_shadow_demon',
+	'npc_dota_hero_shadow_shaman',
+        'npc_dota_hero_skeleton_king',
+        'npc_dota_hero_skywrath_mage',
+	'npc_dota_hero_slardar',
+	'npc_dota_hero_slark',
+        'npc_dota_hero_sniper',
+        'npc_dota_hero_sven',
+        'npc_dota_hero_tidehunter',
+        'npc_dota_hero_tiny',
+	'npc_dota_hero_treant',
+	'npc_dota_hero_tusk',
+	'npc_dota_hero_undying',
+	'npc_dota_hero_ursa',
+        'npc_dota_hero_vengefulspirit',
+	'npc_dota_hero_venomancer',
+        'npc_dota_hero_viper',
+        'npc_dota_hero_warlock',
+        'npc_dota_hero_windrunner',
+        'npc_dota_hero_witch_doctor',
+        'npc_dota_hero_zuus'
+};
+ 
+function GetHumanChatHero(name)
+	if name == nil then return ""; end	
+	for _,hero in  pairs(allBotHeroes) do
+		if string.find(hero, name) then
+			return hero;
+		end
+	end
+	return "";
+end
+
+function SelectHeroChatCallback(PlayerID, ChatText, bTeamOnly)
+
+	if GetGameState() == GAME_STATE_HERO_SELECTION and string.len(ChatText) == 2 then
+		if Localization.Supported(ChatText) then
+			HandleLocaleSetting(ChatText)
+		end
+	end
+	local text = string.lower(ChatText);
+	local hero = GetHumanChatHero(text);
+	local teamPlayers = GetTeamPlayers(GetTeam(), true);
+	if hero ~= "" then
+		if bTeamOnly then
+			for _, id in pairs(teamPlayers) do
+				if IsPlayerBot(id) and IsPlayerInHeroSelectionControl(id) and GetSelectedHeroName(id) == "" then
+					SelectHero(id, hero);
+					break;
+				end
+			end
+		elseif bTeamOnly == false and GetTeamForPlayer(PlayerID) ~= GetTeam() then
+			for _, id in pairs(teamPlayers) do
+				if IsPlayerBot(id) and IsPlayerInHeroSelectionControl(id) and GetSelectedHeroName(id) == "" then
+					SelectHero(id, hero);
+					break;
+				end
+			end
+		end
+	else
+		print("Hero name not found! Please refer to hero_selection.lua of this script for list of heroes's name");
+	end
+end
+
+--==============================================================================
+-- Lane assignment plumbing
+--==============================================================================
 function UpdateLaneAssignments()
 
-	if DotaTime() > 0
-		and nHumanCount == 0
-		and Role.IsPvNMode()
-		and not bLaneAssignActive
-		and not bPvNLaneAssignDone
-	then
-		if RandomInt( 1, 8 ) > 4 then tLaneAssignList[4] = LANE_MID else tLaneAssignList[5] = LANE_MID end
-		bPvNLaneAssignDone = true
+	if GetGameState() == GAME_STATE_HERO_SELECTION or GetGameState() == GAME_STATE_STRATEGY_TIME or GetGameState() == GAME_STATE_PRE_GAME then
+		InstallChatCallback(function (attr) SelectHeroChatCallback(attr.player_id, attr.string, attr.team_only); end);
 	end
 
 	return tLaneAssignList

@@ -12,6 +12,40 @@ local X = {}
 -- ["initiator"] good at starting a teamfight.
 -- ["jungler"] can farm effectively from neutral creeps inside the jungle early in the game.
 
+X.RoleAssignment = {TEAM_RADIANT = {
+    1,
+    2,
+    3,
+    4,
+    5,
+    1,
+    2,
+    3,
+    4,
+    5,
+    1,
+    2,
+    3,
+    4,
+    5
+}, TEAM_DIRE = {
+    1,
+    2,
+    3,
+    4,
+    5,
+    1,
+    2,
+    3,
+    4,
+    5,
+    1,
+    2,
+    3,
+    4,
+    5
+}}
+
 X["hero_roles"] = {
 	["npc_dota_hero_abaddon"] = {
 		['carry'] = 1,
@@ -1570,6 +1604,20 @@ X['invisHeroes'] = {
 --	['npc_dota_hero_broodmother'] = 1,
 	['npc_dota_hero_weaver'] = 1
 }
+
+function X.GetBestEffortSuitableRole( hero )
+    if X.CanBeSupport(hero) then
+        return 4
+    elseif X.CanBeMidlaner(hero) then
+        return 2
+    elseif X.CanBeSafeLaneCarry(hero) then
+        return 1
+    elseif X.CanBeOfflaner(hero) then
+        return 3
+    else
+        return 3
+    end
+end
 
 function X.IsCarry( hero )
 	if X["hero_roles"][hero] == nil then return false end
