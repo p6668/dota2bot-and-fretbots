@@ -12,10 +12,6 @@ local bUserMode = false
 local bLaneAssignActive = true
 local bLineupReserve = false
 
-local CorrectRadiantAssignedLanes = false
-local CorrectDireAssignedLanes = false
-local CorrectDirePlayerIndexToLaneIndex = { }
-
 local nDireFirstLaneType = 1
 if pcall( require,  'game/bot_dire_first_lane_type' )
 then
@@ -29,21 +25,6 @@ local Role = require( GetScriptDirectory()..'/FunLib/aba_role' )
 local Chat = require( GetScriptDirectory()..'/FunLib/aba_chat' )
 local Localization = require( GetScriptDirectory()..'/FunLib/localization' )
 local HeroSet = {}
-
-local tDefaultLaningRadiant = {
-	[1] = LANE_BOT,
-	[2] = LANE_MID,
-	[3] = LANE_TOP,
-	[4] = LANE_TOP,
-	[5] = LANE_BOT,
-}
-local tDefaultLaningDire = {
-	[1] = LANE_TOP,
-	[2] = LANE_MID,
-	[3] = LANE_BOT,
-	[4] = LANE_BOT,
-	[5] = LANE_TOP,
-}
 
 local sHeroList = {										-- pos  1, 2, 3, 4, 5
 	{name = 'npc_dota_hero_abaddon', 					role = {100, 100, 100, 100, 100},	weak = false},
@@ -219,14 +200,6 @@ local sPos2List = GetAdjustedPool(2)
 local sPos3List = GetAdjustedPool(3)
 local sPos4List = GetAdjustedPool(4)
 local sPos5List = GetAdjustedPool(5)
-
-local function GetAllHeroNames(heroPosMap)
-    local heroNames = {}
-    for heroName, _ in pairs(heroPosMap) do
-        table.insert(heroNames, heroName)
-    end
-    return heroNames
-end
 
 tSelectPoolList = {
 	[1] = sPos2List,
