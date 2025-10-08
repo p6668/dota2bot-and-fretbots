@@ -556,24 +556,9 @@ function GetBotNames()
 	return N.GetBotNames()
 end
 
--- local bPvNLaneAssignDone = false
--- function UpdateLaneAssignments()
-
--- 	if DotaTime() > 0
--- 		and nHumanCount == 0
--- 		and Role.IsPvNMode()
--- 		and not bLaneAssignActive
--- 		and not bPvNLaneAssignDone
--- 	then
--- 		if RandomInt( 1, 8 ) > 4 then tLaneAssignList[4] = LANE_MID else tLaneAssignList[5] = LANE_MID end
--- 		bPvNLaneAssignDone = true
--- 	end
-
--- 	return tLaneAssignList
--- end
-
 --==============================================================================
 --functions for custom hero selection
+--==============================================================================
 
 --==============================================================================
 -- Human chat helper: map human input to unit name
