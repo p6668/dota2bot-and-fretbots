@@ -23,7 +23,6 @@ local U    = require( GetScriptDirectory()..'/FunLib/lua_util' )
 local N    = require( GetScriptDirectory()..'/FunLib/bot_names' )
 local Role = require( GetScriptDirectory()..'/FunLib/aba_role' )
 local Chat = require( GetScriptDirectory()..'/FunLib/aba_chat' )
-local Localization = require( GetScriptDirectory()..'/FunLib/localization' )
 local HeroSet = {}
 
 local sHeroList = {										-- pos  1, 2, 3, 4, 5
@@ -716,10 +715,9 @@ end
 function SelectHeroChatCallback(PlayerID, ChatText, bTeamOnly)
 
 	if GetGameState() == GAME_STATE_HERO_SELECTION and string.len(ChatText) == 2 then
-		if Localization.Supported(ChatText) then
-			HandleLocaleSetting(ChatText)
-		end
+		HandleLocaleSetting(ChatText)
 	end
+
 	local text = string.lower(ChatText);
 	local hero = GetHumanChatHero(text);
 	local teamPlayers = GetTeamPlayers(GetTeam(), true);
