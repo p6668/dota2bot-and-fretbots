@@ -556,6 +556,22 @@ function GetBotNames()
 	return N.GetBotNames()
 end
 
+local bPvNLaneAssignDone = false
+function UpdateLaneAssignments()
+
+	if DotaTime() > 0
+		and nHumanCount == 0
+		and Role.IsPvNMode()
+		and not bLaneAssignActive
+		and not bPvNLaneAssignDone
+	then
+		if RandomInt( 1, 8 ) > 4 then tLaneAssignList[4] = LANE_MID else tLaneAssignList[5] = LANE_MID end
+		bPvNLaneAssignDone = true
+	end
+
+	return tLaneAssignList
+end
+
 --==============================================================================
 --functions for custom hero selection
 --==============================================================================
@@ -725,16 +741,4 @@ function SelectHeroChatCallback(PlayerID, ChatText, bTeamOnly)
 	else
 		print("Hero name not found! Please refer to hero_selection.lua of this script for list of heroes's name");
 	end
-end
-
---==============================================================================
--- Lane assignment plumbing
---==============================================================================
-function UpdateLaneAssignments()
-
-	if GetGameState() == GAME_STATE_HERO_SELECTION or GetGameState() == GAME_STATE_STRATEGY_TIME or GetGameState() == GAME_STATE_PRE_GAME then
-		InstallChatCallback(function (attr) SelectHeroChatCallback(attr.player_id, attr.string, attr.team_only); end);
-	end
-
-	return tLaneAssignList
 end
