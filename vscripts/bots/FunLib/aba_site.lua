@@ -86,7 +86,7 @@ Site["dire_base"] = Vector( 7137, 6548 )
 
 
 local visionRad = 2000 --假眼查重范围
-local trueSightRad = 1000 --真眼查重范围
+local trueSightRad = 1050 --真眼查重范围
 
 
 local RADIANT_RUNE_WARD = Vector( 2606, -1547, 0 )
@@ -384,7 +384,14 @@ function Site.IsCloseToAvailableWard( wardLoc )
 end
 
 
---位置是否已有真实视野
+local function IsValidBuilding(building)
+	return  building ~= nil
+		and not building:IsNull()
+		and building:CanBeSeen()
+		and building:IsAlive()
+		and building:IsBuilding()
+end
+
 function Site.IsLocationHaveTrueSight( vLocation )
 
 	local WardList = GetUnitList( UNIT_LIST_ALLIED_WARDS )
@@ -398,10 +405,11 @@ function Site.IsLocationHaveTrueSight( vLocation )
 		end
 	end
 
-	local tNearbyTowerList = GetBot():GetNearbyTowers( 1600, false )
-	for _, tower in pairs( tNearbyTowerList )
-	do
-		if GetUnitToLocationDistance( tower, vLocation ) < trueSightRad - 300
+	local buildingList = GetUnitList(UNIT_LIST_ALLIED_BUILDINGS)
+	for _, building in pairs(buildingList) do
+		if  IsValidBuilding(building)
+		and building:IsTower()
+		and GetUnitToLocationDistance(building, vLocation) < trueSightRad
 		then
 			return true
 		end
@@ -473,8 +481,9 @@ function Site.IsVaildCreep( nUnit )
 		   and not nUnit:IsNull()
 		   and nUnit:IsAlive()
 		   and nUnit:CanBeSeen()
-		   and nUnit:GetHealth() < 5000
-		   and ( GetBot():GetLevel() > 9 or not nUnit:IsAncientCreep() )		  
+		   and nUnit:IsCreep()
+		--    and nUnit:GetHealth() < 5000
+		--    and ( GetBot():GetLevel() > 9 or not nUnit:IsAncientCreep() )		  
 		  
 end
 
@@ -553,19 +562,11 @@ function Site.RefreshCamp( bot )
 
 	local camps = GetNeutralSpawners()
 	local allCampList = {}
-	local nSum = 0
-	local nCount = 0
-	for i, id in pairs( GetTeamPlayers( GetTeam() ) )
-	do
-		nSum = nSum + GetHeroLevel( id )
-		nCount = nCount + 1
-	end
-	local nAverageLV = nSum / nCount
-
+	local botLevel = bot:GetLevel()
 
 	for k, camp in pairs( camps )
 	do
-		if ( nAverageLV <= 7 or bot:GetAttackDamage() <= 80 )
+		if ( botLevel <= 7 or bot:GetAttackDamage() <= 80 )
 		then
 			if not Site.IsEnemyCamp( camp )
 				and not Site.IsLargeCamp( camp )
@@ -573,14 +574,14 @@ function Site.RefreshCamp( bot )
 			then
 				table.insert( allCampList, { idx = k, cattr = camp } )
 			end
-		elseif nAverageLV <= 11
+		elseif botLevel <= 11
 		then
 			if not Site.IsEnemyCamp( camp )
 				and not Site.IsAncientCamp( camp )
 			then
 				table.insert( allCampList, { idx = k, cattr = camp } )
 			end
-		elseif nAverageLV <= 14
+		elseif botLevel <= 14
 		then
 			if not Site.IsEnemyCamp( camp )
 			then
@@ -603,16 +604,18 @@ function Site.GetClosestNeutralSpwan( bot, availableCampList )
 
 	for _, camp in pairs( availableCampList )
 	do
-	   local dist = GetUnitToLocationDistance( bot, camp.cattr.location )
-	   if Site.IsEnemyCamp( camp ) then dist = dist * 1.5 end
-	  
-	   if Site.IsTheClosestOne( bot, camp.cattr.location )
-	      and dist < minDist
-		  and ( bot:GetLevel() >= 10 or not Site.IsAncientCamp( camp ) )
-	   then
-			minDist = dist
-			pCamp = camp
-	   end
+		if not Site.IsUnitAroundLocation(camp.cattr.location, 1200) then
+			local dist = GetUnitToLocationDistance( bot, camp.cattr.location )
+			if Site.IsEnemyCamp( camp ) then dist = dist * 1.5 end
+		   
+			if Site.IsTheClosestOne( bot, camp.cattr.location )
+			   and dist < minDist
+			   and ( bot:GetLevel() >= 10 or not Site.IsAncientCamp( camp ) )
+			then
+				 minDist = dist
+				 pCamp = camp
+			end
+		end
 	end
 
 	return pCamp
@@ -630,7 +633,7 @@ function Site.IsTheClosestOne( bot, loc )
 		local member = GetTeamMember( k )
 		if  member ~= nil
 			and member:IsAlive()
-			and member:GetActiveMode() == BOT_MODE_FARM
+			and (member:GetActiveMode() == BOT_MODE_FARM or Site.GetPosition(member) <= 3)
 		then
 			local memberDist = GetUnitToLocationDistance( member, loc )
 			if memberDist < minDist
@@ -708,6 +711,21 @@ function Site.GetMinHPCreep( creepList )
 
 	return targetCreep
 
+end
+
+function Site.IsUnitAroundLocation(vLoc, nRadius)
+	for _, id in pairs(GetTeamPlayers(GetOpposingTeam())) do
+		if IsHeroAlive(id) then
+			local info = GetHeroLastSeenInfo(id)
+			if info ~= nil then
+				local dInfo = info[1]
+				if dInfo ~= nil and Site.GetDistance(vLoc, dInfo.location) <= nRadius and dInfo.time_since_seen < 30.0 then
+					return true
+				end
+			end
+		end
+	end
+	return false
 end
 
 ----------------------------------
@@ -861,7 +879,8 @@ function Site.IsSuitableFarmMode( mode )
 	return	mode ~= BOT_MODE_RUNE
 		and mode ~= BOT_MODE_ATTACK
 		and mode ~= BOT_MODE_SECRET_SHOP
-		and mode ~= BOT_MODE_SIDE_SHOP
+		-- and mode ~= BOT_MODE_SIDE_SHOP
+		and mode ~= BOT_MODE_ASSEMBLE_WITH_HUMANS
 		and mode ~= BOT_MODE_DEFEND_ALLY
 		and mode ~= BOT_MODE_EVASIVE_MANEUVERS
 
@@ -888,21 +907,17 @@ function Site.IsModeSuitableToFarm( bot )
 		end
 	end
 
-	if Site.IsShouldFarmHero( bot )
-		and botLevel >= 8
-		and botLevel <= 18
-		and Site.IsSuitableFarmMode( mode )
-	    and mode ~= BOT_MODE_WARD
-	    and mode ~= BOT_MODE_LANING
-	    and mode ~= BOT_MODE_DEFEND_TOWER_TOP
-	    and mode ~= BOT_MODE_DEFEND_TOWER_MID
-	    and mode ~= BOT_MODE_DEFEND_TOWER_BOT
-	    and mode ~= BOT_MODE_ASSEMBLE
-	    and mode ~= BOT_MODE_TEAM_ROAM
-	    and mode ~= BOT_MODE_ROSHAN
-	then
-		return true
-	end
+	-- if Site.IsShouldFarmHero( bot )
+	-- 	and botLevel >= 8
+	-- 	and botLevel <= 24
+	-- 	and Site.IsSuitableFarmMode( mode )
+	-- 	and mode ~= BOT_MODE_ROSHAN
+	-- 	and mode ~= BOT_MODE_TEAM_ROAM
+	-- 	and mode ~= BOT_MODE_LANING
+	-- 	and mode ~= BOT_MODE_WARD
+	-- then
+	-- 	return true
+	-- end
 
 	if Site.IsSuitableFarmMode( mode )
 	   and mode ~= BOT_MODE_WARD
@@ -913,7 +928,8 @@ function Site.IsModeSuitableToFarm( bot )
 	   and mode ~= BOT_MODE_ASSEMBLE
 	   and mode ~= BOT_MODE_TEAM_ROAM
 	   and mode ~= BOT_MODE_ROSHAN
-	   and botLevel >= 5
+	   and mode ~= BOT_MODE_RETREAT
+	   and botLevel >= 8
 	then
 		return true
 	end
@@ -923,62 +939,23 @@ function Site.IsModeSuitableToFarm( bot )
 end
 
 
-
 function Site.IsTimeToFarm( bot )
-
-	if DotaTime() < 5 * 60 or DotaTime() > 50 * 60 then return false end
+	if Site.IsInLaningPhase(bot) or DotaTime() > 90 * 60 then return false end
 
 	local botName = bot:GetUnitName()
-	local botNetWorth = bot:GetNetWorth()
 
-	--防止单独无用的推进
-	if bot:GetActiveMode() == BOT_MODE_PUSH_TOWER_BOT
-		or bot:GetActiveMode() == BOT_MODE_PUSH_TOWER_MID
-		or bot:GetActiveMode() == BOT_MODE_PUSH_TOWER_TOP
-	then
-		local enemyAncient = GetAncient( GetOpposingTeam() )
-		local allyList = bot:GetNearbyHeroes( 1400, false, BOT_MODE_NONE )
-		local enemyAncientDistance = GetUnitToUnitDistance( bot, enemyAncient )
-		if  enemyAncientDistance < 2800
-		    and enemyAncientDistance > 1400
-			and bot:GetActiveModeDesire() < BOT_MODE_DESIRE_HIGH
-			and #allyList <= 1
-		then
-			return true
-		end
-
-		if Site.IsShouldFarmHero( bot )
-		then
-			if  bot:GetActiveModeDesire() < BOT_MODE_DESIRE_MODERATE
-				and enemyAncientDistance > 1600
-				and enemyAncientDistance < 5600
-				and #allyList <= 1
-			then
-				return true
+	if Site.GetPosition(bot) <= 3 then
+		for i = 1, 5 do
+			local member = GetTeamMember(i)
+			if member and member:GetNetWorth() > 4500 * 6 then
+				return false
 			end
 		end
-	end
 
-	local carry = Site.GetCarry()
-
-	if  carry ~= nil
-	and (Site.GetPosition(bot) == 1 and bot:GetNetWorth() < 20000
-		or Site.GetPosition(bot) == 2 and carry:GetNetWorth() < 20000
-		or Site.GetPosition(bot) == 3 and carry:GetNetWorth() < 20000
-		)
-	then
-		return true
-	end
-
-	if  Site.ConsiderIsTimeToFarm[botName] ~= nil
-	and Site.ConsiderIsTimeToFarm[botName]() == true
-	and botName == 'npc_dota_hero_chen'
-	then
 		return true
 	end
 
 	return false
-
 end
 
 -----------------------------------------------------------
@@ -1002,9 +979,9 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_antimage"] = function()
 	end
 
 	if not Site.IsHaveItem( bot, "item_satanic" )
-		and botNetWorth < 22000
+		and botNetWorth < 28000
 	then
-		if Site.GetAroundAllyCount( bot, 1100 ) <= 2
+		if Site.GetAroundAllyCount( bot, 1200 ) <= 2
 		then
 			return true
 		end
@@ -1040,8 +1017,8 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_arc_warden"] = function()
 	end
 
 	if Site.IsHaveItem( bot, "item_hand_of_midas" )
-		and Site.GetAroundAllyCount( bot, 1100 ) <= 3
-		and botNetWorth <= 22000
+		and Site.GetAroundAllyCount( bot, 1200 ) <= 3
+		and botNetWorth <= 26000
 	then
 		return true
 	end
@@ -1086,7 +1063,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_bloodseeker"] = function()
 	local botNetWorth = bot:GetNetWorth()
 
 	if DotaTime() > 9 * 60
-		and (  botNetWorth < 20000 )
+		and ( botNetWorth < 22000 )
 	then
 		return true
 	end
@@ -1098,9 +1075,9 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_bloodseeker"] = function()
 	end
 
 	if not Site.IsHaveItem( bot, "item_abyssal_blade" )
-		and botNetWorth < 20000
+		and botNetWorth < 26000
 	then
-		if Site.GetAroundAllyCount( bot, 1100 ) <= 1
+		if Site.GetAroundAllyCount( bot, 1200 ) <= 1
 		then
 			return true
 		end
@@ -1154,9 +1131,9 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_dragon_knight"] = function()
 	local botNetWorth = bot:GetNetWorth()
 
 	if not Site.IsHaveItem( bot, "item_assault" )
-	   and botNetWorth < 20000
+	   and botNetWorth < 22000
 	then
-		local allyCount = Site.GetAroundAllyCount( bot, 1100 )
+		local allyCount = Site.GetAroundAllyCount( bot, 1200 )
 		if bot:GetAttackRange() > 300
 			and allyCount <= 2
 		then
@@ -1213,7 +1190,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_drow_ranger"] = function()
 	end
 
 	if Site.IsHaveItem( bot, "item_ultimate_scepter" )
-		and botNetWorth < 20000
+		and botNetWorth < 23000
 	then
 		if Site.GetAroundAllyCount( bot, 1100 ) <= 2
 		then
@@ -1243,7 +1220,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_huskar"] = function()
 	end
 
 	if not Site.IsHaveItem( bot, "item_black_king_bar" )
-		and botNetWorth < 22000
+		and botNetWorth < 26000
 	then
 		if Site.GetAroundAllyCount( bot, 1100 ) < 2
 		then
@@ -1252,7 +1229,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_huskar"] = function()
 	end
 
 	if bot:GetLevel() > 20
-	   and botNetWorth < 22000
+	   and botNetWorth < 23333
 	then
 		if Site.GetAroundAllyCount( bot, 1100 ) <= 1
 		then
@@ -1284,9 +1261,9 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_juggernaut"] = function()
 	end
 
 	if not Site.IsHaveItem( bot, "item_satanic" )
-		and botNetWorth < 22000
+		and botNetWorth < 24000
 	then
-		if Site.GetAroundAllyCount( bot, 1100 ) <= 1
+		if Site.GetAroundAllyCount( bot, 1000 ) <= 1
 		then
 			return true
 		end
@@ -1332,7 +1309,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_medusa"] = function()
 	end
 
 	if not Site.IsHaveItem( bot, "item_satanic" )
-		and botNetWorth < 22000
+		and botNetWorth < 28000
 	then
 		if Site.GetAroundAllyCount( bot, 1100 ) <= 1
 		then
@@ -1362,7 +1339,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_nevermore"] = function()
 	end
 
 	if not Site.IsHaveItem( bot, "item_sphere" )
-		and botNetWorth < 22000
+		and botNetWorth < 28000
 	then
 		if Site.GetAroundAllyCount( bot, 1100 ) <= 2
 		then
@@ -1404,9 +1381,9 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_phantom_assassin"] = function()
 	end
 
 	if not Site.IsHaveItem( bot, "item_black_king_bar" )
-		and botNetWorth < 22000
+		and botNetWorth < 24000
 	then
-		if Site.GetAroundAllyCount( bot, 1100 ) <= 2
+		if Site.GetAroundAllyCount( bot, 1000 ) <= 2
 		then
 			return true
 		end
@@ -1447,14 +1424,14 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_phantom_lancer"] = function()
 	if not Site.IsHaveItem( bot, "item_sphere" )
 		and botNetWorth < 22000
 	then
-		if Site.GetAroundAllyCount( bot, 1100 ) <= 3
+		if Site.GetAroundAllyCount( bot, 1300 ) <= 3
 		then
 			return true
 		end
 	end
 
 	if not Site.IsHaveItem( bot, "item_heart" )
-		and botNetWorth < 22000
+		and botNetWorth < 26000
 	then
 		if Site.GetAroundAllyCount( bot, 1100 ) <= 1
 		then
@@ -1492,7 +1469,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_razor"] = function()
 	end
 
 	if not Site.IsHaveItem( bot, "item_satanic" )
-		and botNetWorth < 22000
+		and botNetWorth < 25000
 	then
 		if Site.GetAroundAllyCount( bot, 1100 ) <= 1
 		then
@@ -1573,9 +1550,9 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_slark"] = function()
 	end
 
 	if not Site.IsHaveItem( bot, "item_abyssal_blade" )
-		and botNetWorth < 22000
+		and botNetWorth < 25000
 	then
-		if Site.GetAroundAllyCount( bot, 1100 ) <= 1
+		if Site.GetAroundAllyCount( bot, 1300 ) <= 1
 		then
 			return true
 		end
@@ -1610,14 +1587,14 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_sven"] = function()
 	if not Site.IsHaveItem( bot, "item_satanic" )
 		and botNetWorth < 22000
 	then
-		if Site.GetAroundAllyCount( bot, 1100 ) <= 2
+		if Site.GetAroundAllyCount( bot, 1000 ) <= 2
 		then
 			return true
 		end
 	end
 
 	if not Site.IsHaveItem( bot, "item_greater_crit" )
-		and botNetWorth < 22000
+		and botNetWorth < 26000
 	then
 		if Site.GetAroundAllyCount( bot, 1100 ) <= 1
 		then
@@ -1642,7 +1619,7 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_sniper"] = function()
 		local botDeaths = GetHeroDeaths( bot:GetPlayerID() )
 		if botKills - 3 <=  botDeaths
 			and botDeaths > 2
-			and Site.GetAroundAllyCount( bot, 1100 ) <= 2
+			and Site.GetAroundAllyCount( bot, 1200 ) <= 2
 		then
 			return true
 		end
@@ -1672,14 +1649,14 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_templar_assassin"] = function()
 	if not Site.IsHaveItem( bot, "item_hurricane_pike" )
 		and botNetWorth < 20000
 	then
-		if Site.GetAroundAllyCount( bot, 1100 ) <= 3
+		if Site.GetAroundAllyCount( bot, 1300 ) <= 3
 		then
 			return true
 		end
 	end
 
 	if not Site.IsHaveItem( bot, "item_satanic" )
-		and botNetWorth < 22000
+		and botNetWorth < 26000
 	then
 		if Site.GetAroundAllyCount( bot, 1100 ) <= 1
 		then
@@ -2298,70 +2275,6 @@ Site.ConsiderIsTimeToFarm["npc_dota_hero_morphling"] = function()
 	return false
 end
 
--- Get Chen creep
-Site.ConsiderIsTimeToFarm["npc_dota_hero_chen"] = function()
-	local bot = GetBot()
-	local HolyPersuasion = bot:GetAbilityByName('chen_holy_persuasion')
-	local nCastRange = HolyPersuasion:GetCastRange()
-	local nMaxUnit = HolyPersuasion:GetSpecialValueInt('max_units')
-    local nMaxLevel = HolyPersuasion:GetSpecialValueInt('level_req')
-
-	local nGoodCreep = {
-        "npc_dota_neutral_alpha_wolf",
-        "npc_dota_neutral_centaur_khan",
-        "npc_dota_neutral_polar_furbolg_ursa_warrior",
-        "npc_dota_neutral_dark_troll_warlord",
-        "npc_dota_neutral_satyr_hellcaller",
-        "npc_dota_neutral_enraged_wildkin",
-        "npc_dota_neutral_warpine_raider",
-    }
-
-	local unitTable = {}
-    for _, unit in pairs(GetUnitList(UNIT_LIST_ALLIES))
-    do
-        if string.find(unit:GetUnitName(), 'neutral')
-        and unit:HasModifier('modifier_chen_holy_persuasion')
-        then
-            table.insert(unitTable, unit)
-        end
-    end
-
-	if HolyPersuasion:IsFullyCastable()
-	and #unitTable < 2 -- Just 2 for now to stop from farming much as a Support
-	then
-		local nNeutralCreeps = bot:GetNearbyNeutralCreeps(nCastRange)
-
-		if nNeutralCreeps ~= nil and #nNeutralCreeps > 0
-		-- and bot:GetAttackTarget():IsCreep()
-		then
-			for _, creep in pairs(nNeutralCreeps)
-			do
-				if creep ~= nil
-				and creep:CanBeSeen()
-				and creep:IsAlive()
-				and not creep:IsNull()
-				and not creep:IsBuilding()
-				then
-					for _, gCreep in pairs(nGoodCreep)
-					do
-						if creep:GetUnitName() == gCreep
-						and creep:GetLevel() <= nMaxLevel
-						then
-							return true
-						end
-					end
-				end
-			end
-
-			return false
-		else
-			return true
-		end
-	end
-
-	return false
-end
-
 ------------------------------------------------------------------
 
 --根据地点来刷新阵营
@@ -2456,18 +2369,8 @@ function Site.GetPosition(bot)
 	return pos
 end
 
-function Site.GetCarry()
-	for i = 1, 5
-	do
-		local member = GetTeamMember(i)
-		if Site.GetPosition(member) == 1 then return member end
-	end
-
-	return nil
-end
-
-function Site.IsInLaningPhase()
-	if GetBot().isInLanePhase ~= nil and GetBot().isInLanePhase then return true end
+function Site.IsInLaningPhase(bot)
+	if bot.isInLanePhase ~= nil and bot.isInLanePhase then return true end
 	return false
 end
 
@@ -2488,4 +2391,3 @@ function Site.IsModeTurbo()
 end
 
 return Site
--- dota2jmz@163.com QQ:2462331592..
