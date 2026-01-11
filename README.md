@@ -15,3 +15,4 @@ This is typically `<SteamDir>\steamapps\common\dota 2 beta\game\dota\scripts\vsc
 ![](https://github.com/fretmute/fretbots/blob/master/images/EnableCheats.png)
 4. After starting the game, open the console, and input `sv_cheats 1; script_reload_code bots/Buff/buff`.
 5. The script is now running (`Buff mode enabled!` message in chat).
+6. The script allows manual hero selection for the enemy team. For example, typing `/all puck` in chat will pick Puck for the enemy.
