@@ -17,6 +17,8 @@ function StatsAwards.AddStats(bot, nTeam)
         bot:SetBaseStrength(stat + bonus)
         stat = bot:GetBaseAgility()
         bot:SetBaseAgility(stat + bonus)
+        stat = bot:GetBaseIntellect()
+        bot:SetBaseIntellect(stat + bonus * 0.1) -- reduce int stats bonus due to 7.33 update giving magic resist
     end
 end
 
