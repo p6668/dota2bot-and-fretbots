@@ -10,8 +10,10 @@ function F.ChangeHeroFacet(bot)
         -- TODO: others (if possible)
 
         if heroName == 'npc_dota_hero_morphling' then
-            if bot:HasAbility('morphling_flow') then
-                F.DoChange(bot, 'morphling_flow', 'morphling_ebb', false)
+            if RandomInt(1,4) == 1 then
+                if bot:HasAbility('morphling_flow') then
+                    F.DoChange(bot, 'morphling_flow', 'morphling_ebb', false)
+                end
             end
 
         -- Comment out if not using TA bot script, as it requires some other edits (main).
@@ -31,6 +33,12 @@ function F.ChangeHeroFacet(bot)
             if RandomInt(1,2) == 1 then
                 if bot:HasAbility('keeper_of_the_light_recall') then
                     F.DoChange(bot, 'keeper_of_the_light_recall', 'keeper_of_the_light_radiant_bind', true)
+                end
+            end
+        elseif heroName == 'npc_dota_hero_windrunner' then
+            if RandomInt(1,2) == 1 then
+                if bot:HasAbility('windranger_tangled') then
+                    F.DoChange(bot, 'windranger_tangled', 'windranger_killshot', true)
                 end
             end
         elseif heroName == 'npc_dota_hero_tusk' then

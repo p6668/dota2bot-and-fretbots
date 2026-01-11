@@ -1,6 +1,5 @@
 # About
-This is a customized version of fretbots + dota2bot. This script uses dota2bot with slightly modified farming/pushing behavior. 
-It is updated under the assumption the user will also use fretbots with a difficulty of at least 5.
+This is a customized version of dota2bot. This script uses dota2bot with slightly modified farming/pushing behavior. 
 This means that the GPM for enemy bots would be around 1100-1300.
 
 bots from: https://github.com/ryndrb/dota2bot  
@@ -14,7 +13,5 @@ This is typically `<SteamDir>\steamapps\common\dota 2 beta\game\dota\scripts\vsc
 ![](https://github.com/fretmute/fretbots/blob/master/images/EnableConsole.png)
 3. Create a lobby and select `Local Dev Script`. Ensure that `Enable Cheats` is checked; this is required because the scripts use functions that are considered cheats to give gold, items, stats, and experience to the bots. The scripts monitor player chat, and will announce to chat when any player enters cheat commands.
 ![](https://github.com/fretmute/fretbots/blob/master/images/EnableCheats.png)
-4. After starting the game, open the console, and input `sv_cheats 1; script_reload_code fretbots`.
-5. The scripts are now running! You should receive a message in chat with the current version string.  If you did not, you probably received an error message in the console instead.
-![](https://github.com/fretmute/fretbots/blob/master/images/FretBotsWelcome.png)
-6. Voting for difficulty will begin when all players have loaded into the game.  Difficulty scales from 0 to 10. To vote, simply type a number into chat. Values beyond the limits will be coerced to the nearest valid value. Each player may only vote once. Note that at higher difficuty levels, the bots will be sigificantly higher level and wealthier than the human players. The bots will receive their bonuses once per minute past the sounding of the horn, and potentially when they die.  
+4. After starting the game, open the console, and input `sv_cheats 1; script_reload_code bots/Buff/buff`.
+5. The script is now running (`Buff mode enabled!` message in chat).

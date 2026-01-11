@@ -111,16 +111,16 @@ local bBuffFlags = {
         change  = true,  -- Set to 'false' to disable changing (a) facet/s (See /Facets.lua for the heroes).
     },
     towers = {
-        radiant = true, -- Set to 'false' to disable Radiant towers buff.
-        dire    = true, -- Set to 'false' to disable Dire towers buff.
+        radiant = false, -- Set to 'false' to disable Radiant towers buff.
+        dire    = false, -- Set to 'false' to disable Dire towers buff.
     },
     neutrals = {
         radiant = true, -- Set to 'false' to disable Radiant bots receiving neutral items.
         dire    = true, -- Set to 'false' to disable Dire bots receiving neutral items.
     },
     manga_regen = {
-        radiant = true, -- Set to 'false' to disable aiding Radiant bots' receiving added mana regen.
-        dire    = true, -- Set to 'false' to disable aiding Dire bots' receiving added mana regen.
+        radiant = false, -- Set to 'false' to disable aiding Radiant bots' receiving added mana regen.
+        dire    = false, -- Set to 'false' to disable aiding Dire bots' receiving added mana regen.
     },
     -- Applies to All Pick only
     gpm = {

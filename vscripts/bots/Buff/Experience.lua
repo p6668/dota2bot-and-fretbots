@@ -38,27 +38,28 @@ local XPNeeded = {
     [30] = 0,
 }
 
+-- just eyeballed
 function XP.UpdateXP(bot, nTeam)
     local gameTime = Helper.DotaTime() / 60
+    local botPos = Helper.GetPosition(bot, nTeam)
 
-    local botLevel = bot:GetLevel()
-    local needXP = XPNeeded[botLevel]
-    local mul2XP = needXP / 2
-
-    local xp = (mul2XP / 60) / 2
-
-    if not Helper.IsCore(bot, nTeam)
-    then
-        xp = xp * 0.5
+    if gameTime <= 5 then
+        xp = 15
+    elseif gameTime <= 10 then
+        xp = 20
+    elseif gameTime <= 15 then
+        xp = 25
+    elseif gameTime <= 20 then
+        xp = 30
+    elseif gameTime <= 25 then
+        xp = 35
+    elseif gameTime <= 30 then
+        xp = 40
+    else
+        xp = 45
     end
 
-    local timeMul = math.max(1, 1 - (gameTime / 60))
-
-    xp = xp * timeMul
-
-    if  bot:IsAlive()
-    and gameTime > 0
-    then
+    if bot:IsAlive() and gameTime > 0 then
         bot:AddExperience(math.floor(xp), 0, false, true)
     end
 end
