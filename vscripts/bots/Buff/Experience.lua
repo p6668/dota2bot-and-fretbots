@@ -44,9 +44,9 @@ function XP.UpdateXP(bot, nTeam)
     local botPos = Helper.GetPosition(bot, nTeam)
 
     if gameTime <= 5 then
-        xp = 15
+        xp = 10
     elseif gameTime <= 10 then
-        xp = 20
+        xp = 15
     elseif gameTime <= 15 then
         xp = 25
     elseif gameTime <= 20 then
