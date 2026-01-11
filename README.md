@@ -1,6 +1,6 @@
 # About
 This is a customized version of dota2bot. This script uses dota2bot with slightly modified farming/pushing behavior. 
-This means that the GPM for enemy bots would be around 1100-1300.
+This means that the GPM for enemy bots would be around 1300-1400 and bot will be lv30 in 30-35 mins.
 
 bots from: https://github.com/ryndrb/dota2bot  
 fretbots: https://github.com/fretmute/fretbots   
