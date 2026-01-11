@@ -6,7 +6,7 @@ dofile('bots/Buff/Helper')
 dofile('bots/Buff/Towers')
 dofile('bots/Buff/Facets')
 dofile('bots/Buff/Spells')
-dofile('bots/Buff/StatsAwards')
+dofile('bots/Buff/Stats')
 
 if Buff == nil
 then
@@ -240,7 +240,7 @@ function Buff:Init()
                         XP.UpdateXP(h, TeamRadiant)
                     end
                     if bBuffFlags.stats.radiant then
-                        StatsAwards.AddStats(h, TeamRadiant)
+                        Stats.UpdateStats(h, TeamRadiant)
                     end
                 end
 
@@ -252,7 +252,7 @@ function Buff:Init()
                          XP.UpdateXP(h, TeamDire)
                     end
                     if bBuffFlags.stats.dire then
-                        StatsAwards.AddStats(h, TeamDire)
+                        Stats.UpdateStats(h, TeamDire)
                     end
                 end
             end

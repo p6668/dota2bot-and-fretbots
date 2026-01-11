@@ -7,15 +7,6 @@ end
 
 -- Reasonable GPM (XPM later)
 function GPM.TargetGPM(time)
-    -- if time <= 10 * 60 then
-    --     return 450
-    -- elseif time <= 20 * 60 then
-    --     return 600
-    -- elseif time <= 30 * 60 then
-    --     return 750
-    -- else
-    --     return RandomInt(900, 1000)
-    -- end
     if time <= 5 then
         return 800
     elseif time <= 10 then
@@ -43,15 +34,6 @@ function GPM.UpdateBotGold(bot, nTeam)
     local actual = currentGPM * gameTime
     local missing = expected - actual
     local goldPerTick = math.max(1, missing / 60)
-
-    -- Give Supports "passive" Philosopher's stone
-    -- Juice up cores more
-    -- local nAdd = 2.5
-    -- if not isCore
-    -- then
-    --     nAdd = 75 / 60
-    --     goldPerTick = 0
-    -- end
 
     if gameTime > 0
     then

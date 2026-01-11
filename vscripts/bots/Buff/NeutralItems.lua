@@ -243,24 +243,24 @@ function NeutralItems.GiveNeutralItems(hHeroList)
 
             if hero.neutral_items then
                 -- range; to feel more natural
-                -- if bTurboMode then
-                --     hero.neutral_items[1].assign_time = RandomFloat( 2.5,  4.5)
-                --     hero.neutral_items[2].assign_time = RandomFloat( 7.5,  9.5)
-                --     hero.neutral_items[3].assign_time = RandomFloat(12.5, 14.5)
-                --     hero.neutral_items[4].assign_time = RandomFloat(17.5, 19.5)
-                --     hero.neutral_items[5].assign_time = RandomFloat(30.0, 32.0)
-                -- else
-                --     hero.neutral_items[1].assign_time = RandomFloat( 5,  8)
-                --     hero.neutral_items[2].assign_time = RandomFloat(15, 18)
-                --     hero.neutral_items[3].assign_time = RandomFloat(25, 28)
-                --     hero.neutral_items[4].assign_time = RandomFloat(35, 38)
-                --     hero.neutral_items[5].assign_time = RandomFloat(60, 63)
-                -- end
-                hero.neutral_items[1].assign_time = RandomFloat( 2.5,  2.6)
-                hero.neutral_items[2].assign_time = RandomFloat( 7.5,  7.6)
-                hero.neutral_items[3].assign_time = RandomFloat(12.5, 12.6)
-                hero.neutral_items[4].assign_time = RandomFloat(17.5, 17.6)
-                hero.neutral_items[5].assign_time = RandomFloat(30.0, 30.1)
+                if bTurboMode then
+                    hero.neutral_items[1].assign_time = RandomFloat( 2.5,  4.5)
+                    hero.neutral_items[2].assign_time = RandomFloat( 7.5,  9.5)
+                    hero.neutral_items[3].assign_time = RandomFloat(12.5, 14.5)
+                    hero.neutral_items[4].assign_time = RandomFloat(17.5, 19.5)
+                    hero.neutral_items[5].assign_time = RandomFloat(30.0, 32.0)
+                else
+                    -- hero.neutral_items[1].assign_time = RandomFloat( 5,  8)
+                    -- hero.neutral_items[2].assign_time = RandomFloat(15, 18)
+                    -- hero.neutral_items[3].assign_time = RandomFloat(25, 28)
+                    -- hero.neutral_items[4].assign_time = RandomFloat(35, 38)
+                    -- hero.neutral_items[5].assign_time = RandomFloat(60, 63)
+                    hero.neutral_items[1].assign_time = RandomFloat( 2.5,  2.6)
+                    hero.neutral_items[2].assign_time = RandomFloat( 7.5,  7.6)
+                    hero.neutral_items[3].assign_time = RandomFloat(12.5, 12.6)
+                    hero.neutral_items[4].assign_time = RandomFloat(17.5, 17.6)
+                    hero.neutral_items[5].assign_time = RandomFloat(30.0, 30.1)
+                end
             end
         end
 

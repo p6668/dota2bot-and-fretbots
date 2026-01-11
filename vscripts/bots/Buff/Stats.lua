@@ -1,16 +1,16 @@
 dofile('bots/Buff/Helper')
 
-if StatsAwards == nil
+if Stats == nil
 then
-    StatsAwards = {}
+    Stats = {}
 end
 
 -- just eyeballed
-function StatsAwards.AddStats(bot, nTeam)
+function Stats.UpdateStats(bot, nTeam)
     local gameTime = Helper.DotaTime() / 60
     local botPos = Helper.GetPosition(bot, nTeam)
 
-    if gameTime >= 20 and gameTime <=50 then
+    if gameTime >= 25 and gameTime <=60 then
         local stat
         local bonus = 0.01667
         stat = bot:GetBaseStrength()
@@ -22,4 +22,4 @@ function StatsAwards.AddStats(bot, nTeam)
     end
 end
 
-return StatsAwards
+return Stats

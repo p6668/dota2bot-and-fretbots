@@ -43,27 +43,29 @@ function XP.UpdateXP(bot, nTeam)
     local gameTime = Helper.DotaTime() / 60
     local botPos = Helper.GetPosition(bot, nTeam)
 
-    if gameTime <= 5 then
+    if gameTime <= 2.5 then
+        xp = 3
+    elseif gameTime <= 5 then
         xp = 5
-    elseif gameTime <= 7 then
+    elseif gameTime <= 7.5 then
         xp = 10
     elseif gameTime <= 10 then
         xp = 15
-    elseif gameTime <= 12 then
+    elseif gameTime <= 12.5 then
         xp = 20
     elseif gameTime <= 15 then
         xp = 25
     elseif gameTime <= 20 then
         xp = 30
     elseif gameTime <= 25 then
-        xp = 40
+        xp = 35
     elseif gameTime <= 30 then
-        xp = 45
+        xp = 40
     else
-        xp = 50
+        xp = 45
     end
 
-    if bot:IsAlive() and gameTime > 0 then
+    if gameTime > 0 then
         bot:AddExperience(math.floor(xp), 0, false, true)
     end
 end
