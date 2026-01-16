@@ -66,7 +66,7 @@ local sHeroList = {										-- pos    1,   2,   3,   4,   5
 	{name = 'npc_dota_hero_grimstroke', 				role = {  0,   0,   0, 100, 100},	weak = false},
 	{name = 'npc_dota_hero_gyrocopter', 				role = {100,  90,   0,  95,  90},	weak = false},
 	-- {name = 'npc_dota_hero_hoodwink', 					role = {  0,  80,   0, 100,  85},	weak = true },
-	-- {name = 'npc_dota_hero_huskar', 					role = { 90, 100,  95,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_huskar', 					role = { 90, 100,  95,   0,   0},	weak = false},
 	-- {name = 'npc_dota_hero_invoker', 					role = {  0, 100,   0,  85,  80},	weak = false},
 	{name = 'npc_dota_hero_jakiro', 					role = {  0,  85,   0, 100, 100},	weak = false},
 	{name = 'npc_dota_hero_juggernaut', 				role = {100,   0,   0,   0,   0},	weak = false},
@@ -80,7 +80,7 @@ local sHeroList = {										-- pos    1,   2,   3,   4,   5
 	{name = 'npc_dota_hero_life_stealer', 				role = {100,   0,   0,   0,   0},	weak = false},
 	{name = 'npc_dota_hero_lina', 						role = {100, 100,   0, 100, 100},	weak = false},
 	{name = 'npc_dota_hero_lion', 						role = {  0,   0,   0, 100, 100},	weak = false},
-	-- {name = 'npc_dota_hero_lone_druid', 				role = { 85, 100,   0,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_lone_druid', 				role = { 85, 100,   0,   0,   0},	weak = false},
 	{name = 'npc_dota_hero_luna', 						role = {100,   0,   0,   0,   0},	weak = false},
 	{name = 'npc_dota_hero_lycan', 						role = {100, 100, 100,   0,   0},	weak = false},
 	{name = 'npc_dota_hero_magnataur', 					role = { 90,  85, 100,   0,   0},	weak = false},
@@ -122,7 +122,7 @@ local sHeroList = {										-- pos    1,   2,   3,   4,   5
 	{name = 'npc_dota_hero_silencer', 					role = { 85,  95,   0,  95, 100},	weak = false},
 	{name = 'npc_dota_hero_skeleton_king', 				role = {100,   0,  90,   0,   0},	weak = false},
 	{name = 'npc_dota_hero_skywrath_mage', 				role = {  0,  90,   0, 100,  95},	weak = false},
-	{name = 'npc_dota_hero_slardar', 					role = {  0,  95, 100,   0,   0},	weak = false},
+	{name = 'npc_dota_hero_slardar', 					role = { 90,  95, 100,   0,   0},	weak = false},
 	{name = 'npc_dota_hero_slark', 						role = {100,   0,  85,   0,   0},	weak = false},
 	{name = "npc_dota_hero_snapfire", 					role = {  0, 100,   0,  95, 100},	weak = false},
 	{name = 'npc_dota_hero_sniper', 					role = {100, 100,   0,   0,   0},	weak = false},
@@ -142,7 +142,7 @@ local sHeroList = {										-- pos    1,   2,   3,   4,   5
 	{name = 'npc_dota_hero_undying', 					role = {  0,   0,  90,  85, 100},	weak = false},
 	{name = 'npc_dota_hero_ursa', 						role = {100,   0,  85,   0,   0},	weak = false},
 	{name = 'npc_dota_hero_vengefulspirit', 			role = { 90,  90,   0,  95, 100},	weak = false},
-	{name = 'npc_dota_hero_venomancer', 				role = {  0,   0,   0, 100, 100},	weak = false},
+	{name = 'npc_dota_hero_venomancer', 				role = {  0,  90,   0, 100, 100},	weak = false},
 	{name = 'npc_dota_hero_viper', 						role = {  0, 100, 100,   0,   0},	weak = false},
 	{name = 'npc_dota_hero_visage', 					role = {  0,  90, 100,  80,  80},	weak = false},
 	{name = 'npc_dota_hero_void_spirit', 				role = {  0, 100,   0,   0,   0},	weak = false},
@@ -701,7 +701,8 @@ local allBotHeroes = {
         'npc_dota_hero_warlock',
         'npc_dota_hero_windrunner',
         'npc_dota_hero_witch_doctor',
-        'npc_dota_hero_zuus'
+        'npc_dota_hero_zuus',
+        'npc_dota_hero_largo'
 };
  
 function GetHumanChatHero(name)
