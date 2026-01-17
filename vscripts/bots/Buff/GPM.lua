@@ -7,22 +7,20 @@ end
 
 -- Reasonable GPM (XPM later)
 function GPM.TargetGPM(time)
-    if time <= 2 then
+    if time <= 5 then
         return 0
-    elseif time <= 5 then
-        return 200
     elseif time <= 10 then
-        return 400
+        return 500
     elseif time <= 15 then
-        return 600
+        return 700
     elseif time <= 20 then
-        return 800
+        return 900
     elseif time <= 25 then
-        return 1000
-    elseif time <= 30 then
         return 1100
-    elseif time <= 40 then
+    elseif time <= 30 then
         return 1200
+    elseif time <= 40 then
+        return 1300
     else
         return 1100
     end

@@ -10,7 +10,7 @@ function Stats.UpdateStats(bot, nTeam)
     local gameTime = Helper.DotaTime() / 60
     local botPos = Helper.GetPosition(bot, nTeam)
 
-    if gameTime >= 20 and gameTime <=50 then
+    if gameTime >= 10 and gameTime <=50 then
         local stat
         local bonus = 0.01667
         stat = bot:GetBaseStrength()
