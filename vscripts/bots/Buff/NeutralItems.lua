@@ -256,10 +256,10 @@ function NeutralItems.GiveNeutralItems(hHeroList)
                     -- hero.neutral_items[4].assign_time = RandomFloat(35, 38)
                     -- hero.neutral_items[5].assign_time = RandomFloat(60, 63)
                     hero.neutral_items[1].assign_time = 2
-                    hero.neutral_items[2].assign_time = 9
-                    hero.neutral_items[3].assign_time = 16
-                    hero.neutral_items[4].assign_time = 23
-                    hero.neutral_items[5].assign_time = 30
+                    hero.neutral_items[2].assign_time = 7
+                    hero.neutral_items[3].assign_time = 17
+                    hero.neutral_items[4].assign_time = 27
+                    hero.neutral_items[5].assign_time = 37
                 end
             end
         end

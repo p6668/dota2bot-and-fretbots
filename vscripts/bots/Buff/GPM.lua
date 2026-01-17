@@ -10,19 +10,19 @@ function GPM.TargetGPM(time)
     if time <= 2 then
         return 0
     elseif time <= 5 then
-        return 400
+        return 200
     elseif time <= 10 then
-        return 600
+        return 400
     elseif time <= 15 then
-        return 800
+        return 600
     elseif time <= 20 then
-        return 1000
+        return 800
     elseif time <= 25 then
-        return 1200
+        return 1000
     elseif time <= 30 then
-        return 1300
+        return 1100
     elseif time <= 40 then
-        return 1400
+        return 1200
     else
         return 1100
     end
