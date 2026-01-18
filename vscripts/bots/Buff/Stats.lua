@@ -12,8 +12,7 @@ function Stats.UpdateStats(bot, nTeam)
 
     if gameTime >= 20 and gameTime <=60 then
         local stat
-        -- local bonus = 0.01667
-        local bonus = 0
+        local bonus = 0.01667
         stat = bot:GetBaseStrength()
         bot:SetBaseStrength(stat + bonus)
         stat = bot:GetBaseAgility()
