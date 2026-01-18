@@ -30,7 +30,7 @@ function GPM.UpdateBotGold(bot, nTeam)
     local isCore = Helper.IsCore(bot, nTeam)
     local gameTime = Helper.DotaTime() / 60
     local targetGPM = GPM.TargetGPM(gameTime)
-    if isCore and targetGPM > 0 then
+    if not isCore and targetGPM > 0 then
         targetGPM = targetGPM - 200
     end
 
