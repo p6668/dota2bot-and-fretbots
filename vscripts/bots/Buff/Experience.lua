@@ -47,10 +47,8 @@ function XP.UpdateXP(bot, nTeam)
         xp = 0
     elseif gameTime <= 10 then
         xp = 5
-    elseif gameTime <= 12.5 then
-        xp = 10
     elseif gameTime <= 15 then
-        xp = 15
+        xp = 10
     elseif gameTime <= 20 then
         xp = 20
     elseif gameTime <= 25 then
