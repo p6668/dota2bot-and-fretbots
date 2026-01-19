@@ -10,9 +10,27 @@ function Stats.UpdateStats(bot, nTeam)
     local gameTime = Helper.DotaTime() / 60
     local botPos = Helper.GetPosition(bot, nTeam)
 
-    if gameTime >= 20 and gameTime <=60 then
+    if gameTime >= 20 and gameTime <=30 then
         local stat
         local bonus = 0.01667
+        stat = bot:GetBaseStrength()
+        bot:SetBaseStrength(stat + bonus)
+        stat = bot:GetBaseAgility()
+        bot:SetBaseAgility(stat + bonus)
+        stat = bot:GetBaseIntellect()
+        bot:SetBaseIntellect(stat + bonus * 0.1) -- reduce int stats bonus due to 7.33 update giving magic resist
+    elseif gameTime > 30 and gameTime <=40 then 
+        local stat
+        local bonus = 0.01667*1.5
+        stat = bot:GetBaseStrength()
+        bot:SetBaseStrength(stat + bonus)
+        stat = bot:GetBaseAgility()
+        bot:SetBaseAgility(stat + bonus)
+        stat = bot:GetBaseIntellect()
+        bot:SetBaseIntellect(stat + bonus * 0.1) -- reduce int stats bonus due to 7.33 update giving magic resist
+    elseif gameTime > 40 and gameTime <=60 then 
+        local stat
+        local bonus = 0.01667*2
         stat = bot:GetBaseStrength()
         bot:SetBaseStrength(stat + bonus)
         stat = bot:GetBaseAgility()
@@ -28,6 +46,9 @@ function Stats.UpdateStats(bot, nTeam)
         bot:SetBaseAgility(stat + bonus)
         stat = bot:GetBaseIntellect()
         bot:SetBaseIntellect(stat + bonus)
+        if gameTime > 60.9 and gameTime <=61 then
+            GameRules:SendCustomMessage("<font color='#70EA71'>"..string.gsub(bot:GetUnitName(), 'npc_dota_hero_', '').."</font>"..' is in god mode. Cautious!', -1, 0)
+        end
     end
 end
 
