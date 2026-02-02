@@ -10,17 +10,17 @@ function GPM.TargetGPM(time)
     if time <= 5 then
         return 0
     elseif time <= 10 then
-        return 550
+        return 600
     elseif time <= 15 then
-        return 650
+        return 700
     elseif time <= 20 then
         return 800
     elseif time <= 25 then
-        return 900
+        return 890
     elseif time <= 30 then
-        return 1000
+        return 975
     else
-        return 1100
+        return 1150
     end
 end
 
@@ -29,7 +29,7 @@ function GPM.UpdateBotGold(bot, nTeam)
     local gameTime = Helper.DotaTime() / 60
     local targetGPM = GPM.TargetGPM(gameTime)
     if not isCore and targetGPM > 0 then
-        targetGPM = targetGPM - 200
+        targetGPM = targetGPM - 225
     end
 
     local currentGPM = PlayerResource:GetGoldPerMin(bot:GetPlayerID())
