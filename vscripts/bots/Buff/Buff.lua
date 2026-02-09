@@ -231,10 +231,12 @@ function Buff:Init()
             NeutralItems.GiveNeutralItems(hHeroList)
 
             -- Gold, Experience, and Stats
+
             if not Helper.IsTurboMode() then
                 for _, h in pairs(TeamRadiant) do
+                    local BotTotalKills = PlayerResource:GetTeamKills(DOTA_TEAM_GOODGUYS)
                     if bBuffFlags.gpm.radiant then
-                        GPM.UpdateBotGold(h, TeamRadiant)
+                        GPM.UpdateBotGold(h, TeamRadiant, BotTotalKills)
                     end
                     if bBuffFlags.xpm.radiant then
                         XP.UpdateXP(h, TeamRadiant)
@@ -245,8 +247,9 @@ function Buff:Init()
                 end
 
                 for _, h in pairs(TeamDire) do
+                    local BotTotalKills = PlayerResource:GetTeamKills(DOTA_TEAM_BADGUYS)
                     if bBuffFlags.gpm.dire then
-                        GPM.UpdateBotGold(h, TeamDire)
+                        GPM.UpdateBotGold(h, TeamDire, BotTotalKills)
                     end
                     if bBuffFlags.xpm.dire then
                          XP.UpdateXP(h, TeamDire)

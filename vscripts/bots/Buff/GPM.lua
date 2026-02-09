@@ -24,10 +24,27 @@ function GPM.TargetGPM(time)
     end
 end
 
-function GPM.UpdateBotGold(bot, nTeam)
+function GPM.TargetGPMBasedOnKills(time, targetGPM, BotTotalKills)
+    if time > 15 and BotTotalKills < 10 then
+        return targetGPM + 50
+    elseif time > 20 and BotTotalKills < 20 then
+        return targetGPM + 75
+    elseif time > 30 and BotTotalKills < 30 then
+        return targetGPM + 100
+    else
+        return targetGPM
+    end
+end
+
+function GPM.UpdateBotGold(bot, nTeam, BotTotalKills)
     local isCore = Helper.IsCore(bot, nTeam)
     local gameTime = Helper.DotaTime() / 60
     local targetGPM = GPM.TargetGPM(gameTime)
+
+    -- Set GPM based on team kills
+    targetGPM = GPM.TargetGPMBasedOnKills(gameTime, targetGPM, BotTotalKills)
+
+    -- Support will have lower GPM than cores
     if not isCore and targetGPM > 0 then
         targetGPM = targetGPM - 225
     end
