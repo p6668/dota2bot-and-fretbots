@@ -27,8 +27,8 @@ end
 function GPM.TargetGPMBasedOnKills(time, targetGPM, BotTotalKills)
     if time > 15 and BotTotalKills < 10 then
         return targetGPM + 50
-    elseif time > 20 and BotTotalKills < 20 then
-        return targetGPM + 75
+    elseif time > 23 and BotTotalKills < 20 then
+        return targetGPM + 100
     elseif time > 30 and BotTotalKills < 30 then
         return targetGPM + 100
     else
