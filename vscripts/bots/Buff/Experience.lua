@@ -39,7 +39,7 @@ local XPNeeded = {
 }
 
 -- just eyeballed
-function XP.UpdateXP(bot, nTeam)
+function XP.UpdateXP(bot, nTeam, BotTotalKills, PlayerTotalKills)
     local gameTime = Helper.DotaTime() / 60
     local botPos = Helper.GetPosition(bot, nTeam)
 

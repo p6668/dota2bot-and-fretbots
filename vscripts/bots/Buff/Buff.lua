@@ -136,12 +136,20 @@ local bBuffFlags = {
         radiant = true, -- Set to 'false' to disable Radiant bots receiving a stats boost.
         dire    = true, -- Set to 'false' to disable Dire bots receiving a stats boost.
     },
+    godmode = {
+        enabled = true, -- Set to 'false' to disable god mode at the late game.
+        StartTime = 0,
+        KillThreshold = 0,
+        done = false,
+    },
 }
 
 function Buff:Init()
     if not BuffEnabled then
         GameRules:SendCustomMessage('Buff mode enabled!', 0, 0)
         BuffEnabled = true
+        bBuffFlags.godmode.StartTime = RandomFloat(40,  60)
+        bBuffFlags.godmode.KillThreshold = RandomFloat(40,  50)
     end
 
     Timers:CreateTimer(function()
@@ -233,30 +241,38 @@ function Buff:Init()
             -- Gold, Experience, and Stats
 
             if not Helper.IsTurboMode() then
+                local isGodmodeDone = false
                 for _, h in pairs(TeamRadiant) do
                     local BotTotalKills = PlayerResource:GetTeamKills(DOTA_TEAM_GOODGUYS)
+                    local PlayerTotalKills = PlayerResource:GetTeamKills(DOTA_TEAM_BADGUYS)
                     if bBuffFlags.gpm.radiant then
-                        GPM.UpdateBotGold(h, TeamRadiant, BotTotalKills)
+                        GPM.UpdateBotGold(h, TeamRadiant, BotTotalKills, PlayerTotalKills)
                     end
                     if bBuffFlags.xpm.radiant then
-                        XP.UpdateXP(h, TeamRadiant)
+                        XP.UpdateXP(h, TeamRadiant, BotTotalKills, PlayerTotalKills)
                     end
                     if bBuffFlags.stats.radiant then
-                        Stats.UpdateStats(h, TeamRadiant)
+                        isGodmodeDone = Stats.UpdateStats(h, TeamRadiant, BotTotalKills, PlayerTotalKills, bBuffFlags.godmode)
                     end
                 end
 
                 for _, h in pairs(TeamDire) do
                     local BotTotalKills = PlayerResource:GetTeamKills(DOTA_TEAM_BADGUYS)
+                    local PlayerTotalKills = PlayerResource:GetTeamKills(DOTA_TEAM_GOODGUYS)
                     if bBuffFlags.gpm.dire then
-                        GPM.UpdateBotGold(h, TeamDire, BotTotalKills)
+                        GPM.UpdateBotGold(h, TeamDire, BotTotalKills, PlayerTotalKills)
                     end
                     if bBuffFlags.xpm.dire then
-                         XP.UpdateXP(h, TeamDire)
+                         XP.UpdateXP(h, TeamDire, BotTotalKills, PlayerTotalKills)
                     end
                     if bBuffFlags.stats.dire then
-                        Stats.UpdateStats(h, TeamDire)
+                        isGodmodeDone = Stats.UpdateStats(h, TeamDire, BotTotalKills, PlayerTotalKills, bBuffFlags.godmode)
                     end
+                end
+
+                if isGodmodeDone then
+                    bBuffFlags.godmode.done = true
+                    GameRules:SendCustomMessage("God mode enabled!", -1, 0)
                 end
             end
         end

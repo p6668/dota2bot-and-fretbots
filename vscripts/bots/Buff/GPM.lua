@@ -36,7 +36,7 @@ function GPM.TargetGPMBasedOnKills(time, targetGPM, BotTotalKills)
     end
 end
 
-function GPM.UpdateBotGold(bot, nTeam, BotTotalKills)
+function GPM.UpdateBotGold(bot, nTeam, BotTotalKills, PlayerTotalKills)
     local isCore = Helper.IsCore(bot, nTeam)
     local gameTime = Helper.DotaTime() / 60
     local targetGPM = GPM.TargetGPM(gameTime)
