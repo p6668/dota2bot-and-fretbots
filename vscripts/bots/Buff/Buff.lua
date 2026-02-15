@@ -148,8 +148,10 @@ function Buff:Init()
     if not BuffEnabled then
         GameRules:SendCustomMessage('Buff mode enabled!', 0, 0)
         BuffEnabled = true
-        bBuffFlags.godmode.StartTime = RandomFloat(40,  60)
-        bBuffFlags.godmode.KillThreshold = RandomFloat(40,  50)
+        bBuffFlags.godmode.StartTime = math.random(20) + 39
+        bBuffFlags.godmode.KillThreshold = math.random(10) + 39
+        GameRules:SendCustomMessage("Godmode StartTime:"..tostring(bBuffFlags.godmode.StartTime), -1, 0)
+        GameRules:SendCustomMessage("Godmode KillThreshold:"..tostring(bBuffFlags.godmode.KillThreshold), -1, 0)
     end
 
     Timers:CreateTimer(function()
