@@ -31,7 +31,7 @@ function Stats.UpdateStats(bot, nTeam, BotTotalKills, PlayerTotalKills, godmode)
         stat = bot:GetBaseIntellect()
         bot:SetBaseIntellect(stat + bonus * 0.1) -- reduce int stats bonus due to 7.33 update giving magic resist
         return false
-    elseif gameTime >= godmode.StartTime and godmode.enabled and godmode.done == false and PlayerTotalKills - BotTotalKills >= godmode.KillThreshold then
+    elseif gameTime >= godmode.StartTime and godmode.enabled and godmode.done == false and (PlayerTotalKills - BotTotalKills) >= godmode.KillThreshold then
         local stat
         local bonus = 100 -- god mode +100 str, agi, and int instantly.
         stat = bot:GetBaseStrength()
