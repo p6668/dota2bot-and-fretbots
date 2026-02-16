@@ -148,9 +148,8 @@ function Buff:Init()
     if not BuffEnabled then
         GameRules:SendCustomMessage('Buff mode enabled!', 0, 0)
         BuffEnabled = true
-        math.randomseed(os.time())
-        bBuffFlags.godmode.StartTime = math.random(20) + 39
-        bBuffFlags.godmode.KillThreshold = math.random(10) + 39
+        bBuffFlags.godmode.StartTime = RandomInt(1, 20) + 39
+        bBuffFlags.godmode.KillThreshold = RandomInt(1, 10) + 39
         GameRules:SendCustomMessage("Godmode StartTime:"..tostring(bBuffFlags.godmode.StartTime), -1, 0)
         GameRules:SendCustomMessage("Godmode KillThreshold:"..tostring(bBuffFlags.godmode.KillThreshold), -1, 0)
     end
