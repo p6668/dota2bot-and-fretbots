@@ -134,7 +134,7 @@ local sHeroList = {										-- pos    1,   2,   3,   4,   5
 	{name = 'npc_dota_hero_terrorblade', 				role = {100,   0,   0,   0,   0},	weak = false},
 	{name = 'npc_dota_hero_templar_assassin', 			role = {100, 100,   0,   0,   0},	weak = false},
 	{name = 'npc_dota_hero_tidehunter', 				role = {  0,   0, 100,   0,   0},	weak = false},
-	{name = 'npc_dota_hero_tinker', 					role = {  0,  90,   0,  95, 100},	weak = false},
+	{name = 'npc_dota_hero_tinker', 					role = {  0,  100,  0,  95,  0},	weak = false},
 	{name = 'npc_dota_hero_tiny', 						role = {100, 100,  90, 100,  95},	weak = false},
 	{name = 'npc_dota_hero_treant', 					role = {  0,   0,  85,  95, 100},	weak = false},
 	{name = 'npc_dota_hero_troll_warlord', 				role = {100,   0,   0,   0,   0},	weak = false},
