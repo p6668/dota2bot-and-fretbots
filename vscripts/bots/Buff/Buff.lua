@@ -148,8 +148,11 @@ function Buff:Init()
     if not BuffEnabled then
         GameRules:SendCustomMessage('Buff mode enabled!', 0, 0)
         BuffEnabled = true
-        bBuffFlags.godmode.StartTime = RandomInt(1, 20) + 39
-        bBuffFlags.godmode.KillThreshold = RandomInt(1, 10) + 39
+    end
+
+    if bBuffFlags.godmode.StartTime == 0 then
+        bBuffFlags.godmode.StartTime = RandomInt(40, 59)
+        bBuffFlags.godmode.KillThreshold = RandomInt(40, 49)
         GameRules:SendCustomMessage("Godmode StartTime:"..tostring(bBuffFlags.godmode.StartTime), -1, 0)
         GameRules:SendCustomMessage("Godmode KillThreshold:"..tostring(bBuffFlags.godmode.KillThreshold), -1, 0)
     end
@@ -157,6 +160,7 @@ function Buff:Init()
     Timers:CreateTimer(function()
         -- CheckBotCount()
         -- if BotCount ~= SelectedHeroCount then return 1 end
+
 
         -- just refresh instead of above
         botTable[DOTA_TEAM_GOODGUYS] = {}
