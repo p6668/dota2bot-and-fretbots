@@ -432,8 +432,14 @@ function Think()
 		}
 	end
 
-	if nDelayTime == nil then nDelayTime = GameTime() fLastRand = RandomInt(12, 34) / 10 end
-	if nDelayTime ~= nil and nDelayTime > GameTime() - fLastRand then return end
+	if nDelayTime == nil then 
+		nDelayTime = GameTime()
+		-- fLastRand = RandomInt(12, 34) / 10 
+		fLastRand = 5 -- Enemy hero pick will start after 5 seconds
+	end
+	if nDelayTime ~= nil and nDelayTime > GameTime() - fLastRand then 
+		return 
+	end
 
 	local nOwnTeam = X.GetCurrentTeam(GetTeam())
 	local nEnmTeam = X.GetCurrentTeam(GetOpposingTeam())
