@@ -152,7 +152,7 @@ function Buff:Init()
 
     if bBuffFlags.godmode.StartTime == 0 then
         bBuffFlags.godmode.StartTime = RandomInt(40, 59)
-        bBuffFlags.godmode.KillThreshold = RandomInt(40, 49)
+        bBuffFlags.godmode.KillThreshold = 99  -- RandomInt(40, 49)
         GameRules:SendCustomMessage("Godmode StartTime:"..tostring(bBuffFlags.godmode.StartTime), -1, 0)
         GameRules:SendCustomMessage("Godmode KillThreshold:"..tostring(bBuffFlags.godmode.KillThreshold), -1, 0)
     end
