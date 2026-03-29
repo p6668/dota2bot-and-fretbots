@@ -468,7 +468,7 @@ Item['item_abyssal_blade']	= GetItemComponents( 'item_abyssal_blade' )[1]
 
 Item['item_aether_lens']	= GetItemComponents( 'item_aether_lens' )[1]
 
-Item['item_arcane_boots']	= {"item_boots", "item_ring_of_basilius", "item_recipe_arcane_boots"}
+Item['item_arcane_boots']	= {"item_boots", "item_ring_of_basilius", "item_wizard_hat", "item_recipe_arcane_boots"}
 
 Item['item_armlet']	= GetItemComponents( 'item_armlet' )[1]
 
