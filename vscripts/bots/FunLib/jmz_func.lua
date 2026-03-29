@@ -30,10 +30,12 @@ local nEnemyAverageLevel = 1
 
 local RB = Vector(-7184.360840, -6689.084961, 392.750000)
 local DB = Vector(6996.191895, 6414.104004, 392.000000)
+
+-- cl_showpos 1
 -- local roshanRadiantLoc  = Vector(2787.287354, -2752.223877, 13.998048)
-local roshanRadiantLoc  = Vector( 2698.296387 -2974.900879, 13.998048)
+local roshanRadiantLoc  = Vector( 2698.296387 -3274.900879, 13.998048)
 -- local roshanDireLoc = Vector(-2909.122559, 2185.981689, 13.998047)
-local roshanDireLoc = Vector(-2943.225342 2027.822510, 13.998047)
+local roshanDireLoc = Vector(-2943.225342 1627.822510, 13.998047)
 local RadiantTormentorLoc = Vector(7499.061523, -7847.331055, 256.000000)
 local DireTormentorLoc = Vector(-7229.757324, 7933.152832, 256.000000)
 local fKeepManaPercent = 0.39
