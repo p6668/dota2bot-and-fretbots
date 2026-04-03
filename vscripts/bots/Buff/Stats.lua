@@ -26,7 +26,6 @@ end
 
 function Stats.CheckSemiGodMode(bot, semigodmode, godmode)
     if not semigodmode.enabled then return end
-    if godmode.done then return end
 
     local now = GameRules:GetGameTime()
 
@@ -40,6 +39,8 @@ function Stats.CheckSemiGodMode(bot, semigodmode, godmode)
         bot.semigodmode_buff_applied = nil
         bot.semigodmode_cooldown_end = now + SEMI_GOD_COOLDOWN
     end
+
+    if godmode.done then return end
 
     -- Don't stack — skip if buff is already running
     if bot.semigodmode_active then return end
