@@ -16,9 +16,13 @@ local function GetBotPlayerID(bot)
     return nil
 end
 
-local SEMI_GOD_BUFF = 20
 local SEMI_GOD_DURATION = 30
 local SEMI_GOD_COOLDOWN = 600 -- 10 minutes in seconds
+
+-- starts at 20, +10 per every 10 minutes of game time
+local function GetSemiGodBuff(gameTime)
+    return 20 + math.floor(gameTime / 10) * 10
+end
 
 function Stats.CheckSemiGodMode(bot, semigodmode)
     if not semigodmode.enabled then return end
@@ -27,10 +31,12 @@ function Stats.CheckSemiGodMode(bot, semigodmode)
 
     -- Expire active buff and revert stats
     if bot.semigodmode_active and now >= bot.semigodmode_end_time then
-        bot:SetBaseStrength(bot:GetBaseStrength() - SEMI_GOD_BUFF)
-        bot:SetBaseAgility(bot:GetBaseAgility() - SEMI_GOD_BUFF)
-        bot:SetBaseIntellect(bot:GetBaseIntellect() - SEMI_GOD_BUFF)
+        local applied = bot.semigodmode_buff_applied
+        bot:SetBaseStrength(bot:GetBaseStrength() - applied)
+        bot:SetBaseAgility(bot:GetBaseAgility() - applied)
+        bot:SetBaseIntellect(bot:GetBaseIntellect() - applied)
         bot.semigodmode_active = false
+        bot.semigodmode_buff_applied = nil
         bot.semigodmode_cooldown_end = now + SEMI_GOD_COOLDOWN
     end
 
@@ -83,12 +89,14 @@ function Stats.CheckSemiGodMode(bot, semigodmode)
     -- 5% chance to trigger
     if RandomInt(1, 100) > 5 then return end
 
-    -- Apply semi-god mode
-    bot:SetBaseStrength(bot:GetBaseStrength() + SEMI_GOD_BUFF)
-    bot:SetBaseAgility(bot:GetBaseAgility() + SEMI_GOD_BUFF)
-    bot:SetBaseIntellect(bot:GetBaseIntellect() + SEMI_GOD_BUFF)
-    bot.semigodmode_active   = true
-    bot.semigodmode_end_time = now + SEMI_GOD_DURATION
+    -- Apply semi-god mode (buff scales with game time)
+    local buff = GetSemiGodBuff(gameTime)
+    bot:SetBaseStrength(bot:GetBaseStrength() + buff)
+    bot:SetBaseAgility(bot:GetBaseAgility() + buff)
+    bot:SetBaseIntellect(bot:GetBaseIntellect() + buff)
+    bot.semigodmode_active      = true
+    bot.semigodmode_buff_applied = buff
+    bot.semigodmode_end_time    = now + SEMI_GOD_DURATION
 
     GameRules:SendCustomMessage(
         "<font color='#FFD700'>"..string.gsub(bot:GetUnitName(), 'npc_dota_hero_', '').."</font> entered semi-god mode for 30s!",
