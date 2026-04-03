@@ -24,8 +24,9 @@ local function GetSemiGodBuff(gameTime)
     return 20 + math.floor(gameTime / 10) * 10
 end
 
-function Stats.CheckSemiGodMode(bot, semigodmode)
+function Stats.CheckSemiGodMode(bot, semigodmode, godmode)
     if not semigodmode.enabled then return end
+    if godmode.done then return end
 
     local now = GameRules:GetGameTime()
 
@@ -111,7 +112,7 @@ function Stats.UpdateStats(bot, nTeam, BotTotalKills, PlayerTotalKills, godmode,
     local botPos = Helper.GetPosition(bot, nTeam)
     local unitStats = 1/60
 
-    Stats.CheckSemiGodMode(bot, semigodmode)
+    Stats.CheckSemiGodMode(bot, semigodmode, godmode)
 
     if gameTime >= 10 and gameTime <=30 then
         local stat
