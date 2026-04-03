@@ -142,6 +142,10 @@ local bBuffFlags = {
         KillThreshold = 0,
         done = false,
     },
+    semigodmode = {
+        enabled = false, -- Toggled on via console command: semi_god_mode
+        StartTime = 0,
+    },
 }
 
 function Buff:Init()
@@ -156,6 +160,16 @@ function Buff:Init()
         GameRules:SendCustomMessage("Godmode StartTime:"..tostring(bBuffFlags.godmode.StartTime), -1, 0)
         GameRules:SendCustomMessage("Godmode KillThreshold:"..tostring(bBuffFlags.godmode.KillThreshold), -1, 0)
     end
+
+    if bBuffFlags.semigodmode.StartTime == 0 then
+        bBuffFlags.semigodmode.StartTime = RandomInt(10, 15)
+        GameRules:SendCustomMessage("Semi-godmode StartTime:"..tostring(bBuffFlags.semigodmode.StartTime).." min", -1, 0)
+    end
+
+    Convars:RegisterCommand("semi_god_mode", function()
+        bBuffFlags.semigodmode.enabled = true
+        GameRules:SendCustomMessage("Semi-god mode enabled!", -1, 0)
+    end, "Enable semi-god mode for bots", 0)
 
     Timers:CreateTimer(function()
         -- CheckBotCount()
@@ -258,7 +272,7 @@ function Buff:Init()
                         XP.UpdateXP(h, TeamRadiant, BotTotalKills, PlayerTotalKills)
                     end
                     if bBuffFlags.stats.radiant then
-                        isGodmodeDone = Stats.UpdateStats(h, TeamRadiant, BotTotalKills, PlayerTotalKills, bBuffFlags.godmode)
+                        isGodmodeDone = Stats.UpdateStats(h, TeamRadiant, BotTotalKills, PlayerTotalKills, bBuffFlags.godmode, bBuffFlags.semigodmode)
                     end
                 end
 
@@ -272,7 +286,7 @@ function Buff:Init()
                          XP.UpdateXP(h, TeamDire, BotTotalKills, PlayerTotalKills)
                     end
                     if bBuffFlags.stats.dire then
-                        isGodmodeDone = Stats.UpdateStats(h, TeamDire, BotTotalKills, PlayerTotalKills, bBuffFlags.godmode)
+                        isGodmodeDone = Stats.UpdateStats(h, TeamDire, BotTotalKills, PlayerTotalKills, bBuffFlags.godmode, bBuffFlags.semigodmode)
                     end
                 end
 
