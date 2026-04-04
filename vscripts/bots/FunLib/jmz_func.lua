@@ -30,16 +30,10 @@ local nEnemyAverageLevel = 1
 
 local RB = Vector(-7184.360840, -6689.084961, 392.750000)
 local DB = Vector(6996.191895, 6414.104004, 392.000000)
-
--- cl_showpos 1
--- local roshanRadiantLoc  = Vector(2787.287354, -2752.223877, 13.998048)
--- local roshanRadiantLoc  = Vector( 2698.296387, -3274.900879, 13.998048)
-local roshanRadiantLoc  = Vector(2615.437500, -2550.781250, 13.998048)
--- local roshanDireLoc = Vector(-2909.122559, 2185.981689, 13.998047)
--- local roshanDireLoc = Vector(-2943.225342, 1627.822510, 13.998047)
-local roshanDireLoc = Vector(-2910.531250, 2116.556641, 13.998047)
-local RadiantTormentorLoc = Vector(7499.061523, -7847.331055, 256.000000)
-local DireTormentorLoc = Vector(-7229.757324, 7933.152832, 256.000000)
+local roshanRadiantLoc  = Vector(2787.287354, -2752.223877, 13.998048)
+local roshanDireLoc = Vector(-2909.122559, 2185.981689, 13.998047)
+local RadiantTormentorLoc = Vector(7753.750488, -6217.413086, 0.000000)
+local DireTormentorLoc = Vector(-7678.044434, 6337.246094, 0.000000)
 local fKeepManaPercent = 0.39
 
 
@@ -789,6 +783,7 @@ function J.IsInEtherealForm( npcTarget )
     or npcTarget:HasModifier( "modifier_necrolyte_sadist_active" )
     or npcTarget:HasModifier( "modifier_pugna_decrepify" )
 	or npcTarget:HasModifier( "modifier_muerta_pierce_the_veil_buff" )
+	or npcTarget:HasModifier( "modifier_muerta_spectral_slug_ethereal" )
 end
 
 function J.CanCastOnTargetAdvanced( npcTarget )
@@ -4579,8 +4574,8 @@ function J.DoesSomeoneHaveModifier(nUnitList, modifierName)
 	return false
 end
 
-function J.IsHumanPlayerInTeam()
-	for _, member in pairs(GetTeamPlayers(GetTeam()))
+function J.IsHumanPlayerInTeam(nTeam)
+	for _, member in pairs(GetTeamPlayers(nTeam))
 	do
 		if not IsPlayerBot(member)
 		then
@@ -4631,36 +4626,24 @@ end
 
 function J.GetCurrentRoshanLocation()
 	local timeOfDay = J.CheckTimeOfDay()
-	CheckNightStalker()
-
-	if bNightStalkerNightReign then
-		return timeOfDay == 'day' and roshanDireLoc or roshanRadiantLoc
-	else
-		return timeOfDay == 'day' and roshanRadiantLoc or roshanDireLoc
-	end
+	return timeOfDay == 'day' and roshanDireLoc or roshanRadiantLoc
 end
 
 function J.GetTormentorLocation(team)
 	local timeOfDay = J.CheckTimeOfDay()
-	CheckNightStalker()
-
-	if bNightStalkerNightReign then
-		return timeOfDay == 'day' and RadiantTormentorLoc or DireTormentorLoc
-	else
-		return timeOfDay == 'day' and DireTormentorLoc or RadiantTormentorLoc
-	end
+	return timeOfDay == 'day' and RadiantTormentorLoc or DireTormentorLoc
 end
 
-local tormentorWaitLocRadiant = Vector(6792.795410, -6815.032715, 256.000000)
-local tormentorWaitLocDire = Vector(-7041, 6796, 256)
+local vWaitLocationRadiant_ForRadiant = Vector(7094.211914, -7222.513184, 256.000000)
+local vWaitLocationRadiant_ForDire = Vector(8283.729492, -5354.837891, 128.000000)
+local vWaitLocationDire_ForRadiant = Vector(-8133.520996, 5458.318359, 128.000000)
+local vWaitLocationDire_ForDire = Vector(-6970.238770, 7332.361816, 256.000000)
 function J.GetTormentorWaitingLocation(nTeam)
 	local timeOfDay = J.CheckTimeOfDay()
-	CheckNightStalker()
-
-	if bNightStalkerNightReign then
-		return timeOfDay == 'day' and tormentorWaitLocRadiant or tormentorWaitLocDire
+	if timeOfDay == 'day' then
+		return GetTeam() == TEAM_RADIANT and vWaitLocationRadiant_ForRadiant or vWaitLocationRadiant_ForDire
 	else
-		return timeOfDay == 'day' and tormentorWaitLocDire or tormentorWaitLocRadiant
+		return GetTeam() == TEAM_RADIANT and vWaitLocationDire_ForRadiant or vWaitLocationDire_ForDire
 	end
 end
 

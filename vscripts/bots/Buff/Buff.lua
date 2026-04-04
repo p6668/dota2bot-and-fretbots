@@ -109,7 +109,7 @@ end
 local bBuffFlags = {
     -- General
     facets = {
-        change  = true,  -- Set to 'false' to disable changing (a) facet/s (See /Facets.lua for the heroes).
+        change  = false,  -- Set to 'false' to disable changing (a) facet/s (See /Facets.lua for the heroes).
     },
     towers = {
         radiant = false, -- Set to 'false' to disable Radiant towers buff.

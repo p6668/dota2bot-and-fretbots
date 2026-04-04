@@ -5,7 +5,7 @@ local pingTimeDelta = 5
 local tUrgentDefend = {false, nil}
 
 function Push.GetPushDesire(bot, lane)
-    local nMaxDesire = 0.75
+    local nMaxDesire = BOT_MODE_DESIRE_HIGH
     local botActiveMode = bot:GetActiveMode()
     local bMyLane = bot:GetAssignedLane() == lane
 
@@ -48,7 +48,7 @@ function Push.GetPushDesire(bot, lane)
 	if human ~= nil and humanPing ~= nil and not humanPing.normal_ping and DotaTime() > 0 then
 		local isPinged, pingedLane = J.IsPingCloseToValidTower(GetOpposingTeam(), humanPing, 700, 5.0)
 		if isPinged and lane == pingedLane and GameTime() < humanPing.time + pingTimeDelta then
-			return 0.9
+			return BOT_MODE_DESIRE_VERYHIGH
 		end
 	end
 
@@ -73,7 +73,7 @@ function Push.GetPushDesire(bot, lane)
             local nEnemiesAroundAncient = J.GetEnemiesNearLoc(hAncient:GetLocation(), 1000)
             if aAliveCount >= #nEnemiesAroundAncient and aAliveCoreCount>= eAliveCoreCount then
                 tUrgentDefend = {true, J.GetEnemyFountain()}
-                return 0.9
+                return BOT_MODE_DESIRE_VERYHIGH
             else
                 tUrgentDefend = {false, nil}
             end
@@ -118,15 +118,12 @@ function Push.GetPushDesire(bot, lane)
         then
             if not J.IsEarlyGame() then
                 if J.DoesTeamHaveAegis() and aAliveCount >= 4 then
-                    nPushDesire = nPushDesire + 0.25
+                    nPushDesire = nPushDesire + GetAdjustedValueCausedPatch(0.25)
                 end
 
-                if aAliveCount >= eAliveCount
-                and J.GetAverageLevel(GetTeam()) >= 12
-                -- and (DotaTime() < (J.IsModeTurbo() and 30 * 60 or 50 * 60))
-                then
+                if aAliveCount >= eAliveCount and J.GetAverageLevel(GetTeam()) >= 12 then
                     local teamNetworth, enemyNetworth = J.GetInventoryNetworth()
-                    nPushDesire = nPushDesire + RemapValClamped(teamNetworth - enemyNetworth, 5000, (J.IsModeTurbo() and 15000) or 10000, 0.0, 0.5)
+                    nPushDesire = nPushDesire + RemapValClamped(teamNetworth - enemyNetworth, 5000, (J.IsModeTurbo() and 15000) or 10000, 0.0, GetAdjustedValueCausedPatch(0.5))
                 end
             end
 
@@ -327,7 +324,7 @@ function Push.PushThink(bot, lane)
         and not J.IsTormentor(creep)
         and not J.IsRoshan(creep)
         then
-            bot:Action_AttackUnit(creep, true)
+            bot:Action_AttackUnit(creep, false)
             return
         end
     end

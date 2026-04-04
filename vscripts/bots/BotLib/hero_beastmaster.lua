@@ -19,13 +19,44 @@ local HeroBuild = {
     ['pos_1'] = {
         [1] = {
             ['talent'] = {
-                [1] = {},
+				[1] = {
+					['t25'] = {10, 0},
+					['t20'] = {0, 10},
+					['t15'] = {10, 0},
+					['t10'] = {10, 0},
+				}
             },
             ['ability'] = {
-                [1] = {},
+                [1] = {2,1,1,2,1,6,1,2,2,3,6,3,3,3,6},
             },
-            ['buy_list'] = {},
-            ['sell_list'] = {},
+            ['buy_list'] = {
+                "item_double_branches",
+				"item_circlet",
+                "item_slippers",
+                "item_quelling_blade",
+				"item_tango",
+			
+				"item_magic_wand",
+                "item_wraith_band",
+				"item_power_treads",
+                "item_echo_sabre",
+                "item_ultimate_scepter",
+                "item_harpoon",--
+				"item_black_king_bar",--
+				"item_blink",
+                "item_aghanims_shard",
+                "item_skadi",--
+                "item_satanic",--
+                "item_ultimate_scepter_2",
+                "item_swift_blink",--
+                "item_moon_shard",
+                "item_travel_boots_2",--
+			},
+            ['sell_list'] = {
+                "item_quelling_blade", "item_black_king_bar",
+				"item_magic_wand", "item_blink",
+                "item_wraith_band", "item_skadi",
+			},
         },
     },
     ['pos_2'] = {
@@ -39,7 +70,7 @@ local HeroBuild = {
 				}
             },
             ['ability'] = {
-                [1] = {2,4,2,4,2,6,2,4,4,1,6,1,1,1,6},
+                [1] = {2,1,1,2,1,6,1,2,2,3,6,3,3,3,6},
             },
             ['buy_list'] = {
 				"item_tango",
@@ -77,12 +108,12 @@ local HeroBuild = {
 				[1] = {
 					['t25'] = {10, 0},
 					['t20'] = {10, 0},
-					['t15'] = {0, 10},
-					['t10'] = {0, 10},
+					['t15'] = {10, 0},
+					['t10'] = {10, 0},
 				}
             },
             ['ability'] = {
-                [1] = {1,2,2,1,1,6,1,2,2,4,6,4,4,4,6},
+                [1] = {2,1,1,2,1,6,1,2,2,3,6,3,3,3,6},
             },
             ['buy_list'] = {
 				"item_tango",
@@ -121,8 +152,7 @@ local HeroBuild = {
 				}
             },
             ['ability'] = {
-                [1] = {1,2,2,1,1,6,1,2,2,4,6,4,4,4,6},
-                [2] = {2,1,2,1,1,6,1,2,2,4,6,4,4,4,6},
+                [1] = {2,1,1,2,1,6,1,2,2,3,6,3,3,3,6},
             },
             ['buy_list'] = {
 				"item_tango",
@@ -202,15 +232,15 @@ end
 end
 
 local WildAxes          = bot:GetAbilityByName('beastmaster_wild_axes')
-local CallOfTheWildBoar = bot:GetAbilityByName('beastmaster_call_of_the_wild_boar')
-local CallOfTheWildHawk = bot:GetAbilityByName('beastmaster_call_of_the_wild_hawk')
+local SummonRazorback   = bot:GetAbilityByName('beastmaster_summon_razorback')
+local SummonRaptors     = bot:GetAbilityByName('beastmaster_summon_raptor')
 local InnerBeast        = bot:GetAbilityByName('beastmaster_inner_beast')
 -- local DrumsOfSlom        = bot:GetAbilityByName('beastmaster_drums_of_slom')
 local PrimalRoar        = bot:GetAbilityByName('beastmaster_primal_roar')
 
 local WildAxesDesire, WildAxesLocation
-local CallOfTheWildBoarDesire
-local CallOfTheWildHawkDesire
+local SummonRazorbackDesire
+local SummonRaptorsDesire
 local InnerBeastDesire
 local PrimalRoarDesire, PrimalRoarTarget
 
@@ -226,8 +256,8 @@ function X.SkillsComplement()
 	if J.CanNotUseAbility(bot) then return end
 
     WildAxes          = bot:GetAbilityByName('beastmaster_wild_axes')
-    CallOfTheWildBoar = bot:GetAbilityByName('beastmaster_call_of_the_wild_boar')
-    CallOfTheWildHawk = bot:GetAbilityByName('beastmaster_call_of_the_wild_hawk')
+    SummonRazorback   = bot:GetAbilityByName('beastmaster_summon_razorback')
+    SummonRaptors     = bot:GetAbilityByName('beastmaster_summon_raptor')
     InnerBeast        = bot:GetAbilityByName('beastmaster_inner_beast')
     PrimalRoar        = bot:GetAbilityByName('beastmaster_primal_roar')
 
@@ -260,10 +290,10 @@ function X.SkillsComplement()
         return
     end
 
-    CallOfTheWildBoarDesire = X.ConsiderCallOfTheWildBoar()
-    if CallOfTheWildBoarDesire > 0 then
+    SummonRazorbackDesire = X.ConsiderSummonRazorback()
+    if SummonRazorbackDesire > 0 then
         J.SetQueuePtToINT(bot, false)
-        bot:ActionQueue_UseAbility(CallOfTheWildBoar)
+        bot:ActionQueue_UseAbility(SummonRazorback)
         return
     end
 
@@ -274,10 +304,10 @@ function X.SkillsComplement()
         return
     end
 
-    CallOfTheWildHawkDesire = X.ConsiderCallOfTheWildHawk()
-    if CallOfTheWildHawkDesire > 0 then
+    SummonRaptorsDesire = X.ConsiderSummonRaptors()
+    if SummonRaptorsDesire > 0 then
         J.SetQueuePtToINT(bot, false)
-        bot:ActionQueue_UseAbility(CallOfTheWildHawk)
+        bot:ActionQueue_UseAbility(SummonRaptors)
         return
     end
 
@@ -302,7 +332,7 @@ function X.ConsiderWildAxes()
     local fThrowDurationMax = WildAxes:GetSpecialValueFloat('max_throw_duration')
     local nManaCost = WildAxes:GetManaCost()
     local fManaAfter = J.GetManaAfter(nManaCost)
-    local fManaThreshold1 = J.GetManaThreshold(bot, nManaCost, {CallOfTheWildBoar, CallOfTheWildHawk, PrimalRoar})
+    local fManaThreshold1 = J.GetManaThreshold(bot, nManaCost, {SummonRazorback, SummonRaptors, PrimalRoar})
 
     for _, enemyHero in pairs(nEnemyHeroes) do
         if  J.IsValidHero(enemyHero)
@@ -333,12 +363,9 @@ function X.ConsiderWildAxes()
         and not botTarget:HasModifier('modifier_templar_assassin_refraction_absorb')
 		then
             local eta = RemapValClamped(GetUnitToUnitDistance(bot, botTarget), 0, nCastRange, fThrowDurationMin, fThrowDurationMax)
-            local vLocation = J.GetCorrectLoc(botTarget, eta)
+            local vLocation = J.VectorAway(J.GetCorrectLoc(botTarget, eta), bot:GetLocation(), 350)
             if GetUnitToLocationDistance(bot, vLocation) <= nCastRange then
-                vLocation = J.VectorAway(vLocation, bot:GetLocation(), 350)
-                if GetUnitToLocationDistance(bot, vLocation) <= nCastRange then
-                    return BOT_ACTION_DESIRE_HIGH, vLocation
-                end
+                return BOT_ACTION_DESIRE_HIGH, vLocation
             end
 		end
 	end
@@ -401,7 +428,7 @@ function X.ConsiderWildAxes()
         end
     end
 
-    if J.IsLaning(bot) and J.IsInLaningPhase() and fManaAfter > fManaThreshold1 then
+    if J.IsLaning(bot) and J.IsEarlyGame() and fManaAfter > fManaThreshold1 then
 		for _, creep in pairs(nEnemyCreeps) do
 			if  J.IsValid(creep)
             and J.CanBeAttacked(creep)
@@ -450,8 +477,8 @@ function X.ConsiderWildAxes()
     if J.IsDoingRoshan(bot) then
         if  J.IsRoshan(botTarget)
         and J.CanBeAttacked(botTarget)
-        and J.CanCastOnNonMagicImmune(botTarget)
         and J.IsInRange(bot, botTarget, nCastRange)
+        and J.CanCastOnNonMagicImmune(botTarget)
         and bAttacking
         and fManaAfter > fManaThreshold1
         then
@@ -472,8 +499,8 @@ function X.ConsiderWildAxes()
     return BOT_ACTION_DESIRE_NONE, 0
 end
 
-function X.ConsiderCallOfTheWildBoar()
-    if not J.CanCastAbility(CallOfTheWildBoar) then
+function X.ConsiderSummonRazorback()
+    if not J.CanCastAbility(SummonRazorback) then
 		return BOT_ACTION_DESIRE_NONE
 	end
 
@@ -533,12 +560,25 @@ function X.ConsiderCallOfTheWildBoar()
 	return BOT_ACTION_DESIRE_NONE
 end
 
-function X.ConsiderCallOfTheWildHawk()
-    if not J.CanCastAbility(CallOfTheWildHawk) then
+function X.ConsiderSummonRaptors()
+    if not J.CanCastAbility(SummonRaptors) then
 		return BOT_ACTION_DESIRE_NONE
 	end
 
-    local nRadius = CallOfTheWildHawk:GetSpecialValueInt('attack_radius')
+    local nRadius = SummonRaptors:GetSpecialValueInt('attack_radius')
+
+    if not J.IsRealInvisible(bot) then
+        for _, enemyHero in pairs(nEnemyHeroes) do
+            if  J.IsValidHero(enemyHero)
+            and J.CanBeAttacked(enemyHero)
+            and J.IsInRange(bot, enemyHero, nRadius)
+            and J.CanCastOnNonMagicImmune(enemyHero)
+            and enemyHero:IsChanneling()
+            then
+                return BOT_ACTION_DESIRE_HIGH
+            end
+        end
+    end
 
     if J.IsInTeamFight(bot, 1200) then
         local nInRangeEnemy = J.GetEnemiesNearLoc(bot:GetLocation(), nRadius)
@@ -604,7 +644,7 @@ function X.ConsiderInnerBeast()
         if  J.IsRoshan(botTarget)
         and J.CanBeAttacked(botTarget)
         and J.IsInRange(bot, botTarget, 300)
-        and J.IsAttacking(bot)
+        and bAttacking
         then
             return BOT_ACTION_DESIRE_HIGH
         end
@@ -613,7 +653,7 @@ function X.ConsiderInnerBeast()
     if J.IsDoingTormentor(bot) then
         if  J.IsTormentor(botTarget)
         and J.IsInRange(bot, botTarget, 300)
-        and J.IsAttacking(bot)
+        and bAttacking
         then
             return BOT_ACTION_DESIRE_HIGH
         end

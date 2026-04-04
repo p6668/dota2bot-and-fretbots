@@ -546,7 +546,7 @@ function X.ConsiderChronosphere()
 	if not J.CanCastAbility(Chronosphere)
 	or bInsideChronosphere
 	then
-		return BOT_ACTION_DESIRE_NONE, 0
+		return BOT_ACTION_DESIRE_NONE
 	end
 
 	local nCastRange = Chronosphere:GetCastRange()
@@ -626,7 +626,7 @@ function X.ConsiderChronosphere()
 		if J.IsRetreating(bot)
 		and not J.IsRealInvisible(bot)
 		and bot:WasRecentlyDamagedByAnyHero(5)
-		and bot:GetActiveModeDesire() >= 0.95
+		and bot:GetActiveModeDesire() >= BOT_MODE_DESIRE_VERYHIGH + 0.05
 		and not J.IsLateGame()
 		and not bot:IsRooted()
 		and #nAllyHeroes <= 2
@@ -650,7 +650,7 @@ function X.ConsiderChronosphere()
 		end
 	end
 
-	return BOT_ACTION_DESIRE_NONE, 0
+	return BOT_ACTION_DESIRE_NONE
 end
 
 function X.ConsiderTimezone()

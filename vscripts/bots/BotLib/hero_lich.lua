@@ -164,12 +164,14 @@ end
 local FrostBlast = bot:GetAbilityByName('lich_frost_nova')
 local FrostShield = bot:GetAbilityByName('lich_frost_shield')
 local SinisterGaze = bot:GetAbilityByName('lich_sinister_gaze')
+local Sacrifice = bot:GetAbilityByName('lich_death_charge')
 local IceSpire = bot:GetAbilityByName('lich_ice_spire')
 local ChainFrost = bot:GetAbilityByName('lich_chain_frost')
 
 local FrostBlastDesire, FrostBlastTarget
 local FrostShieldDesire, FrostShieldTarget
 local SinisterGazeDesire, SinisterGazeTarget
+local SacrificeDesire, SacrificeTarget
 local IceSpireDesire, IceSpireLocation
 local ChainFrostDesire, ChainFrostTarget
 
@@ -185,6 +187,7 @@ function X.SkillsComplement()
 	FrostBlast = bot:GetAbilityByName('lich_frost_nova')
 	FrostShield = bot:GetAbilityByName('lich_frost_shield')
 	SinisterGaze = bot:GetAbilityByName('lich_sinister_gaze')
+	Sacrifice = bot:GetAbilityByName('lich_death_charge')
 	IceSpire = bot:GetAbilityByName('lich_ice_spire')
 	ChainFrost = bot:GetAbilityByName('lich_chain_frost')
 
@@ -241,6 +244,13 @@ function X.SkillsComplement()
 		end
 		return
 	end
+
+	SacrificeDesire, SacrificeTarget = X.ConsiderSacrifice()
+	if SacrificeDesire > 0 then
+		J.SetQueuePtToINT(bot, false)
+		bot:ActionQueue_UseAbilityOnEntity(Sacrifice, SacrificeTarget)
+		return
+	end
 end
 
 function X.ConsiderFrostBlast()
@@ -257,7 +267,6 @@ function X.ConsiderFrostBlast()
 	local nManaCost = FrostBlast:GetManaCost()
 	local fManaAfter = J.GetManaAfter(nManaCost)
 	local fManaThreshold1 = J.GetManaThreshold(bot, nManaCost, {FrostShield, SinisterGaze, IceSpire, ChainFrost})
-	local fManaThreshold2 = J.GetManaThreshold(bot, nManaCost, {FrostBlast, FrostShield, SinisterGaze, IceSpire, ChainFrost})
 
 	local hTarget = nil
 	local hTargetScore = -math.huge
@@ -314,6 +323,7 @@ function X.ConsiderFrostBlast()
 
 	if J.IsGoingOnSomeone(bot) then
 		if J.IsValidHero(botTarget)
+		and J.CanBeAttacked(botTarget)
 		and J.IsInRange(bot, botTarget, nCastRange + 300)
 		and J.CanCastOnNonMagicImmune(botTarget)
 		and J.CanCastOnTargetAdvanced(botTarget)
@@ -393,7 +403,7 @@ function X.ConsiderFrostBlast()
 		end
 	end
 
-	if J.IsLaning(bot) and J.IsInLaningPhase() and fManaAfter > fManaThreshold1 then
+	if J.IsLaning(bot) and J.IsEarlyGame() and fManaAfter > fManaThreshold1 then
 		if fManaAfter > 0.4 then
 			for _, enemyHero in pairs(nEnemyHeroes) do
 				if  J.IsValidHero(enemyHero)
@@ -475,7 +485,7 @@ function X.ConsiderFrostShield()
 	local fManaAfter = J.GetManaAfter(nManaCost)
 	local fManaThreshold1 = J.GetManaThreshold(bot, nManaCost, {FrostBlast, SinisterGaze, IceSpire, ChainFrost})
 
-	if J.IsInTeamFight(bot, 900) then
+	if J.IsInTeamFight(bot, 1200) then
 		local hAllyTarget = nil
 		local hAllyTargetScore = 0
 		for _, allyHero in pairs(nAllyHeroes) do
@@ -483,6 +493,7 @@ function X.ConsiderFrostShield()
 			and J.CanBeAttacked(allyHero)
 			and J.IsInRange(bot, allyHero, nCastRange + 300)
 			and not J.IsSuspiciousIllusion(allyHero)
+			and not allyHero:HasModifier('modifier_abaddon_borrowed_time')
 			and not allyHero:HasModifier('modifier_necrolyte_reapers_scythe')
 			then
 				local allyHeroScrore = 0
@@ -514,6 +525,7 @@ function X.ConsiderFrostShield()
 		and J.CanBeAttacked(allyHero)
 		and J.IsInRange(bot, allyHero, nCastRange)
 		and not J.IsSuspiciousIllusion(allyHero)
+		and not allyHero:HasModifier('modifier_abaddon_borrowed_time')
 		then
 			local allyTarget = J.GetProperTarget(allyHero)
 			local nInRangeEnemy = allyHero:GetNearbyHeroes(nRadius - 25, true, BOT_MODE_NONE)
@@ -623,7 +635,7 @@ function X.ConsiderFrostShield()
 			return BOT_ACTION_DESIRE_HIGH, hTeamAncient
 		end
 
-		local nAllyTowers = bot:GetNearbyTowers(nCastRange + 300, false)
+		local nAllyTowers = bot:GetNearbyTowers(Min(nCastRange + 300, 1600), false)
 		for _, tower in pairs(nAllyTowers) do
 			if J.IsValidBuilding(tower)
 			and J.CanBeAttacked(tower)
@@ -638,7 +650,7 @@ function X.ConsiderFrostShield()
 			end
 		end
 
-		local nAllyBarracks = bot:GetNearbyBarracks(nCastRange + 300, false)
+		local nAllyBarracks = bot:GetNearbyBarracks(Min(nCastRange + 300, 1600), false)
 		for _, barracks in pairs(nAllyBarracks) do
 			if J.IsValidBuilding(barracks)
 			and J.CanBeAttacked(barracks)
@@ -668,6 +680,7 @@ function X.ConsiderSinisterGaze()
 
 	for _, enemyHero in pairs(nEnemyHeroes) do
 		if J.IsValidHero(enemyHero)
+		and J.CanBeAttacked(enemyHero)
 		and J.IsInRange(bot, enemyHero, nCastRange + 300)
 		and J.CanCastOnNonMagicImmune(enemyHero)
 		and J.CanCastOnTargetAdvanced(enemyHero)
@@ -676,8 +689,8 @@ function X.ConsiderSinisterGaze()
 				return BOT_ACTION_DESIRE_HIGH, enemyHero
 			end
 
-			if J.IsInLaningPhase() and not J.IsRetreating(bot) then
-				if J.IsValidBuilding(nAllyTowers[1]) and J.IsInRange(nAllyTowers[1], enemyHero, 800) then
+			if J.IsEarlyGame() and not J.IsRetreating(bot) then
+				if J.IsValidBuilding(nAllyTowers[1]) and J.IsInRange(nAllyTowers[1], enemyHero, 650) then
 					if nAllyTowers[1] == nil or nAllyTowers[1]:GetAttackTarget() == enemyHero then
 						return BOT_ACTION_DESIRE_HIGH, enemyHero
 					end
@@ -727,6 +740,7 @@ function X.ConsiderSinisterGaze()
 
 	if J.IsDoingRoshan(bot) then
 		if J.IsRoshan(botTarget)
+		and J.CanBeAttacked(botTarget)
 		and J.IsInRange(bot, botTarget, nCastRange)
 		and J.CanCastOnTargetAdvanced(botTarget)
 		and not J.IsDisabled(botTarget)
@@ -737,6 +751,45 @@ function X.ConsiderSinisterGaze()
 	end
 
 	return BOT_ACTION_DESIRE_NONE, nil
+end
+
+function X.ConsiderSacrifice()
+	if not J.CanCastAbility(Sacrifice) then
+		return BOT_ACTION_DESIRE_NONE
+	end
+
+	if bot:HasModifier('modifier_rune_regen')
+	or bot:HasModifier('modifier_fountain_aura_buff')
+	then
+		return BOT_ACTION_DESIRE_NONE
+	end
+
+	local nCastRange = Sacrifice:GetCastRange()
+	local fHealthToManaPct = Sacrifice:GetSpecialValueInt('active_mana_restore_pct_of_health') / 100
+	local fHealthToManaPctPerLevel = 3 / 100
+
+	local nAllyLaneCreeps = bot:GetNearbyLaneCreeps(Min(nCastRange + 300, 1600), false)
+
+	if J.GetMP(bot) < 0.5 then
+		local hTarget = nil
+		local hTargetManaHeal = 0
+		for _, creep in pairs(nAllyLaneCreeps) do
+			if J.IsValid(creep) and J.CanBeAttacked(creep) then
+				local creepManaHeal = creep:GetHealth() * (fHealthToManaPct + (bot:GetLevel() * fHealthToManaPctPerLevel))
+				if creepManaHeal >= 200 and creepManaHeal > hTargetManaHeal then
+					hTarget = creep
+					hTargetManaHeal = creepManaHeal
+				end
+			end
+		end
+
+		if hTarget then
+			return BOT_ACTION_DESIRE_HIGH, hTarget
+		end
+	end
+
+
+	return BOT_ACTION_DESIRE_NONE
 end
 
 function X.ConsiderIceSpire()
@@ -761,6 +814,9 @@ function X.ConsiderIceSpire()
 				and J.CanCastOnNonMagicImmune(enemyHero)
 				then
 					count = count + 1
+					if enemyHero:HasModifier('modifier_lich_chainfrost_slow') then
+						return BOT_ACTION_DESIRE_HIGH, enemyHero:GetLocation()
+					end
 				end
 			end
 
@@ -778,11 +834,15 @@ function X.ConsiderIceSpire()
 		and not J.IsDisabled(botTarget)
 		and fManaAfter > fManaThreshold1 + 0.1
 		then
-			return BOT_ACTION_DESIRE_HIGH, botTarget:GetLocation()
+			if J.IsChasingTarget(bot, botTarget)
+			or botTarget:HasModifier('modifier_lich_chainfrost_slow')
+			then
+				return BOT_ACTION_DESIRE_HIGH, botTarget:GetLocation()
+			end
 		end
 	end
 
-	if J.IsRetreating(bot) and not J.IsRealInvisible(bot) and bot:WasRecentlyDamagedByAnyHero(4.0) then
+	if J.IsRetreating(bot) and not J.IsRealInvisible(bot) and J.IsRunning(bot) and not bot:IsRooted() then
 		for _, enemyHero in pairs(nEnemyHeroes) do
 			if J.IsValidHero(enemyHero)
 			and J.CanBeAttacked(enemyHero)
@@ -791,7 +851,7 @@ function X.ConsiderIceSpire()
 			and not J.IsDisabled(enemyHero)
 			and bot:WasRecentlyDamagedByHero(enemyHero, 3.0)
 			then
-				return BOT_ACTION_DESIRE_HIGH, bot:GetLocation()
+				return BOT_ACTION_DESIRE_HIGH, (bot:GetLocation() + enemyHero:GetLocation()) / 2
 			end
 		end
 	end
@@ -811,7 +871,7 @@ function X.ConsiderChainFrost()
 	for _, enemyHero in pairs(nEnemyHeroes) do
         if  J.IsValidHero(enemyHero)
         and J.CanBeAttacked(enemyHero)
-        and J.IsInRange(bot, enemyHero, nCastRange + 300)
+        and J.IsInRange(bot, enemyHero, nCastRange)
         and J.CanCastOnNonMagicImmune(enemyHero)
 		and J.CanCastOnTargetAdvanced(enemyHero)
 		and J.CanKillTarget(enemyHero, nDamage, DAMAGE_TYPE_MAGICAL)
@@ -841,7 +901,7 @@ function X.ConsiderChainFrost()
 		end
 	end
 
-	if not J.IsRetreating(bot) and not J.IsRealInvisible(bot) then
+	if J.IsRetreating(bot) and not J.IsRealInvisible(bot) then
 		for _, enemyHero in pairs(nEnemyHeroes) do
 			if  J.IsValidHero(enemyHero)
 			and J.CanBeAttacked(enemyHero)
@@ -853,11 +913,11 @@ function X.ConsiderChainFrost()
 			and not enemyHero:HasModifier('modifier_necrolyte_reapers_scythe')
 			and not enemyHero:HasModifier('modifier_oracle_false_promise_timer')
 			and not enemyHero:HasModifier('modifier_templar_assassin_refraction_absorb')
-			and bot:WasRecentlyDamagedByAnyHero(1.0)
+			and bot:WasRecentlyDamagedByHero(enemyHero, 3.0)
 			and J.GetHP(enemyHero) < 0.55
 			then
 				local nInRangeEnemy = J.GetEnemiesNearLoc(enemyHero:GetLocation(), nRadius * 0.8)
-				if #nInRangeEnemy >= 2 then
+				if #nInRangeEnemy >= 2 and J.GetTotalEstimatedDamageToTarget(nInRangeEnemy, bot, 5.0) > bot:GetHealth() then
 					return BOT_ACTION_DESIRE_HIGH, enemyHero
 				end
 			end

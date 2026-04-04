@@ -157,12 +157,14 @@ local Penitence         = bot:GetAbilityByName('chen_penitence')
 local HolyPersuasion    = bot:GetAbilityByName('chen_holy_persuasion')
 local DivineFavor       = bot:GetAbilityByName('chen_divine_favor')
 local SummonConvert     = bot:GetAbilityByName('chen_summon_convert')
+local Zealot            = bot:GetAbilityByName('chen_zealot')
 local HandOfGod         = bot:GetAbilityByName('chen_hand_of_god')
 
 local PenitenceDesire, PenitenceTarget
 local HolyPersuasionDesire, HolyPersuasionTarget
 local DivineFavorDesire, DivineFavorTarget
 local SummonConvertDesire
+local ZealotDesire
 local HandOfGodDesire
 
 local bAttacking = false
@@ -205,6 +207,7 @@ function X.SkillsComplement()
     HolyPersuasion    = bot:GetAbilityByName('chen_holy_persuasion')
     DivineFavor       = bot:GetAbilityByName('chen_divine_favor')
     SummonConvert     = bot:GetAbilityByName('chen_summon_convert')
+    Zealot            = bot:GetAbilityByName('chen_zealot')
     HandOfGod         = bot:GetAbilityByName('chen_hand_of_god')
 
     bAttacking = J.IsAttacking(bot)
@@ -234,6 +237,13 @@ function X.SkillsComplement()
         return
     end
 
+    ZealotDesire = X.ConsiderZealot()
+    if ZealotDesire > 0 then
+        J.SetQueuePtToINT(bot, false)
+        bot:ActionQueue_UseAbility(Zealot)
+        return
+    end
+
     HolyPersuasionDesire, HolyPersuasionTarget = X.ConsiderHolyPersuasion()
     if HolyPersuasionDesire > 0 then
         J.SetQueuePtToINT(bot, false)
@@ -258,10 +268,9 @@ function X.ConsiderPenitence()
     local nManaCost = Penitence:GetManaCost()
     local fManaAfter = J.GetManaAfter(nManaCost)
     local fManaThreshold1 = J.GetManaThreshold(bot, nManaCost, {HolyPersuasion, DivineFavor, HandOfGod})
-    local fManaThreshold2 = J.GetManaThreshold(bot, nManaCost, {Penitence, HolyPersuasion, DivineFavor, HandOfGod})
 
     if J.IsGoingOnSomeone(bot) then
-		if  J.IsValidTarget(botTarget)
+		if  J.IsValidHero(botTarget)
         and J.CanBeAttacked(botTarget)
         and J.IsInRange(bot, botTarget, nCastRange)
         and J.CanCastOnNonMagicImmune(botTarget)
@@ -269,23 +278,23 @@ function X.ConsiderPenitence()
         and not J.IsDisabled(botTarget)
         and not botTarget:HasModifier('modifier_necrolyte_reapers_scythe')
 		then
-            local nAllyHeroesTargetingTarget = J.GetHeroesTargetingUnit(nAllyHeroes, botTarget)
             if J.IsChasingTarget(bot, botTarget) and bot:GetCurrentMovementSpeed() < botTarget:GetCurrentMovementSpeed() then
-                if botHP < 0.4 or #nAllyHeroesTargetingTarget > 0 then
+                if botHP < 0.4 or J.GetTotalEstimatedDamageToTarget(nAllyHeroes, botTarget, 5.0) > botTarget:GetHealth() then
                     return BOT_ACTION_DESIRE_HIGH, botTarget
                 end
             end
 
             local nInRangeAlly = J.GetAlliesNearLoc(botTarget:GetLocation(), 800)
-            if #nAllyHeroesTargetingTarget > 0 and #nInRangeAlly >= 2 then
+            if #nInRangeAlly >= 2 then
                 return BOT_ACTION_DESIRE_HIGH, botTarget
             end
 		end
 	end
 
-	if J.IsRetreating(bot) and not J.IsRealInvisible(bot) then
+	if J.IsRetreating(bot) and not J.IsRealInvisible(bot) and J.IsRunning(bot) then
         for _, enemyHero in pairs(nEnemyHeroes) do
             if  J.IsValidHero(enemyHero)
+            and J.CanBeAttacked(enemyHero)
             and J.IsInRange(bot, enemyHero, nCastRange)
             and J.CanCastOnNonMagicImmune(enemyHero)
             and J.CanCastOnTargetAdvanced(enemyHero)
@@ -302,16 +311,18 @@ function X.ConsiderPenitence()
             if  J.IsValidHero(allyHero)
             and bot ~= allyHero
             and J.IsRetreating(allyHero)
-            and allyHero:WasRecentlyDamagedByAnyHero(3.0)
             and not allyHero:IsIllusion()
             then
                 for _, enemyHero in pairs(nEnemyHeroes) do
                     if  J.IsValidHero(enemyHero)
+                    and J.CanBeAttacked(enemyHero)
                     and J.IsInRange(bot, enemyHero, nCastRange)
+                    and not J.IsInRange(bot, enemyHero, nCastRange / 2)
                     and J.CanCastOnNonMagicImmune(enemyHero)
                     and J.CanCastOnTargetAdvanced(enemyHero)
                     and J.IsChasingTarget(enemyHero, allyHero)
                     and not J.IsDisabled(enemyHero)
+                    and allyHero:WasRecentlyDamagedByHero(enemyHero, 2.0)
                     then
                         return BOT_ACTION_DESIRE_HIGH, enemyHero
                     end
@@ -326,7 +337,7 @@ function X.ConsiderPenitence()
         and J.IsInRange(bot, botTarget, nCastRange)
         and J.CanCastOnTargetAdvanced(botTarget)
         and bAttacking
-        and fManaAfter > fManaThreshold2
+        and fManaAfter > fManaThreshold1 + 0.1
         then
             return BOT_ACTION_DESIRE_HIGH, botTarget
         end
@@ -334,11 +345,9 @@ function X.ConsiderPenitence()
 
     if J.IsDoingTormentor(bot) then
         if J.IsTormentor(botTarget)
-        and J.CanBeAttacked(botTarget)
         and J.IsInRange(bot, botTarget, nCastRange)
-        and J.CanCastOnTargetAdvanced(botTarget)
         and bAttacking
-        and fManaAfter > fManaThreshold2
+        and fManaAfter > fManaThreshold1 + 0.1
         then
             return BOT_ACTION_DESIRE_HIGH, botTarget
         end
@@ -449,7 +458,7 @@ function X.ConsiderDivineFavor()
         and not allyHero:HasModifier('modifier_chen_divine_favor_armor_buff')
         and bot ~= allyHero
 		then
-            if allyHero:WasRecentlyDamagedByAnyHero(1.5) and J.GetHP(allyHero) < 0.6 then
+            if allyHero:WasRecentlyDamagedByAnyHero(2.0) and J.GetHP(allyHero) < 0.6 then
                 return BOT_ACTION_DESIRE_HIGH, allyHero
             end
 
@@ -462,25 +471,26 @@ function X.ConsiderDivineFavor()
 		end
 	end
 
-    if J.IsInTeamFight(bot, 1200) then
-        local distance = 0
-        if bot.chen.creeps and #bot.chen.creeps > 0 then
-            for _, creep in pairs(bot.chen.creeps) do
-                if J.IsValid(creep) then
-                    distance = distance + GetUnitToUnitDistance(bot, creep)
-                end
-            end
+    -- if J.IsInTeamFight(bot, 1200) then
+    --     local distance = 0
+    --     if bot.chen.creeps and #bot.chen.creeps > 0 then
+    --         for _, creep in pairs(bot.chen.creeps) do
+    --             if J.IsValid(creep) then
+    --                 distance = distance + GetUnitToUnitDistance(bot, creep)
+    --             end
+    --         end
 
-            if (distance / #bot.chen.creeps) > 1200 then
-                return BOT_ACTION_DESIRE_HIGH, bot
-            end
-        end
-    end
+    --         if (distance / #bot.chen.creeps) > 1200 then
+    --             return BOT_ACTION_DESIRE_HIGH, bot
+    --         end
+    --     end
+    -- end
 
     local hTarget = nil
     local hTargetHealth = math.huge
     for _, allyHero in pairs(nAllyHeroes) do
         if  J.IsValidHero(allyHero)
+        and J.CanBeAttacked(allyHero)
         and J.IsInRange(bot, allyHero, nCastRange)
         and not allyHero:HasModifier('modifier_abaddon_borrowed_time')
         and not allyHero:HasModifier('modifier_legion_commander_press_the_attack')
@@ -499,8 +509,8 @@ function X.ConsiderDivineFavor()
 
     if J.IsDoingRoshan(bot) then
         if J.IsRoshan(botTarget)
+        and J.CanBeAttacked(botTarget)
         and J.IsInRange(bot, botTarget, 1200)
-        and J.CanCastOnTargetAdvanced(botTarget)
         and fManaAfter > fManaThreshold1
         then
             if hTarget and J.IsAttacking(hTarget) then
@@ -511,7 +521,6 @@ function X.ConsiderDivineFavor()
 
     if J.IsDoingTormentor(bot) then
         if J.IsTormentor(botTarget)
-        and J.CanBeAttacked(botTarget)
         and J.IsInRange(bot, botTarget, 1200)
         and fManaAfter > fManaThreshold1
         then
@@ -549,6 +558,29 @@ function X.ConsiderSummonConvert()
     return BOT_ACTION_DESIRE_NONE
 end
 
+function X.ConsiderZealot()
+    if not J.CanCastAbility(Zealot) then
+        return BOT_ACTION_DESIRE_NONE
+    end
+
+    if J.IsInTeamFight(bot, 1200) then
+        local distance = 0
+        if bot.chen.creeps and #bot.chen.creeps > 0 then
+            for _, creep in pairs(bot.chen.creeps) do
+                if J.IsValid(creep) then
+                    distance = distance + GetUnitToUnitDistance(bot, creep)
+                end
+            end
+
+            if (distance / #bot.chen.creeps) > 1200 then
+                return BOT_ACTION_DESIRE_HIGH, bot
+            end
+        end
+    end
+
+    return BOT_ACTION_DESIRE_NONE
+end
+
 function X.ConsiderHandOfGod()
 	if not J.CanCastAbility(HandOfGod) then
 		return BOT_ACTION_DESIRE_NONE
@@ -576,7 +608,7 @@ function X.ConsiderHandOfGod()
             and not allyHero:HasModifier('modifier_oracle_false_promise_timer')
             then
                 count = count + 1
-                if J.IsCore(allyHero) or count >= 2 then
+                if (J.IsCore(allyHero) and allyHero:WasRecentlyDamagedByAnyHero(3.0)) or count >= 2 then
                     return BOT_ACTION_DESIRE_HIGH
                 end
             end
@@ -586,7 +618,7 @@ function X.ConsiderHandOfGod()
     for _, allyHero in pairs(GetUnitList(UNIT_LIST_ALLIED_HEROES)) do
         if  J.IsValidHero(allyHero)
         and J.CanBeAttacked(allyHero)
-        and allyHero:DistanceFromFountain() > 1000
+        and allyHero:DistanceFromFountain() > 1200
         and not J.IsSuspiciousIllusion(allyHero)
         and not allyHero:HasModifier('modifier_abaddon_borrowed_time')
         and not allyHero:HasModifier('modifier_doom_bringer_doom_aura_enemy')
