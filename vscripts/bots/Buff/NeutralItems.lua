@@ -279,11 +279,16 @@ function NeutralItems.GiveNeutralItems(hHeroList)
                     hero.neutral_items[4].assign_time = RandomFloat(17.5, 19.5)
                     hero.neutral_items[5].assign_time = RandomFloat(30.0, 32.0)
                 else
-                    hero.neutral_items[1].assign_time = RandomFloat( 0,  3)
-                    hero.neutral_items[2].assign_time = RandomFloat(15, 18)
-                    hero.neutral_items[3].assign_time = RandomFloat(25, 28)
-                    hero.neutral_items[4].assign_time = RandomFloat(35, 38)
-                    hero.neutral_items[5].assign_time = RandomFloat(60, 63)
+                    -- hero.neutral_items[1].assign_time = RandomFloat( 0,  3)
+                    -- hero.neutral_items[2].assign_time = RandomFloat(15, 18)
+                    -- hero.neutral_items[3].assign_time = RandomFloat(25, 28)
+                    -- hero.neutral_items[4].assign_time = RandomFloat(35, 38)
+                    -- hero.neutral_items[5].assign_time = RandomFloat(60, 63)
+                    hero.neutral_items[1].assign_time = 2
+                    hero.neutral_items[2].assign_time = 7
+                    hero.neutral_items[3].assign_time = 17
+                    hero.neutral_items[4].assign_time = 27
+                    hero.neutral_items[5].assign_time = 37
                 end
             end
         end
@@ -440,7 +445,7 @@ function NeutralItems.SelectItem(hNeutralItemList)
 end
 
 function NeutralItems.GetCurrentTierWindow(bTurboMode, fCurrentTime)
-    local thresholds = bTurboMode and {0, 7.5, 12.5, 17.5, 30} or {0, 15, 25, 35, 60}
+    local thresholds = bTurboMode and {2.5, 7.5, 12.5, 17.5, 30} or {2, 9, 16, 23, 30}
     for i = #thresholds, 1, -1 do
         if fCurrentTime >= thresholds[i] * 60 then return i end
     end
