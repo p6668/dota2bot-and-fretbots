@@ -13,7 +13,7 @@ function Stats.UpdateStats(bot, nTeam, BotTotalKills, PlayerTotalKills, godmode)
 
     if gameTime >= 10 and gameTime <=30 then 
         local stat
-        local bonus = unitStats * 1.3 -- add 1 stats per min 
+        local bonus = unitStats * 0.8 -- add 0.8 stats per min 
         stat = bot:GetBaseStrength()
         bot:SetBaseStrength(stat + bonus)
         stat = bot:GetBaseAgility()
