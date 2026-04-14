@@ -4626,7 +4626,11 @@ end
 
 function J.GetCurrentRoshanLocation()
 	local timeOfDay = J.CheckTimeOfDay()
-	return timeOfDay == 'day' and roshanDireLoc or roshanRadiantLoc
+	if DotaTime() < 15 * 60 or timeOfDay == 'day' then
+		return roshanDireLoc
+	end
+
+	return roshanRadiantLoc
 end
 
 function J.GetTormentorLocation(team)
@@ -5913,6 +5917,16 @@ function J.IsLocationWithinLane(vLocation, nRadius, nLane)
 		end
 	end
 	
+	return false
+end
+
+function J.IsRealBot(bot)
+	for i = 1, 5 do
+		local member = GetTeamMember(i)
+		if member and bot == member then
+			return true
+		end
+	end
 	return false
 end
 
