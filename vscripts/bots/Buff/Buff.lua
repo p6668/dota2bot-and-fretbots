@@ -138,6 +138,7 @@ local bBuffFlags = {
     },
     godmode = {
         enabled = true, -- Set to 'false' to disable god mode at the late game.
+        Hardmode = false,
         StartTime = 0,
         KillThreshold = 0,
         done = false,
@@ -151,10 +152,16 @@ function Buff:Init()
     end
 
     if bBuffFlags.godmode.StartTime == 0 then
+        if RandomInt(0, 1) == 1 then
+            bBuffFlags.godmode.Hardmode = true
+            GameRules:SendCustomMessage('Early-game hard mode enabled!', 0, 0)
+        else
+            GameRules:SendCustomMessage('Early-game hard mode disabled!', 0, 0)
+        end
         bBuffFlags.godmode.StartTime = RandomInt(40, 59)
         bBuffFlags.godmode.KillThreshold = 99  -- RandomInt(40, 49)
-        GameRules:SendCustomMessage("Godmode StartTime:"..tostring(bBuffFlags.godmode.StartTime), -1, 0)
-        GameRules:SendCustomMessage("Godmode KillThreshold:"..tostring(bBuffFlags.godmode.KillThreshold), -1, 0)
+        -- GameRules:SendCustomMessage("Godmode StartTime:"..tostring(bBuffFlags.godmode.StartTime), -1, 0)
+        -- GameRules:SendCustomMessage("Godmode KillThreshold:"..tostring(bBuffFlags.godmode.KillThreshold), -1, 0)
     end
 
     Timers:CreateTimer(function()
