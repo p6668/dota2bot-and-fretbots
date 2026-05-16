@@ -59,7 +59,7 @@ local HeroBuild = {
 					['t25'] = {0, 10},
 					['t20'] = {0, 10},
 					['t15'] = {10, 0},
-					['t10'] = {10, 0},
+					['t10'] = {0, 10},
 				}
             },
             ['ability'] = {
@@ -97,7 +97,7 @@ local HeroBuild = {
 					['t25'] = {0, 10},
 					['t20'] = {0, 10},
 					['t15'] = {10, 0},
-					['t10'] = {10, 0},
+					['t10'] = {0, 10},
 				}
             },
             ['ability'] = {
@@ -164,7 +164,7 @@ local PenitenceDesire, PenitenceTarget
 local HolyPersuasionDesire, HolyPersuasionTarget
 local DivineFavorDesire, DivineFavorTarget
 local SummonConvertDesire
-local ZealotDesire
+local ZealotDesire, ZealotTarget
 local HandOfGodDesire
 
 local bAttacking = false
@@ -237,10 +237,10 @@ function X.SkillsComplement()
         return
     end
 
-    ZealotDesire = X.ConsiderZealot()
+    ZealotDesire, ZealotTarget = X.ConsiderZealot()
     if ZealotDesire > 0 then
         J.SetQueuePtToINT(bot, false)
-        bot:ActionQueue_UseAbility(Zealot)
+        bot:ActionQueue_UseAbilityOnEntity(Zealot, ZealotTarget)
         return
     end
 

@@ -73,9 +73,9 @@ local HeroBuild = {
         [1] = {
             ['talent'] = {
                 [1] = {
-                    ['t25'] = {10, 0},
+                    ['t25'] = {0, 10},
                     ['t20'] = {0, 10},
-                    ['t15'] = {0, 10},
+                    ['t15'] = {10, 0},
                     ['t10'] = {0, 10},
                 }
             },
@@ -115,9 +115,9 @@ local HeroBuild = {
         [1] = {
             ['talent'] = {
                 [1] = {
-                    ['t25'] = {10, 0},
+                    ['t25'] = {0, 10},
                     ['t20'] = {10, 0},
-                    ['t15'] = {0, 10},
+                    ['t15'] = {10, 0},
                     ['t10'] = {0, 10},
                 }
             },
@@ -157,9 +157,9 @@ local HeroBuild = {
         [1] = {
             ['talent'] = {
                 [1] = {
-                    ['t25'] = {10, 0},
+                    ['t25'] = {0, 10},
                     ['t20'] = {10, 0},
-                    ['t15'] = {0, 10},
+                    ['t15'] = {10, 0},
                     ['t10'] = {0, 10},
                 }
             },
@@ -228,7 +228,7 @@ local NetherStrike      = bot:GetAbilityByName('spirit_breaker_nether_strike')
 
 local ChargeOfDarknessDesire, ChargeOfDarknessTarget
 local BulldozeDesire
-local PlanarPocketDesire
+local PlanarPocketDesire, PlanarPocketTarget
 local NetherStrikeDesire, NetherStrikeTarget
 
 if bot.chargeRetreat == nil then bot.chargeRetreat = false end
@@ -275,11 +275,11 @@ function X.SkillsComplement()
         return
     end
 
-    PlanarPocketDesire = X.ConsiderPlanarPocket()
+    PlanarPocketDesire, PlanarPocketTarget = X.ConsiderPlanarPocket()
     if PlanarPocketDesire > 0
     then
         J.SetQueuePtToINT(bot, false)
-        bot:ActionQueue_UseAbility(PlanarPocket)
+        bot:ActionQueue_UseAbilityOnEntity(PlanarPocket, PlanarPocketTarget)
         return
     end
 
