@@ -48,7 +48,7 @@ function GPM.UpdateBotGold(bot, nTeam, BotTotalKills, PlayerTotalKills, godmode)
 
     -- Support will have lower GPM than cores
     if not isCore and targetGPM > 0 then
-        targetGPM = targetGPM - 250
+        targetGPM = targetGPM - 200
     end
 
     if godmode.DifficultyMode == 0 then
