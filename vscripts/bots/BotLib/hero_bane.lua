@@ -281,7 +281,7 @@ function X.ConsiderEnfeeble()
 			and not enemyHero:HasModifier('modifier_necrolyte_reapers_scythe')
 			and not enemyHero:HasModifier('modifier_teleporting')
 			then
-				local enemyHeroDamage = enemyHero:GetAttackDamage() / enemyHero:GetSecondsPerAttack()
+				local enemyHeroDamage = enemyHero:GetAttackDamage() * enemyHero:GetAttackSpeed()
 				if enemyHeroDamage > hTargetDamage then
 					hTarget = enemyHero
 					hTargetDamage = enemyHeroDamage

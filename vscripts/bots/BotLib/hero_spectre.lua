@@ -39,6 +39,7 @@ local HeroBuild = {
                 "item_magic_wand",
                 "item_power_treads",
                 "item_wraith_band",
+                "item_blade_mail",
                 "item_radiance",--
                 "item_manta",--
                 "item_orchid",
@@ -51,11 +52,11 @@ local HeroBuild = {
                 "item_butterfly",--
             },
             ['sell_list'] = {
-                "item_quelling_blade", "item_orchid",
-                "item_quelling_blade", "item_bloodthorn",
+                "item_quelling_blade", "item_manta",
+                "item_magic_wand", "item_orchid",
                 "item_wraith_band", "item_skadi",
-                "item_magic_wand", "item_abyssal_blade",
                 "item_power_treads", "item_abyssal_blade",
+                "item_blade_mail", "item_butterfly",
             },
         },
     },

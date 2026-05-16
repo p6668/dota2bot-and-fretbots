@@ -45,8 +45,8 @@ local HeroBuild = {
             ['talent'] = {
                 [1] = {
                     ['t25'] = {0, 10},
-                    ['t20'] = {0, 10},
-                    ['t15'] = {10, 0},
+                    ['t20'] = {10, 0},
+                    ['t15'] = {0, 10},
                     ['t10'] = {0, 10},
                 }
             },
@@ -62,23 +62,22 @@ local HeroBuild = {
                 "item_phase_boots",
                 "item_soul_ring",
                 "item_blade_mail",
-                "item_consecrated_wraps",
                 "item_crimson_guard",--
+                "item_echo_sabre",
                 "item_ultimate_scepter",
+                "item_sange_and_yasha",--
+                "item_harpoon",--
                 "item_heart",--
-                "item_shivas_guard",--
                 "item_ultimate_scepter_2",
                 "item_sheepstick",--
-                "item_crellas_crozier",--
                 "item_moon_shard",
                 "item_aghanims_shard",
                 "item_travel_boots_2",--
             },
             ['sell_list'] = {
                 "item_magic_wand", "item_ultimate_scepter",
-                "item_soul_ring", "item_heart",
-                "item_consecrated_wraps", "item_sheepstick",
-                "item_blade_mail", "item_crellas_crozier",
+                "item_soul_ring", "item_sange_and_yasha",
+                "item_blade_mail", "item_sheepstick",
             },
         },
     },
@@ -104,16 +103,16 @@ local HeroBuild = {
                 "item_tranquil_boots",
                 "item_magic_wand",
                 "item_ancient_janggo",
-                "item_glimmer_cape",--
+                "item_force_staff",--
+                "item_boots_of_bearing",--
                 "item_blink",
                 "item_lotus_orb",--
-                "item_boots_of_bearing",--
                 "item_heart",--
                 "item_octarine_core",--
                 "item_ultimate_scepter_2",
-                "item_overwhelming_blink",--
-                "item_aghanims_shard",
                 "item_moon_shard",
+                "item_aghanims_shard",
+                "item_overwhelming_blink",--
             },
             ['sell_list'] = {
                 "item_magic_wand", "item_octarine_core",
@@ -148,16 +147,16 @@ local HeroBuild = {
                 "item_arcane_boots",
                 "item_magic_wand",
                 "item_mekansm",
-                "item_glimmer_cape",--
+                "item_force_staff",--
+                "item_guardian_greaves",--
                 "item_blink",
                 "item_lotus_orb",--
-                "item_guardian_greaves",--
                 "item_heart",--
                 "item_octarine_core",--
                 "item_ultimate_scepter_2",
-                "item_overwhelming_blink",--
-                "item_aghanims_shard",
                 "item_moon_shard",
+                "item_aghanims_shard",
+                "item_overwhelming_blink",--
             },
             ['sell_list'] = {
                 "item_magic_wand", "item_octarine_core",

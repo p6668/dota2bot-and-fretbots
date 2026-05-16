@@ -314,7 +314,7 @@ function X.ConsiderFatesEdict()
 			and not J.IsDisabled(enemyHero)
 			and not enemyHero:IsDisarmed()
 			then
-				local enemyHeroDamage = enemyHero:GetAttackDamage() / enemyHero:GetSecondsPerAttack()
+				local enemyHeroDamage = enemyHero:GetAttackDamage() * enemyHero:GetAttackSpeed()
 				if enemyHeroDamage > hTargetDamage then
 					hTarget = enemyHero
 					hTargetDamage = enemyHeroDamage

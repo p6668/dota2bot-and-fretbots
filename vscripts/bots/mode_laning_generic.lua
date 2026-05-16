@@ -216,7 +216,7 @@ function Think()
 
 	local nFurthestEnemyAttackRange = GetFurthestAttackRange(nInRangeEnemy)
 
-	if DropTowerAggro(bot, nAllyCreeps) then return end
+	DropTowerAggro(bot, nAllyCreeps)
 
 	if J.IsValidBuilding(nEnemyTowers[1]) then
 		local distanceFromNearestTower = GetUnitToUnitDistance(bot, nEnemyTowers[1])
@@ -254,7 +254,6 @@ function Think()
 				bot:Action_MoveDirectly(J.VectorTowards(lastHitCreep:GetLocation(), botLocation, botAttackRange - lastHitCreep:GetBoundingRadius()))
 				return
 			else
-				if J.AfterAttackAnim(bot) then return end
 				bot:Action_AttackUnit(lastHitCreep, false)
 				return
 			end
@@ -285,7 +284,6 @@ function Think()
 	if #nEnemyCreeps <= 1 and not J.IsCore(bot) then
 		local harassTarget = GetHarassTarget(nInRangeEnemy)
 		if J.IsValidHero(harassTarget) then
-			if J.AfterAttackAnim(bot) then return end
 			bot:Action_AttackUnit(harassTarget, true)
 			return
 		end
@@ -299,16 +297,6 @@ function Think()
 	end
 
 	if DotaTime() >= fNextMovementTime then
-		-- spread
-		local bIsCore = J.IsCore(bot)
-		local offset = 320
-		if botAssignedLane == LANE_TOP or botAssignedLane == LANE_BOT then
-			local laneSign = (botAssignedLane == LANE_TOP) and -1 or 1
-			local coreSign = bIsCore and 1 or -1
-			local finalSign = laneSign * coreSign
-			vLocation = Vector(vLocation.x + offset * finalSign, vLocation.y, vLocation.z)
-		end
-
 		bot:Action_MoveToLocation(vLocation + RandomVector(100))
 		fNextMovementTime = DotaTime() + RandomFloat(0.3, 0.9)
 	end
@@ -330,23 +318,19 @@ end
 
 function DropTowerAggro(hUnit, nUnitList)
 	if J.IsValid(hUnit) then
-		if J.CanNotUseAction(hUnit) or hUnit:IsDisarmed() then return false end
-
 		local nEnemyTowers = hUnit:GetNearbyTowers(800, true)
 		if J.IsValidBuilding(nEnemyTowers[1]) and nEnemyTowers[1]:GetAttackTarget() == hUnit then
 			for _, creep in pairs(nUnitList) do
 				if J.IsValid(creep) and GetUnitToUnitDistance(creep, nEnemyTowers[1]) < 700 then
 					hUnit:Action_AttackUnit(creep, false)
-					return true
+					return
 				end
 			end
 
 			hUnit:Action_MoveToLocation(J.GetTeamFountain())
-			return true
+			return
 		end
 	end
-
-	return false
 end
 
 end
