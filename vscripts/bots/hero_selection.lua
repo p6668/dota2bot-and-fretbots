@@ -414,7 +414,7 @@ function Think()
 	local ownRatio = #nOwnTeam / ownMax
 	local enmRatio = #nEnmTeam / enmMax
 
-	if ownRatio <= enmRatio or (--[[GetGameMode() == 23 and]] ownMax ~= enmMax) then -- if imbalance, just pick; scoring below will be useless if not early picking though
+	-- if ownRatio <= enmRatio or (--[[GetGameMode() == 23 and]] ownMax ~= enmMax) then -- if imbalance, just pick; scoring below will be useless if not early picking though
 		for i = 1, #nIDs do
 			local botID = nIDs[IDMap[tIDs[i]]]
 			local poolID = IDMap[tIDs[i]]
@@ -508,7 +508,7 @@ function Think()
 				break
 			end
 		end
-	end
+	-- end
 end
 
 function X.GetCurrentTeam(nTeam)
