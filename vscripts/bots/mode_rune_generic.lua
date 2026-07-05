@@ -51,8 +51,8 @@ function GetDesire()
         return BOT_MODE_DESIRE_ABSOLUTE
     end
 
-	-- Wisdom Rune (Valve added default behaviour with the 7.41 update; will use that now)
-	if bot:GetLevel() < 30 and false then
+	-- Wisdom Rune
+	if bot:GetLevel() < 30 then
 		nShrineOfWisdomTime = X.GetCurrentWisdomTime()
 
 		X.UpdateWisdom()

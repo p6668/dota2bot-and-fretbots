@@ -148,25 +148,87 @@ local HeroBuild = {
     ['pos_4'] = {
         [1] = {
             ['talent'] = {
-                [1] = {},
+                [1] = {
+                    ['t25'] = {10, 0},
+                    ['t20'] = {0, 10},
+                    ['t15'] = {0, 10},
+                    ['t10'] = {0, 10},
+                }
             },
             ['ability'] = {
-                [1] = {},
+                [1] = {2,3,1,2,2,6,2,1,1,1,6,3,3,3,6},
             },
-            ['buy_list'] = {},
-            ['sell_list'] = {},
+            ['buy_list'] = {
+                "item_tango",
+                "item_double_branches",
+                "item_blood_grenade",
+                "item_magic_stick",
+                "item_faerie_fire",
+    
+                "item_tranquil_boots",
+                "item_magic_wand",
+				"item_bracer",
+				"item_blink",
+				"item_ancient_janggo",
+				"item_orchid",
+				"item_nullifier",--
+                "item_boots_of_bearing",--
+                "item_aghanims_shard",
+				"item_octarine_core",--
+                "item_ultimate_scepter",
+				"item_bloodthorn",--
+				"item_black_king_bar",--
+                "item_ultimate_scepter_2",
+                "item_moon_shard",
+				"item_overwhelming_blink",--
+            },
+            ['sell_list'] = {
+                "item_bracer", "item_nullifier",
+				"item_magic_wand", "item_ultimate_scepter",
+            }
         },
     },
     ['pos_5'] = {
         [1] = {
             ['talent'] = {
-                [1] = {},
+                [1] = {
+                    ['t25'] = {10, 0},
+                    ['t20'] = {0, 10},
+                    ['t15'] = {0, 10},
+                    ['t10'] = {0, 10},
+                }
             },
             ['ability'] = {
-                [1] = {},
+                [1] = {2,3,1,2,2,6,2,1,1,1,6,3,3,3,6},
             },
-            ['buy_list'] = {},
-            ['sell_list'] = {},
+            ['buy_list'] = {
+                "item_tango",
+                "item_double_branches",
+                "item_blood_grenade",
+                "item_magic_stick",
+                "item_faerie_fire",
+    
+                "item_arcane_boots",
+                "item_magic_wand",
+				"item_bracer",
+				"item_blink",
+				"item_mekansm",
+				"item_orchid",
+				"item_nullifier",--
+                "item_guardian_greaves",--
+                "item_aghanims_shard",
+				"item_octarine_core",--
+                "item_ultimate_scepter",
+				"item_bloodthorn",--
+				"item_black_king_bar",--
+                "item_ultimate_scepter_2",
+                "item_moon_shard",
+				"item_overwhelming_blink",--
+            },
+            ['sell_list'] = {
+                "item_bracer", "item_nullifier",
+				"item_magic_wand", "item_ultimate_scepter",
+            }
         },
     },
 }

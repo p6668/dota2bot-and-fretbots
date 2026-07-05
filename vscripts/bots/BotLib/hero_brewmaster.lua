@@ -178,7 +178,7 @@ function X.SkillsComplement()
     LiquidCourageDesire, LiquidCourageTarget = X.ConsiderLiquidCourage()
     if LiquidCourageDesire > 0 then
         J.SetQueuePtToINT(bot, false)
-        bot:ActionQueue_UseAbilityOnLocation(LiquidCourage, LiquidCourageTarget)
+        bot:ActionQueue_UseAbilityOnEntity(LiquidCourage, LiquidCourageTarget)
         return
     end
 

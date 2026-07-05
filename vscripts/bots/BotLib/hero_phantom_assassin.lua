@@ -434,17 +434,21 @@ function X.ConsiderPhantomStrike()
 		and J.CanCastOnTargetAdvanced(botTarget)
 		and GetUnitToLocationDistance(botTarget, J.GetEnemyFountain()) > 800
 		then
-			local nInRangeAlly = J.GetAlliesNearLoc(botTarget:GetLocation(), 800)
-			local nInRangeEnemy = J.GetEnemiesNearLoc(botTarget:GetLocation(), 800)
-			local nInRangeAlly_ = J.GetAlliesNearLoc(bot:GetLocation(), 1600)
-
-			if (J.WillKillTarget(botTarget, nAttackDamage * 3, DAMAGE_TYPE_PHYSICAL, nCastPoint * 3.0))
-			or (J.IsInRange(bot, botTarget, 500))
-			or (#nInRangeAlly >= #nInRangeEnemy)
-			or (#nInRangeAlly_ <= 1)
-			or (botHP > 0.4 and J.GetHP(botTarget) < 0.15)
+			if not bot:HasModifier('modifier_phantom_assassin_phantom_strike')
+			or not J.IsInRange(bot, botTarget, bot:GetAttackRange() * 1.8)
 			then
-				return BOT_ACTION_DESIRE_HIGH, botTarget
+				local nInRangeAlly = J.GetAlliesNearLoc(botTarget:GetLocation(), 800)
+				local nInRangeEnemy = J.GetEnemiesNearLoc(botTarget:GetLocation(), 800)
+				local nInRangeAlly_ = J.GetAlliesNearLoc(bot:GetLocation(), 1600)
+
+				if (J.WillKillTarget(botTarget, nAttackDamage * 3, DAMAGE_TYPE_PHYSICAL, nCastPoint * 3.0))
+				or (J.IsInRange(bot, botTarget, 500))
+				or (#nInRangeAlly >= #nInRangeEnemy)
+				or (#nInRangeAlly_ <= 1)
+				or (botHP > 0.4 and J.GetHP(botTarget) < 0.15)
+				then
+					return BOT_ACTION_DESIRE_HIGH, botTarget
+				end
 			end
 		end
 	end
@@ -458,6 +462,10 @@ function X.ConsiderPhantomStrike()
 				return BOT_ACTION_DESIRE_HIGH, bestAlly
 			end
 		end
+	end
+
+	if bot:HasModifier('modifier_phantom_assassin_phantom_strike') then
+		return BOT_ACTION_DESIRE_NONE
 	end
 
 	local nEnemyCreeps = bot:GetNearbyCreeps(Min(nCastRange, 1600), true)

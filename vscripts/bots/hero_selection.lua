@@ -23,7 +23,7 @@ local HeroSet = {}
 														-- role bias	                    -- bot "quality"
 local sHeroList = {										-- pos    1,   2,   3,   4,   5
 	{name = 'npc_dota_hero_abaddon', 					role = {100, 100, 100, 100, 100},	quality = 1.4 },
-	{name = 'npc_dota_hero_abyssal_underlord', 			role = {  0,   0, 100,   0,   0},	quality = 1.3 },
+	{name = 'npc_dota_hero_abyssal_underlord', 			role = {  0,   0, 100,  80,  80},	quality = 1.3 },
 	{name = 'npc_dota_hero_alchemist', 					role = {100,  90,  95,   0,   0},	quality = 1.2 },
 	{name = 'npc_dota_hero_ancient_apparition', 		role = {  0,   0,   0,  95, 100},	quality = 1.2 },
 	{name = 'npc_dota_hero_antimage', 					role = {100,   0,  85,   0,   0},	quality = 1.3 },
@@ -118,7 +118,7 @@ local sHeroList = {										-- pos    1,   2,   3,   4,   5
 	{name = 'npc_dota_hero_silencer', 					role = { 85,  95,   0,  95, 100},	quality = 1.4 },
 	{name = 'npc_dota_hero_skeleton_king', 				role = {100,   0,  90,   0,   0},	quality = 1.3 },
 	{name = 'npc_dota_hero_skywrath_mage', 				role = {  0,  90,   0, 100,  95},	quality = 1.4 },
-	{name = 'npc_dota_hero_slardar', 					role = { 90,  95, 100,   0,   0},	quality = 1.3 },
+	{name = 'npc_dota_hero_slardar', 					role = { 90,  95, 100,  80,  80},	quality = 1.3 },
 	{name = 'npc_dota_hero_slark', 						role = {100,   0,  85,   0,   0},	quality = 1.3 },
 	{name = "npc_dota_hero_snapfire", 					role = {  0, 100,   0,  95, 100},	quality = 1.3 },
 	{name = 'npc_dota_hero_sniper', 					role = {100, 100,   0,   0,   0},	quality = 1.4 },

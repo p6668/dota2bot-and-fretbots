@@ -457,15 +457,19 @@ function U.IsBrewLink(unit)
 	return unit_name == "npc_dota_brewmaster_earth_1"
 		or unit_name == "npc_dota_brewmaster_earth_2"
 		or unit_name == "npc_dota_brewmaster_earth_3"
+		or unit_name == "npc_dota_brewmaster_earth_4"
 		or unit_name == "npc_dota_brewmaster_storm_1"
 		or unit_name == "npc_dota_brewmaster_storm_2"
 		or unit_name == "npc_dota_brewmaster_storm_3"
+		or unit_name == "npc_dota_brewmaster_storm_4"
 		or unit_name == "npc_dota_brewmaster_fire_1"
 		or unit_name == "npc_dota_brewmaster_fire_2"
 		or unit_name == "npc_dota_brewmaster_fire_3"
+		or unit_name == "npc_dota_brewmaster_fire_4"
 		or unit_name == "npc_dota_brewmaster_void_1"
 		or unit_name == "npc_dota_brewmaster_void_2"
 		or unit_name == "npc_dota_brewmaster_void_3"
+		or unit_name == "npc_dota_brewmaster_void_4"
 end
 
 return U
