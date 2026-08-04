@@ -55,7 +55,7 @@ local HeroBuild = {
 				"item_aghanims_shard",
 				"item_assault",--
 				"item_moon_shard",
-				"item_ultimate_scepter_2",
+				-- "item_ultimate_scepter_2",
 				"item_travel_boots_2",--
 			},
             ['sell_list'] = {
@@ -104,7 +104,7 @@ local HeroBuild = {
 				"item_aghanims_shard",
 				"item_assault",--
 				"item_moon_shard",
-				"item_ultimate_scepter_2",
+				-- "item_ultimate_scepter_2",
 				"item_travel_boots_2",--
 			},
             ['sell_list'] = {
