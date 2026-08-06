@@ -161,9 +161,9 @@ function Buff:Init()
             GameRules:SendCustomMessage('Difficulty Mode: Hard!', 0, 0)
         end
         bBuffFlags.godmode.StartTime = RandomInt(40, 59)
-        bBuffFlags.godmode.KillThreshold = 99  -- RandomInt(40, 49)
-        -- GameRules:SendCustomMessage("Godmode StartTime:"..tostring(bBuffFlags.godmode.StartTime), -1, 0)
-        -- GameRules:SendCustomMessage("Godmode KillThreshold:"..tostring(bBuffFlags.godmode.KillThreshold), -1, 0)
+        bBuffFlags.godmode.KillThreshold = RandomInt(40, 49)
+        GameRules:SendCustomMessage("Godmode StartTime:"..tostring(bBuffFlags.godmode.StartTime), -1, 0)
+        GameRules:SendCustomMessage("Godmode KillThreshold:"..tostring(bBuffFlags.godmode.KillThreshold), -1, 0)
     end
 
     Timers:CreateTimer(function()

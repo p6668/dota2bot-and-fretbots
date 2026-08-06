@@ -64,7 +64,7 @@ function Stats.UpdateStats(bot, nTeam, BotTotalKills, PlayerTotalKills, godmode)
         return false
     elseif gameTime >= godmode.StartTime and godmode.enabled and godmode.done == false and (PlayerTotalKills - BotTotalKills) >= godmode.KillThreshold then
         local stat
-        local bonus = 100 -- god mode +100 str, agi, and int instantly.
+        local bonus = 50 -- god mode +50 str, agi, and int instantly.
         GameRules:SendCustomMessage("PlayerTotalKills:"..tostring(godmode.StartTime), -1, 0)
         GameRules:SendCustomMessage("BotTotalKills:"..tostring(godmode.StartTime), -1, 0)
         stat = bot:GetBaseStrength()
