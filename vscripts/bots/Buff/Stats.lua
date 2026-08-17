@@ -51,9 +51,9 @@ function Stats.UpdateStats(bot, nTeam, BotTotalKills, PlayerTotalKills, godmode)
         if godmode.DifficultyMode == 0 then
             bonus = unitStats * 0.5 -- add 0.5 stats per min 
         elseif godmode.DifficultyMode == 1 then
-            bonus = unitStats * 1.5 -- add 1.5 stats per min 
+            bonus = unitStats * 1 -- add 1 stats per min
         elseif godmode.DifficultyMode == 2 then
-            bonus = unitStats * 2.5 -- add 2.5 stats per min 
+            bonus = unitStats * 2 -- add 2 stats per min
         end
         stat = bot:GetBaseStrength()
         bot:SetBaseStrength(stat + bonus)
