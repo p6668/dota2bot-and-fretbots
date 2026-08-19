@@ -152,7 +152,7 @@ local HeroBuild = {
 				"item_heart",--
 				"item_nullifier",--
 				"item_moon_shard",
-				"item_ultimate_scepter_2",
+				-- "item_ultimate_scepter_2",
 				"item_travel_boots_2",--
 			},
             ['sell_list'] = {
