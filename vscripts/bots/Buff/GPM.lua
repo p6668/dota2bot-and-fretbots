@@ -54,7 +54,7 @@ function GPM.UpdateBotGold(bot, nTeam, BotTotalKills, PlayerTotalKills, godmode)
     if godmode.DifficultyMode == 0 then
         targetGPM = targetGPM - 100
     elseif godmode.DifficultyMode == 1 then
-        targetGPM = targetGPM + 25
+        targetGPM = targetGPM
     elseif godmode.DifficultyMode == 2 then
         targetGPM = targetGPM + 100
     end
