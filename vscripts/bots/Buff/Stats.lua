@@ -75,23 +75,6 @@ function Stats.UpdateStats(bot, nTeam, BotTotalKills, PlayerTotalKills, godmode)
         bot:SetBaseIntellect(stat + bonus)
         GameRules:SendCustomMessage("<font color='#70EA71'>"..string.gsub(bot:GetUnitName(), 'npc_dota_hero_', '').."</font>"..' is in god mode. Cautious!', -1, 0)
         return true
-    elseif gameTime > 40 and gameTime <=60 then  
-        local stat
-        local bonus
-        if godmode.DifficultyMode == 0 then
-            bonus = unitStats * 1 -- add 1 stats per min 
-        elseif godmode.DifficultyMode == 1 then
-            bonus = unitStats * 2 -- add 2 stats per min 
-        elseif godmode.DifficultyMode == 2 then
-            bonus = unitStats * 3 -- add 3 stats per min 
-        end
-        stat = bot:GetBaseStrength()
-        bot:SetBaseStrength(stat + bonus)
-        stat = bot:GetBaseAgility()
-        bot:SetBaseAgility(stat + bonus)
-        stat = bot:GetBaseIntellect()
-        bot:SetBaseIntellect(stat + bonus * 0.1) -- reduce int stats bonus due to 7.33 update giving magic resist
-        return false
     end
     return false
 end
