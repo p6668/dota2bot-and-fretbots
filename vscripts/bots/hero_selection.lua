@@ -152,14 +152,14 @@ local sHeroList = {										-- pos    1,   2,   3,   4,   5
 }
 
 local sWeakHeroes = {
-	['npc_dota_hero_dark_willow'] = true,
-	['npc_dota_hero_elder_titan'] = true,
+	-- ['npc_dota_hero_dark_willow'] = true,
+	-- ['npc_dota_hero_elder_titan'] = true,
 	['npc_dota_hero_hoodwink'] = true,
 	['npc_dota_hero_kez'] = true,
 	['npc_dota_hero_marci'] = true,
 	-- ['npc_dota_hero_muerta'] = true,
 	['npc_dota_hero_primal_beast'] = true,
-	['npc_dota_hero_wisp'] = true,
+	-- ['npc_dota_hero_wisp'] = true,
 }
 
 local function GetHeroList(pos)
