@@ -697,6 +697,7 @@ local allBotHeroes = {
 	'npc_dota_hero_phoenix',
 	'npc_dota_hero_terrorblade',
 	'npc_dota_hero_morphling',
+	'npc_dota_hero_muerta',
 	'npc_dota_hero_shredder',
 	'npc_dota_hero_broodmother',
 	'npc_dota_hero_antimage',
