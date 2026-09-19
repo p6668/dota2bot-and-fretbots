@@ -128,11 +128,11 @@ local HeroBuild = {
 				"item_radiance",--
 				"item_blink",
 				"item_black_king_bar",--
+				"item_ultimate_scepter_2",
 				"item_assault",--
 				"item_aghanims_shard",
 				"item_abyssal_blade",--
 				"item_swift_blink",--
-				"item_ultimate_scepter_2",
 				"item_moon_shard",
 				"item_travel_boots_2",--
 			},
@@ -165,11 +165,11 @@ local HeroBuild = {
 				"item_desolator",--
 				"item_blink",
 				"item_black_king_bar",--
+				"item_ultimate_scepter_2",
 				"item_assault",--
 				"item_aghanims_shard",
 				"item_abyssal_blade",--
 				"item_swift_blink",--
-				"item_ultimate_scepter_2",
 				"item_moon_shard",
 				"item_travel_boots_2",--
 			},
