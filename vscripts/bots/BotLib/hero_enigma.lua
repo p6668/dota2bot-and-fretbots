@@ -572,7 +572,7 @@ function X.ConsiderMidnightPulse()
 
 	if J.IsInTeamFight(bot, 1200) then
         local nLocationAoE = bot:FindAoELocation(true, true, bot:GetLocation(), nCastRange, nRadius, 0, 0)
-        local nInRangeEnemy = J.GetEnemiesNearLoc(nLocationAoE.targetloc, nRadius * 0.8)
+        local nInRangeEnemy = J.GetEnemiesNearLoc(nLocationAoE.targetloc, nRadius * 0.9)
         if #nInRangeEnemy >= 2 then
             local count = 0
             for _, enemyHero in pairs(nInRangeEnemy) do
@@ -640,7 +640,7 @@ function X.ConsiderBlackHole()
 
 	if J.IsInTeamFight(bot, 1200) then
         local nLocationAoE = bot:FindAoELocation(true, true, bot:GetLocation(), nCastRange, nRadius, 0, 0)
-        local nInRangeEnemy = J.GetEnemiesNearLoc(nLocationAoE.targetloc, nRadius * 0.8)
+        local nInRangeEnemy = J.GetEnemiesNearLoc(nLocationAoE.targetloc, nRadius * 0.9)
         if #nInRangeEnemy >= 2 then
             local count = 0
             for _, enemyHero in pairs(nInRangeEnemy) do
@@ -661,7 +661,7 @@ function X.ConsiderBlackHole()
                 end
             end
 
-            if count >= 1.5 then
+            if count >= 1 then
                 return BOT_ACTION_DESIRE_HIGH, nLocationAoE.targetloc
             end
         end
@@ -683,7 +683,7 @@ function X.ConsiderBlackHole()
             local nInRangeEnemy = J.GetEnemiesNearLoc(bot:GetLocation(), 1200)
             local damage = nDamage * (nDuration * (1 - fTickRate))
 
-            local nInRangeEnemy__ = J.GetEnemiesNearLoc(botTarget:GetLocation(), nRadius * 0.8)
+            local nInRangeEnemy__ = J.GetEnemiesNearLoc(botTarget:GetLocation(), nRadius * 0.9)
 
             if not (#nInRangeAlly >= #nInRangeEnemy + 3) and botTarget:GetHealth() >= damage * 0.5 then
                 if J.WillKillTarget(botTarget, damage, DAMAGE_TYPE_PURE, nDuration + nCastPoint) then
@@ -724,7 +724,7 @@ function X.ConsiderBlinkHole()
             and J.IsInTeamFight(allyHero, 1200)
             then
                 local nLocationAoE = allyHero:FindAoELocation(true, true, allyHero:GetLocation(), 1200, nRadius, 0, 0)
-                local nInRangeEnemy = J.GetEnemiesNearLoc(nLocationAoE.targetloc, nRadius * 0.8)
+                local nInRangeEnemy = J.GetEnemiesNearLoc(nLocationAoE.targetloc, nRadius * 0.9)
                 if #nInRangeEnemy >= 2 then
                     local count = 0
                     for _, enemyHero in pairs(nInRangeEnemy) do
@@ -745,7 +745,7 @@ function X.ConsiderBlinkHole()
                         end
                     end
 
-                    if count >= 1.5 then
+                    if count >= 1 then
                         return BOT_ACTION_DESIRE_HIGH, nLocationAoE.targetloc
                     end
                 end
@@ -774,7 +774,7 @@ function X.ConsiderBlinkPulseHole()
             and J.IsInTeamFight(allyHero, 1200)
             then
                 local nLocationAoE = allyHero:FindAoELocation(true, true, allyHero:GetLocation(), 1200, nRadius, 0, 0)
-                local nInRangeEnemy = J.GetEnemiesNearLoc(nLocationAoE.targetloc, nRadius * 0.8)
+                local nInRangeEnemy = J.GetEnemiesNearLoc(nLocationAoE.targetloc, nRadius * 0.9)
                 if #nInRangeEnemy >= 2 then
                     local count = 0
                     for _, enemyHero in pairs(nInRangeEnemy) do
@@ -795,7 +795,7 @@ function X.ConsiderBlinkPulseHole()
                         end
                     end
 
-                    if count >= 1.5 then
+                    if count >= 1 then
                         return BOT_ACTION_DESIRE_HIGH, nLocationAoE.targetloc
                     end
                 end
