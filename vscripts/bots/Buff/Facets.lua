@@ -35,12 +35,6 @@ function F.ChangeHeroFacet(bot)
                     F.DoChange(bot, 'keeper_of_the_light_recall', 'keeper_of_the_light_radiant_bind', true)
                 end
             end
-        elseif heroName == 'npc_dota_hero_windrunner' then
-            if RandomInt(1,2) == 1 then
-                if bot:HasAbility('windranger_tangled') then
-                    F.DoChange(bot, 'windranger_tangled', 'windranger_killshot', true)
-                end
-            end
         elseif heroName == 'npc_dota_hero_tusk' then
             if RandomInt(1,2) == 1 then
                 if bot:HasAbility('tusk_drinking_buddies') then

@@ -63,7 +63,7 @@ local sHeroList = {										-- pos    1,   2,   3,   4,   5
 	{name = 'npc_dota_hero_gyrocopter', 				role = {100,  90,   0,  95,  90},	quality = 1.4 },
 	-- {name = 'npc_dota_hero_hoodwink', 					role = {  0,  80,   0, 100,  85},	quality = 0.8 },
 	{name = 'npc_dota_hero_huskar', 					role = { 90, 100,  95,   0,   0},	quality = 1.3 },
-	-- {name = 'npc_dota_hero_invoker', 					role = {  0, 100,   0,  85,  80},	quality = 1.2 },
+	{name = 'npc_dota_hero_invoker', 					role = {  0, 100,   0,  85,  80},	quality = 1.2 },
 	{name = 'npc_dota_hero_jakiro', 					role = {  0,  85,   0, 100, 100},	quality = 1.4 },
 	{name = 'npc_dota_hero_juggernaut', 				role = {100,   0,   0,   0,   0},	quality = 1.3 },
 	{name = 'npc_dota_hero_keeper_of_the_light', 		role = {  0,  90,   0, 100,  85},	quality = 1.0 },

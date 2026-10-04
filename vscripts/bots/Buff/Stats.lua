@@ -6,20 +6,23 @@ then
 end
 
 -- just eyeballed
-function Stats.UpdateStats(bot, nTeam, BotTotalKills, PlayerTotalKills, godmode)
+function Stats.UpdateStats(bot, godmode)
     local gameTime = Helper.DotaTime() / 60
-    local botPos = Helper.GetPosition(bot, nTeam)
     local unitStats = 1/60
+    local KillsGap = 0
+    if bot:GetTeam() == DOTA_TEAM_GOODGUYS then
+        KillsGap = PlayerResource:GetTeamKills(DOTA_TEAM_BADGUYS) - PlayerResource:GetTeamKills(DOTA_TEAM_GOODGUYS)
+    else
+        KillsGap = PlayerResource:GetTeamKills(DOTA_TEAM_GOODGUYS) - PlayerResource:GetTeamKills(DOTA_TEAM_BADGUYS)
+    end
 
     if gameTime >= 10 and gameTime <=20 then 
         local stat
         local bonus
         if godmode.DifficultyMode == 0 then
             bonus = unitStats * 0 -- add 0 stats per min 
-        elseif godmode.DifficultyMode == 1 then
+        else 
             bonus = unitStats * 0.5 -- add 0.5 stats per min 
-        elseif godmode.DifficultyMode == 2 then
-            bonus = unitStats * 1.5 -- add 1.5 stats per min 
         end
         stat = bot:GetBaseStrength()
         bot:SetBaseStrength(stat + bonus)
@@ -33,10 +36,8 @@ function Stats.UpdateStats(bot, nTeam, BotTotalKills, PlayerTotalKills, godmode)
         local bonus
         if godmode.DifficultyMode == 0 then
             bonus = unitStats * 0 -- add 0 stats per min 
-        elseif godmode.DifficultyMode == 1 then
+        else
             bonus = unitStats * 0.5 -- add 1 stats per min
-        elseif godmode.DifficultyMode == 2 then
-            bonus = unitStats * 1 -- add 2 stats per min
         end
         stat = bot:GetBaseStrength()
         bot:SetBaseStrength(stat + bonus)
@@ -50,10 +51,8 @@ function Stats.UpdateStats(bot, nTeam, BotTotalKills, PlayerTotalKills, godmode)
         local bonus
         if godmode.DifficultyMode == 0 then
             bonus = unitStats * 0.5 -- add 0.5 stats per min 
-        elseif godmode.DifficultyMode == 1 then
+        else
             bonus = unitStats * 1 -- add 1 stats per min
-        elseif godmode.DifficultyMode == 2 then
-            bonus = unitStats * 2 -- add 2 stats per min
         end
         stat = bot:GetBaseStrength()
         bot:SetBaseStrength(stat + bonus)
@@ -62,11 +61,9 @@ function Stats.UpdateStats(bot, nTeam, BotTotalKills, PlayerTotalKills, godmode)
         stat = bot:GetBaseIntellect()
         bot:SetBaseIntellect(stat + bonus * 0.1) -- reduce int stats bonus due to 7.33 update giving magic resist
         return false
-    elseif gameTime >= godmode.StartTime and godmode.enabled and godmode.done == false and (PlayerTotalKills - BotTotalKills) >= godmode.KillThreshold then
+    elseif gameTime >= godmode.StartTime and godmode.enabled and godmode.done == false and KillsGap >= godmode.KillThreshold then
         local stat
         local bonus = 50 -- god mode +50 str, agi, and int instantly.
-        GameRules:SendCustomMessage("PlayerTotalKills:"..tostring(godmode.StartTime), -1, 0)
-        GameRules:SendCustomMessage("BotTotalKills:"..tostring(godmode.StartTime), -1, 0)
         stat = bot:GetBaseStrength()
         bot:SetBaseStrength(stat + bonus)
         stat = bot:GetBaseAgility()
