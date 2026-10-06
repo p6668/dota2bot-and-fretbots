@@ -1,4 +1,3 @@
-
 --[[
 Banned:
     - abilities with sub-abilities (eg Sharpshooter).
@@ -338,6 +337,14 @@ local function GetAbilityBuild(hero, nAbilityCount, hAbilityList, bAllowDuplicat
                 end
             end
 
+            -- never pick the same spell twice for one hero (bAllowDuplicate only lets different heroes share a spell);
+            -- a repeated pick used to be dropped later by HasAbility, leaving the hero with fewer new spells
+            if not bSkip then
+                for i = 1, #abilityList do
+                    if abilityList[i] == spell then bSkip = true break end
+                end
+            end
+
             if not bSkip and (bAllowDuplicate or not AbilityPickedList[spell]) then
                 pAccum = pAccum + (value / total)
                 if pRoll <= pAccum then
@@ -387,13 +394,13 @@ local function GetSpellScore(spell, hero, nTeam)
 
         for r, v in pairs(posRoleRelevance[nPos]) do
             local heroVal = totalRole[r] or 0
-			score = score + heroVal * v
+            score = score + heroVal * v
         end
 
         local tagSum = 0
         for _, v in pairs(totalRole) do tagSum = tagSum + v end
         score = score^2 / math.max(tagSum, 1)
-	end
+    end
 
     return score
 end
@@ -433,6 +440,201 @@ local function SetAbilityHidden(hUnit, sAbilityName, bHidden)
             hAbility:SetHidden(bHidden)
         end
     end
+end
+
+-- Dota only binds hotkeys (Q W E D F R) to ability slots 0-5.
+-- AddAbility puts the new spell after the hero's talents, so it has no hotkey (click only).
+-- To give it one, swap it into a slot in 0-5 that is not really used for casting:
+--   1) a 'generic_hidden' placeholder (heroes with fewer than 6 abilities, usually D/F)
+--   2) a hidden Aghanim's Shard/Scepter ability
+--   3) a passive hero ability (innates like Lion's to_hell_and_back, Counter Helix, ...); a passive can't be
+--      cast, so its hotkey is passed to the new active spell. Passive NEW spells get no slot at all.
+--   New BASIC spells prefer the passive slots on Q/W/E; the ultimate takes what is left (D/F first).
+--   The hero's own active abilities always keep their original hotkeys (e.g. Take Aim stays on E);
+--   only passive slots are handed to new spells.
+-- The displaced ability keeps its hidden/activated state and keeps working (passives and
+-- upgrades don't need a slot); it just moves to the end of the list with no hotkey.
+-- Hero sub-abilities that the game shows/hides itself (e.g. Morphling) are never touched.
+-- set to true to print what sits in each hotkey slot (D/F = slots 3/4) to the console
+local DEBUG_HOTKEY_SLOTS = false
+
+local function IsHumanHero(hero)
+    local nPlayerID = hero:GetPlayerOwnerID()
+    return nPlayerID ~= nil and nPlayerID >= 0 and not PlayerResource:IsFakeClient(nPlayerID)
+end
+
+-- prints to the console, and also to the in-game chat for human players (no console needed)
+local function DebugSay(hero, sMsg)
+    if not DEBUG_HOTKEY_SLOTS then return end
+    print('[SpellsMore] ' .. sMsg)
+    local nPlayerID = hero:GetPlayerOwnerID()
+    if nPlayerID and nPlayerID >= 0 and not PlayerResource:IsFakeClient(nPlayerID) then
+        GameRules:SendCustomMessage('[SpellsMore] ' .. sMsg, 0, 0)
+    end
+end
+
+local function PrintHotkeySlots(hero, sLabel)
+    if not DEBUG_HOTKEY_SLOTS then return end
+    local t = {}
+    for i = 0, 5 do
+        local hAbility = hero:GetAbilityByIndex(i)
+        if hAbility then
+            local sName = string.gsub(hAbility:GetAbilityName(), '^' .. string.gsub(string.gsub(hero:GetUnitName(), 'npc_dota_hero_', ''), '%-', '%%-') .. '_', '')
+            t[#t + 1] = string.format('[%d]%s%s%s', i, sName, hAbility:IsHidden() and '(h)' or '', hAbility:IsPassive() and '(p)' or '')
+        else
+            t[#t + 1] = string.format('[%d]nil', i)
+        end
+    end
+    DebugSay(hero, string.format('%s %s: %s', string.gsub(hero:GetUnitName(), 'npc_dota_hero_', ''), sLabel, table.concat(t, ' ')))
+end
+
+local function IsShardOrScepterAbility(sAbilityName)
+    for _, spell in pairs(SPL['SpellsMap']) do
+        if spell and spell.name == sAbilityName
+        and (HasFlag(spell.type, SPL.SPELL_AGHANIMS_SHARD) or HasFlag(spell.type, SPL.SPELL_AGHANIMS_SCEPTER))
+        then
+            return true
+        end
+    end
+    return false
+end
+
+-- a passive can't be cast, so it never needs a hotkey: visible ones (innates, Counter Helix, ...) waste it,
+-- and hidden ones waiting for a Shard/Scepter (e.g. Nyx's Neuro-Sting) won't need one once unlocked
+local function IsPassiveSlotAbility(hAbility)
+    return hAbility:GetAbilityName() ~= 'generic_hidden' and hAbility:IsPassive()
+end
+
+local function GetAbilityIndex(hero, sName)
+    for i = 0, hero:GetAbilityCount() - 1 do
+        local hAbility = hero:GetAbilityByIndex(i)
+        if hAbility and hAbility:GetAbilityName() == sName then return i end
+    end
+    return -1
+end
+
+-- names of abilities that can be swapped out of a hotkey slot, best first
+-- tTaken: spells we already moved into a hotkey slot (never displaced) + the '__ghBlocked' flag
+-- bPreferQWE: new BASIC spells take the passive slots on Q/W/E first (the easiest keys), then the rest
+local function GetFreeHotkeySlotNames(hero, tTaken, bPreferQWE)
+    local tNames, tSeen = {}, {}
+
+    local function AddPassiveSlots(tSlots)
+        for _, i in ipairs(tSlots) do
+            local hSlot = hero:GetAbilityByIndex(i)
+            if hSlot then
+                local sSlotName = hSlot:GetAbilityName()
+                if not tSeen[sSlotName] and not tTaken[sSlotName] and IsPassiveSlotAbility(hSlot) then
+                    tSeen[sSlotName] = true
+                    tNames[#tNames + 1] = sSlotName
+                end
+            end
+        end
+    end
+
+    -- 1) basics: passives on Q/W/E
+    if bPreferQWE then AddPassiveSlots({0, 1, 2}) end
+
+    -- 2) empty placeholders. SwapAbilities finds abilities BY NAME, and a hero can have several
+    --    'generic_hidden' (Earthshaker: D and F), so only one of them can be reached reliably.
+    --    GiveHotkeySlot verifies the swap and sets '__ghBlocked' when it hits the wrong one.
+    if not tTaken['__ghBlocked'] then
+        for i = 0, 5 do
+            local hSlot = hero:GetAbilityByIndex(i)
+            if hSlot and hSlot:GetAbilityName() == 'generic_hidden' then
+                tNames[#tNames + 1] = 'generic_hidden'
+                break
+            end
+        end
+    end
+
+    -- 3) remaining passive abilities (innates, passive spells); D/F before Q/W/E/R for the ultimate
+    if bPreferQWE then
+        AddPassiveSlots({3, 4, 5, 0, 1, 2})
+    else
+        AddPassiveSlots({3, 4, 0, 1, 2, 5})
+    end
+
+    -- 4) hidden shard/scepter abilities (last resort: they are real spells once the upgrade is bought)
+    for i = 0, 5 do
+        local hSlot = hero:GetAbilityByIndex(i)
+        if hSlot and hSlot:IsHidden() then
+            local sSlotName = hSlot:GetAbilityName()
+            if sSlotName ~= 'generic_hidden' and not tTaken[sSlotName] and IsShardOrScepterAbility(sSlotName) then
+                tNames[#tNames + 1] = sSlotName
+            end
+        end
+    end
+
+    return tNames
+end
+
+-- returns 'OK', 'NO-SLOT' (stays click-only), 'PASSIVE' (no hotkey needed) or 'MISSING'
+local function GiveHotkeySlot(hero, sAbilityName, tTaken, bPreferQWE)
+    local hNew = hero:FindAbilityByName(sAbilityName)
+    if not hNew then return 'MISSING' end
+
+    -- a passive spell can't be cast, so don't spend a hotkey slot on it
+    if hNew:IsPassive() then return 'PASSIVE' end
+
+    -- AddAbility may already have put it into a freed placeholder slot
+    local nIdx = GetAbilityIndex(hero, sAbilityName)
+    if nIdx <= 5 then
+        -- a basic spell sitting on D/F moves onto a passive's Q/W/E key if there is one (both stay in the bar)
+        if bPreferQWE and nIdx > 2 then
+            for _, i in ipairs({0, 1, 2}) do
+                local hSlot = hero:GetAbilityByIndex(i)
+                if hSlot and not tTaken[hSlot:GetAbilityName()] and IsPassiveSlotAbility(hSlot) then
+                    local sSlotName = hSlot:GetAbilityName()
+                    local bSlotHidden, bSlotActivated = hSlot:IsHidden(), hSlot:IsActivated()
+                    local bNewHidden, bNewActivated = hNew:IsHidden(), hNew:IsActivated()
+                    hero:SwapAbilities(sSlotName, sAbilityName, true, true)
+                    hSlot:SetHidden(bSlotHidden); hSlot:SetActivated(bSlotActivated)
+                    hNew:SetHidden(bNewHidden);   hNew:SetActivated(bNewActivated)
+                    break
+                end
+            end
+        end
+        tTaken[sAbilityName] = true
+        return 'OK'
+    end
+
+    for _, sSlotName in ipairs(GetFreeHotkeySlotNames(hero, tTaken, bPreferQWE)) do
+        local hDisplaced = hero:FindAbilityByName(sSlotName)
+        local bDisplacedHidden = hDisplaced and hDisplaced:IsHidden()
+        local bDisplacedActivated = hDisplaced and hDisplaced:IsActivated()
+
+        hero:SwapAbilities(sSlotName, sAbilityName, false, true)
+
+        -- SwapAbilities toggles enable state; put the displaced ability back how it was
+        if sSlotName ~= 'generic_hidden' and hDisplaced then
+            hDisplaced:SetHidden(bDisplacedHidden)
+            hDisplaced:SetActivated(bDisplacedActivated)
+        end
+
+        -- verify: the new spell must really be in a hotkey slot now
+        if GetAbilityIndex(hero, sAbilityName) <= 5 then
+            if DEBUG_HOTKEY_SLOTS and hDisplaced and sSlotName ~= 'generic_hidden' then
+                DebugSay(hero, string.format('displaced %s: level=%d hidden=%s activated=%s',
+                    sSlotName, hDisplaced:GetLevel(), tostring(hDisplaced:IsHidden()), tostring(hDisplaced:IsActivated())))
+            end
+
+            -- keep invoker spells locked until they are leveled
+            if string.find(sAbilityName, 'invoker_') then
+                SetAbilityActivated(hero, sAbilityName, false)
+            end
+
+            tTaken[sAbilityName] = true
+            return 'OK'
+        end
+
+        -- the swap hit another 'generic_hidden' outside the hotkey slots; stop using placeholders
+        if sSlotName == 'generic_hidden' then
+            tTaken['__ghBlocked'] = true
+        end
+    end
+
+    return 'NO-SLOT'
 end
 
 -- how many basic/ultimate (kim level 30 ceiling, cooldown, lag, memory)
@@ -501,6 +703,26 @@ function SM.InitMoreSpells(hero, nTeams)
         -- ^ for non-shards/ults only
         -- etc
 
+        -- Heroes like Earthshaker have several 'generic_hidden' placeholders in the D/F slots. SwapAbilities
+        -- finds abilities by NAME, so it can only ever reach one of them. Remove all but the last one (humans
+        -- only); AddAbility then fills the freed slots, so the first added spells land on those hotkeys.
+        if IsHumanHero(hero) then
+            local tPlaceholders = {}
+            for i = 0, 5 do
+                local hSlot = hero:GetAbilityByIndex(i)
+                if hSlot and hSlot:GetAbilityName() == 'generic_hidden' then
+                    tPlaceholders[#tPlaceholders + 1] = hSlot
+                end
+            end
+            for i = 1, #tPlaceholders - 1 do
+                hero:RemoveAbilityByHandle(tPlaceholders[i])
+            end
+
+        end
+
+        -- helper abilities some spells need are added after all spells, so they don't take a hotkey slot
+        local tHelpers = {}
+
         for i = 1, #basicAbilities do
             local sAbilityName = basicAbilities[i].name
             if not hero:HasAbility(sAbilityName) then
@@ -524,20 +746,11 @@ function SM.InitMoreSpells(hero, nTeams)
                 end
 
                 if sAbilityName == 'bristleback_bristleback' then
-                    local sAbilityNameReq = 'bristleback_quill_spray'
-                    hero:AddAbility(sAbilityNameReq)
-                    SetAbilityLevel(hero, sAbilityNameReq, 4)
-                    SetAbilityActivated(hero, sAbilityNameReq, false)
+                    tHelpers[#tHelpers + 1] = 'bristleback_quill_spray'
                 elseif sAbilityName == 'drow_ranger_multishot' then
-                    local sAbilityNameReq = 'drow_ranger_frost_arrows'
-                    hero:AddAbility(sAbilityNameReq)
-                    SetAbilityLevel(hero, sAbilityNameReq, 4)
-                    SetAbilityActivated(hero, sAbilityNameReq, false)
+                    tHelpers[#tHelpers + 1] = 'drow_ranger_frost_arrows'
                 elseif sAbilityName == 'zuus_lightning_hands' then
-                    local sAbilityNameReq = 'zuus_arc_lightning'
-                    hero:AddAbility(sAbilityNameReq)
-                    SetAbilityLevel(hero, sAbilityNameReq, 4)
-                    SetAbilityActivated(hero, sAbilityNameReq, false)
+                    tHelpers[#tHelpers + 1] = 'zuus_arc_lightning'
                 end
             end
         end
@@ -546,19 +759,58 @@ function SM.InitMoreSpells(hero, nTeams)
             if not hero:HasAbility(ultimateAbilities[i].name) then
                 hero:AddAbility(ultimateAbilities[i].name)
                 if ultimateAbilities[i].name == 'luna_eclipse' then
-                    local sAbilityName = 'luna_lucent_beam'
-                    hero:AddAbility(sAbilityName)
-                    SetAbilityLevel(hero, sAbilityName, 4)
-                    SetAbilityActivated(hero, sAbilityName, false)
+                    tHelpers[#tHelpers + 1] = 'luna_lucent_beam'
                 end
             end
         end
+
+        for _, sHelper in ipairs(tHelpers) do
+            hero:AddAbility(sHelper)
+            SetAbilityLevel(hero, sHelper, 4)
+            SetAbilityActivated(hero, sHelper, false)
+        end
+
+        -- move new spells into hotkey slots
+        PrintHotkeySlots(hero, 'before')
+        local tHotkeyResults = {}
+        local tTaken = {}
+
+        -- a passive new spell that landed in a hotkey slot wastes it: swap it with an active new spell
+        -- that is still outside the hotkey slots (unique names, so the swap is reliable)
+        local tAddedNames = {}
+        for i = 1, #basicAbilities do tAddedNames[#tAddedNames + 1] = basicAbilities[i].name end
+        for i = 1, #ultimateAbilities do tAddedNames[#tAddedNames + 1] = ultimateAbilities[i].name end
+        for _, sPassive in ipairs(tAddedNames) do
+            local hPassive = hero:FindAbilityByName(sPassive)
+            if hPassive and hPassive:IsPassive() and GetAbilityIndex(hero, sPassive) <= 5 then
+                for _, sActive in ipairs(tAddedNames) do
+                    local hActive = hero:FindAbilityByName(sActive)
+                    if hActive and not hActive:IsPassive() and GetAbilityIndex(hero, sActive) > 5 then
+                        hero:SwapAbilities(sPassive, sActive, false, true)
+                        hPassive:SetHidden(false) -- keep it visible so it still gets leveled
+                        break
+                    end
+                end
+            end
+        end
+        -- basics first: they are cast far more often than the ultimate, which gets any leftover slot
+        for i = 1, #basicAbilities do
+            local sResult = GiveHotkeySlot(hero, basicAbilities[i].name, tTaken, true)
+            tHotkeyResults[#tHotkeyResults + 1] = basicAbilities[i].name .. ' ' .. sResult
+        end
+        for i = 1, #ultimateAbilities do
+            local sResult = GiveHotkeySlot(hero, ultimateAbilities[i].name, tTaken, false)
+            tHotkeyResults[#tHotkeyResults + 1] = ultimateAbilities[i].name .. ' ' .. sResult
+        end
+        PrintHotkeySlots(hero, 'after')
+        DebugSay(hero, table.concat(tHotkeyResults, ', '))
 
         abilities = { basic = {}, ult = {} }
         for i = 1, #basicAbilities do abilities.basic[#abilities.basic+1] = basicAbilities[i].name end
         for i = 1, #ultimateAbilities do abilities.ult[#abilities.ult+1] = ultimateAbilities[i].name end
 
         hero.spellLevelUpList = BuildAbilityLevelUpList(abilities.basic, abilities.ult , rules)
+
         hero.spellInitDone = true
         fPreviousTime = fDotaTime
     end
