@@ -369,6 +369,89 @@ local posRoleRelevance = {
     [4] = { carry = 0.2, disabler = 1.3, durable = 0.3, escape = 0.4, initiator = 0.6, jungler = 0.1, nuker = 0.6, support = 1.3, pusher = 0.3, healer = 0.4 },
     [5] = { carry = 0.2, disabler = 1.3, durable = 0.3, escape = 0.4, initiator = 0.5, jungler = 0.1, nuker = 0.6, support = 1.3, pusher = 0.3, healer = 0.6 },
 }
+-- is the spell a passive? read from the ability KV data, so it works before the spell is added to the hero
+local bWarnedNoKV = false
+local function IsPassiveSpellName(sAbilityName)
+    if not GetAbilityKeyValuesByName then
+        if not bWarnedNoKV then
+            bWarnedNoKV = true
+            print('[SpellsMore] GetAbilityKeyValuesByName is not available; cannot guarantee a passive spell')
+        end
+        return false
+    end
+
+    local ok, tKV = pcall(GetAbilityKeyValuesByName, sAbilityName)
+    if ok and type(tKV) == 'table' and type(tKV['AbilityBehavior']) == 'string' then
+        return string.find(tKV['AbilityBehavior'], 'DOTA_ABILITY_BEHAVIOR_PASSIVE', 1, true) ~= nil
+    end
+
+    return false
+end
+
+-- at least one of the new spells (2 basic + 1 ultimate) must be passive.
+-- if none is, the lowest-scoring basic is replaced by a passive spell from the basic pool.
+local function EnsurePassiveSpell(hero, basicAbilities, ultimateAbilities, hBasicPool)
+    if #basicAbilities == 0 then return end
+
+    for i = 1, #basicAbilities do
+        if IsPassiveSpellName(basicAbilities[i].name) then return end
+    end
+    for i = 1, #ultimateAbilities do
+        if IsPassiveSpellName(ultimateAbilities[i].name) then return end
+    end
+
+    -- the basic that gets replaced: lowest score
+    local nReplace, nLowest = 1, math.huge
+    for i = 1, #basicAbilities do
+        local nScore = hBasicPool[basicAbilities[i]] or 0
+        if nScore < nLowest then nReplace, nLowest = i, nScore end
+    end
+
+    local tCandidates, nTotal = {}, 0
+    for spell, value in pairs(hBasicPool) do
+        if value > 0 and IsPassiveSpellName(spell.name) then
+            local bOk = true
+
+            -- not already picked, and compatible with the hero's abilities and the spells that stay
+            for i = 1, #basicAbilities do
+                if basicAbilities[i] == spell
+                or (i ~= nReplace and IsIncompatible(basicAbilities[i].name, spell.name)) then
+                    bOk = false
+                end
+            end
+            for i = 1, #ultimateAbilities do
+                if IsIncompatible(ultimateAbilities[i].name, spell.name) then bOk = false end
+            end
+            for i = 0, hero:GetAbilityCount() - 1 do
+                local hAbility = hero:GetAbilityByIndex(i)
+                if hAbility and IsIncompatible(hAbility:GetAbilityName(), spell.name) then bOk = false break end
+            end
+            for sPicked, _ in pairs(AbilityPickedList) do
+                if type(sPicked) == 'table' and IsIncompatible(sPicked.name, spell.name) then bOk = false break end
+            end
+
+            if bOk then
+                tCandidates[#tCandidates + 1] = { spell = spell, value = value }
+                nTotal = nTotal + value
+            end
+        end
+    end
+
+    if #tCandidates == 0 then
+        print('[SpellsMore] no passive spell available for ' .. hero:GetUnitName())
+        return
+    end
+
+    local nRoll, nAccum, tPicked = RandomFloat(0, nTotal), 0, tCandidates[#tCandidates].spell
+    for i = 1, #tCandidates do
+        nAccum = nAccum + tCandidates[i].value
+        if nRoll <= nAccum then tPicked = tCandidates[i].spell break end
+    end
+
+    basicAbilities[nReplace] = tPicked
+    AbilityPickedList[tPicked] = true
+end
+
 local function GetSpellScore(spell, hero, nTeam)
     if not hero then return 0 end
     if not spell or spell == '' then return 0 end
@@ -694,6 +777,9 @@ function SM.InitMoreSpells(hero, nTeams)
 
         local basicAbilities    = GetAbilityBuild(hero, COUNT_BASIC, abilities.basic, true)
         local ultimateAbilities = GetAbilityBuild(hero, COUNT_ULTIMATE, abilities.ult, false)
+
+        -- at least one passive among the new spells
+        EnsurePassiveSpell(hero, basicAbilities, ultimateAbilities, abilities.basic)
 
         PrecacheUnits(nTeams, basicAbilities, ultimateAbilities)
 
