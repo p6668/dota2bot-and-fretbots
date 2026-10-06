@@ -60,7 +60,7 @@ function XP.UpdateXP(bot, nTeam)
     end
 
     if gameTime > 0 then
-        bot:AddExperience(math.floor(xp), 0, false, true)
+        bot:AddExperience(math.floor(xp*0.75), 0, false, true)
     end
 end
 

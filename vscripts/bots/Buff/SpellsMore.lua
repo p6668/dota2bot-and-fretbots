@@ -388,6 +388,17 @@ local function IsPassiveSpellName(sAbilityName)
     return false
 end
 
+-- 'shard' / 'scepter' if the ability is granted by that Aghanim upgrade (from the ability KV), else nil
+local function GetUpgradeKind(sAbilityName)
+    if not GetAbilityKeyValuesByName then return nil end
+    local ok, tKV = pcall(GetAbilityKeyValuesByName, sAbilityName)
+    if ok and type(tKV) == 'table' then
+        if tostring(tKV['IsGrantedByShard']) == '1' then return 'shard' end
+        if tostring(tKV['IsGrantedByScepter']) == '1' then return 'scepter' end
+    end
+    return nil
+end
+
 -- at least one of the new spells (2 basic + 1 ultimate) must be passive.
 -- if none is, the lowest-scoring basic is replaced by a passive spell from the basic pool.
 local function EnsurePassiveSpell(hero, basicAbilities, ultimateAbilities, hBasicPool)
@@ -582,10 +593,20 @@ local function IsShardOrScepterAbility(sAbilityName)
     return false
 end
 
+-- hidden passives that are still locked (level 0: Shard/Scepter abilities such as Gyrocopter's Side Gunner or
+-- Nyx's Neuro-Sting). A hotkey belongs to a slot, and only slots 0-5 are shown, so such an ability can't be in
+-- the bar and give its key to a new spell at the same time.
+-- true: a new spell uses the slot until the upgrade unlocks; then the upgrade is swapped back into its slot
+--       (so it is in the UI) and that new spell becomes click-only. Not verified in game.
+-- false: locked passives keep their slot, their key is unused, the new spell stays click-only.
+local ALLOW_DISPLACE_LOCKED_PASSIVES = true
+
 -- a passive can't be cast, so it never needs a hotkey: visible ones (innates, Counter Helix, ...) waste it,
--- and hidden ones waiting for a Shard/Scepter (e.g. Nyx's Neuro-Sting) won't need one once unlocked
+-- and hidden ones that are already active (e.g. Gyrocopter's Afterburner, level 1) are not shown anyway
 local function IsPassiveSlotAbility(hAbility)
-    return hAbility:GetAbilityName() ~= 'generic_hidden' and hAbility:IsPassive()
+    if hAbility:GetAbilityName() == 'generic_hidden' or not hAbility:IsPassive() then return false end
+    if hAbility:IsHidden() and hAbility:GetLevel() == 0 and not ALLOW_DISPLACE_LOCKED_PASSIVES then return false end
+    return true
 end
 
 local function GetAbilityIndex(hero, sName)
@@ -595,6 +616,11 @@ local function GetAbilityIndex(hero, sName)
     end
     return -1
 end
+
+-- false: a hero's hidden Shard/Scepter spell (Lina's Flame Cloak, Nyx's Burrow, ...) is never displaced, so it
+-- shows up with its original hotkey when the upgrade is bought. New spells may then stay click-only.
+-- true: use those slots as a last resort; the upgrade spell can then disappear once unlocked.
+local ALLOW_UPGRADE_SLOT_DISPLACEMENT = false
 
 -- names of abilities that can be swapped out of a hotkey slot, best first
 -- tTaken: spells we already moved into a hotkey slot (never displaced) + the '__ghBlocked' flag
@@ -638,13 +664,16 @@ local function GetFreeHotkeySlotNames(hero, tTaken, bPreferQWE)
         AddPassiveSlots({3, 4, 0, 1, 2, 5})
     end
 
-    -- 4) hidden shard/scepter abilities (last resort: they are real spells once the upgrade is bought)
-    for i = 0, 5 do
-        local hSlot = hero:GetAbilityByIndex(i)
-        if hSlot and hSlot:IsHidden() then
-            local sSlotName = hSlot:GetAbilityName()
-            if sSlotName ~= 'generic_hidden' and not tTaken[sSlotName] and IsShardOrScepterAbility(sSlotName) then
-                tNames[#tNames + 1] = sSlotName
+    -- 4) hidden shard/scepter abilities (off by default: they are real spells once the upgrade is bought, and
+    --    the engine won't show them again once they have been moved past slot 5, e.g. Lina's Flame Cloak)
+    if ALLOW_UPGRADE_SLOT_DISPLACEMENT then
+        for i = 0, 5 do
+            local hSlot = hero:GetAbilityByIndex(i)
+            if hSlot and hSlot:IsHidden() then
+                local sSlotName = hSlot:GetAbilityName()
+                if sSlotName ~= 'generic_hidden' and not tTaken[sSlotName] and IsShardOrScepterAbility(sSlotName) then
+                    tNames[#tNames + 1] = sSlotName
+                end
             end
         end
     end
@@ -697,6 +726,19 @@ local function GiveHotkeySlot(hero, sAbilityName, tTaken, bPreferQWE)
 
         -- verify: the new spell must really be in a hotkey slot now
         if GetAbilityIndex(hero, sAbilityName) <= 5 then
+            -- a hidden passive (Shard/Scepter ability) was moved out: remember it, so it can be brought back
+            -- into the bar when it unlocks (the engine can't unhide an ability that sits past slot 5)
+            if hDisplaced and bDisplacedHidden and sSlotName ~= 'generic_hidden' and hDisplaced:IsPassive()
+            and hDisplaced:GetLevel() == 0 then
+                hero.spellDisplacedUpgrades = hero.spellDisplacedUpgrades or {}
+                hero.spellDisplacedUpgrades[sSlotName] = {
+                    spell   = sAbilityName,
+                    kind    = GetUpgradeKind(sSlotName),
+                    scepter = hero:HasScepter(),
+                    shard   = hero:HasModifier('modifier_item_aghanims_shard'),
+                }
+            end
+
             if DEBUG_HOTKEY_SLOTS and hDisplaced and sSlotName ~= 'generic_hidden' then
                 DebugSay(hero, string.format('displaced %s: level=%d hidden=%s activated=%s',
                     sSlotName, hDisplaced:GetLevel(), tostring(hDisplaced:IsHidden()), tostring(hDisplaced:IsActivated())))
@@ -737,6 +779,74 @@ local rules = {
 
 local fPreviousTime = -math.huge
 
+-- When the Aghanim upgrade that grants a displaced passive is bought:
+--  * the engine tried to unlock it while it sat past slot 5 and could not (it stays level 0 and hidden), so
+--  * swap it back into the hotkey slot it came from (the new spell that took the slot becomes click-only), and
+--  * unlock it ourselves (level 1, visible), like the engine would have.
+local function RestoreUnlockedUpgrades(hero)
+    if not hero.spellDisplacedUpgrades then return end
+
+    local bScepter = hero:HasScepter()
+    local bShard = hero:HasModifier('modifier_item_aghanims_shard')
+
+    for sUpgrade, tInfo in pairs(hero.spellDisplacedUpgrades) do
+        local hUpgrade = hero:FindAbilityByName(sUpgrade)
+        if not hUpgrade or hUpgrade:IsNull() then
+            hero.spellDisplacedUpgrades[sUpgrade] = nil
+        else
+            local bUnlockedByEngine = hUpgrade:GetLevel() > 0
+            local bBought = (tInfo.kind == 'scepter' and bScepter and not tInfo.scepter)
+                         or (tInfo.kind == 'shard' and bShard and not tInfo.shard)
+
+            if bUnlockedByEngine or bBought then
+                hero.spellDisplacedUpgrades[sUpgrade] = nil
+
+                local sSpell
+                if GetAbilityIndex(hero, sUpgrade) > 5 then
+                    -- the new spell that took its slot; fall back to the last new spell still in the bar
+                    sSpell = tInfo.spell
+                    local hSpell = hero:FindAbilityByName(sSpell)
+                    if not hSpell or GetAbilityIndex(hero, sSpell) > 5 then
+                        sSpell, hSpell = nil, nil
+                        for _, sName in ipairs(hero.spellAddedNames or {}) do
+                            local hCandidate = hero:FindAbilityByName(sName)
+                            if hCandidate and not hCandidate:IsPassive() and GetAbilityIndex(hero, sName) <= 5 then
+                                sSpell, hSpell = sName, hCandidate
+                            end
+                        end
+                    end
+
+                    if hSpell then
+                        local bActivated = hSpell:IsActivated()
+                        hero:SwapAbilities(sUpgrade, sSpell, true, false)
+                        hSpell:SetHidden(false); hSpell:SetActivated(bActivated)
+                    end
+                end
+
+                -- unlock it ourselves if the engine could not
+                if hUpgrade:GetLevel() == 0 then
+                    hUpgrade:UpgradeAbility(true)
+                    if hUpgrade:GetLevel() == 0 then hUpgrade:SetLevel(1) end
+                end
+                hUpgrade:SetHidden(false)
+                hUpgrade:SetActivated(true)
+
+                DebugSay(hero, string.format('%s unlocked and moved back into the bar (%s is click-only now), level=%d',
+                    sUpgrade, tostring(sSpell), hUpgrade:GetLevel()))
+            end
+        end
+    end
+end
+
+-- heroes that only get PASSIVE new spells, so no hotkey is needed. Invoker's bar has no free slot (Q W E orbs,
+-- D F invoked spells, R invoke) and the game re-lays out his abilities on every Invoke, which hides anything
+-- placed past slot 5; Rubick's bar rearranges itself the same way. Their passives work while hidden, so the
+-- script levels them itself (the player can't).
+local PASSIVE_ONLY_HEROES = {
+    ['npc_dota_hero_invoker'] = true,
+    ['npc_dota_hero_rubick']  = true,
+}
+
 function SM.InitMoreSpells(hero, nTeams)
     if not hero then return end
 
@@ -775,8 +885,29 @@ function SM.InitMoreSpells(hero, nTeams)
             end
         end
 
+        local bPassiveOnly = PASSIVE_ONLY_HEROES[sHeroName] == true
+        if bPassiveOnly then
+            hero.spellPassiveOnly = true
+            for spell, _ in pairs(abilities.basic) do
+                if not IsPassiveSpellName(spell.name) then abilities.basic[spell] = nil end
+            end
+            for spell, _ in pairs(abilities.ult) do
+                if not IsPassiveSpellName(spell.name) then abilities.ult[spell] = nil end
+            end
+        end
+
         local basicAbilities    = GetAbilityBuild(hero, COUNT_BASIC, abilities.basic, true)
         local ultimateAbilities = GetAbilityBuild(hero, COUNT_ULTIMATE, abilities.ult, false)
+
+        -- passive ultimates are rare: if there is none, the third passive comes from the basic pool
+        if bPassiveOnly and #ultimateAbilities < COUNT_ULTIMATE then
+            local tThree = GetAbilityBuild(hero, COUNT_BASIC + COUNT_ULTIMATE, abilities.basic, true)
+            basicAbilities, ultimateAbilities = {}, {}
+            for i = 1, #tThree do
+                if i <= COUNT_BASIC then basicAbilities[#basicAbilities + 1] = tThree[i]
+                else ultimateAbilities[#ultimateAbilities + 1] = tThree[i] end
+            end
+        end
 
         -- at least one passive among the new spells
         EnsurePassiveSpell(hero, basicAbilities, ultimateAbilities, abilities.basic)
@@ -792,7 +923,7 @@ function SM.InitMoreSpells(hero, nTeams)
         -- Heroes like Earthshaker have several 'generic_hidden' placeholders in the D/F slots. SwapAbilities
         -- finds abilities by NAME, so it can only ever reach one of them. Remove all but the last one (humans
         -- only); AddAbility then fills the freed slots, so the first added spells land on those hotkeys.
-        if IsHumanHero(hero) then
+        if IsHumanHero(hero) and not bPassiveOnly then
             local tPlaceholders = {}
             for i = 0, 5 do
                 local hSlot = hero:GetAbilityByIndex(i)
@@ -866,6 +997,7 @@ function SM.InitMoreSpells(hero, nTeams)
         local tAddedNames = {}
         for i = 1, #basicAbilities do tAddedNames[#tAddedNames + 1] = basicAbilities[i].name end
         for i = 1, #ultimateAbilities do tAddedNames[#tAddedNames + 1] = ultimateAbilities[i].name end
+        hero.spellAddedNames = tAddedNames
         for _, sPassive in ipairs(tAddedNames) do
             local hPassive = hero:FindAbilityByName(sPassive)
             if hPassive and hPassive:IsPassive() and GetAbilityIndex(hero, sPassive) <= 5 then
@@ -895,11 +1027,18 @@ function SM.InitMoreSpells(hero, nTeams)
         for i = 1, #basicAbilities do abilities.basic[#abilities.basic+1] = basicAbilities[i].name end
         for i = 1, #ultimateAbilities do abilities.ult[#abilities.ult+1] = ultimateAbilities[i].name end
 
-        hero.spellLevelUpList = BuildAbilityLevelUpList(abilities.basic, abilities.ult , rules)
+        -- fewer spells than expected (e.g. no passive spell available): trim the rules to match
+        local tHeroRules = { heroLevelMax = rules.heroLevelMax, basics = {}, ults = {} }
+        for i = 1, #abilities.basic do tHeroRules.basics[i] = rules.basics[i] end
+        for i = 1, #abilities.ult do tHeroRules.ults[i] = rules.ults[i] end
+
+        hero.spellLevelUpList = BuildAbilityLevelUpList(abilities.basic, abilities.ult, tHeroRules)
 
         hero.spellInitDone = true
         fPreviousTime = fDotaTime
     end
+
+    RestoreUnlockedUpgrades(hero)
 
     -- level up
     if hero:GetLevel() > hero.spellLevelPrev and #hero.spellLevelUpList > 0 then
@@ -908,14 +1047,19 @@ function SM.InitMoreSpells(hero, nTeams)
             if w.level == hero.spellLevelPrev then
                 for i = 0, hero:GetAbilityCount() - 1 do
                     local ability = hero:GetAbilityByIndex(i)
-                    if ability and not ability:IsHidden() then
+                    if ability and (not ability:IsHidden() or hero.spellPassiveOnly) then
                         local sAbilityName = ability:GetAbilityName()
                         if sAbilityName == w.ability then
                             if string.find(sAbilityName, 'invoker_') and not ability:IsActivated() then
                                 ability:SetActivated(true)
                             end
 
+                            local nBefore = ability:GetLevel()
                             ability:UpgradeAbility(true)
+                            -- a hidden ability may refuse the upgrade call; set the level directly
+                            if hero.spellPassiveOnly and ability:GetLevel() == nBefore and nBefore < ability:GetMaxLevel() then
+                                ability:SetLevel(nBefore + 1)
+                            end
                         end
                     end
                 end
