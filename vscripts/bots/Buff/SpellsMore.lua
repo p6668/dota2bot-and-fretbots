@@ -399,6 +399,44 @@ local function GetUpgradeKind(sAbilityName)
     return nil
 end
 
+-- weighted random passive spell from hPool (spell -> score) that is compatible with the hero and with the
+-- spells in tKeep (the new spells that stay); nil if there is none
+local function PickPassiveSpell(hero, hPool, tKeep)
+    local tCandidates, nTotal = {}, 0
+    for spell, value in pairs(hPool) do
+        if value > 0 and IsPassiveSpellName(spell.name) and not hero:HasAbility(spell.name) then
+            local bOk = true
+
+            for i = 1, #tKeep do
+                if tKeep[i] == spell or IsIncompatible(tKeep[i].name, spell.name) then bOk = false end
+            end
+            for i = 0, hero:GetAbilityCount() - 1 do
+                local hAbility = hero:GetAbilityByIndex(i)
+                if hAbility and IsIncompatible(hAbility:GetAbilityName(), spell.name) then bOk = false break end
+            end
+            for sPicked, _ in pairs(AbilityPickedList) do
+                if type(sPicked) == 'table' and IsIncompatible(sPicked.name, spell.name) then bOk = false break end
+            end
+
+            if bOk then
+                tCandidates[#tCandidates + 1] = { spell = spell, value = value }
+                nTotal = nTotal + value
+            end
+        end
+    end
+
+    if #tCandidates == 0 then return nil end
+
+    local nRoll, nAccum, tPicked = RandomFloat(0, nTotal), 0, tCandidates[#tCandidates].spell
+    for i = 1, #tCandidates do
+        nAccum = nAccum + tCandidates[i].value
+        if nRoll <= nAccum then tPicked = tCandidates[i].spell break end
+    end
+
+    AbilityPickedList[tPicked] = true
+    return tPicked
+end
+
 -- at least one of the new spells (2 basic + 1 ultimate) must be passive.
 -- if none is, the lowest-scoring basic is replaced by a passive spell from the basic pool.
 local function EnsurePassiveSpell(hero, basicAbilities, ultimateAbilities, hBasicPool)
@@ -418,49 +456,19 @@ local function EnsurePassiveSpell(hero, basicAbilities, ultimateAbilities, hBasi
         if nScore < nLowest then nReplace, nLowest = i, nScore end
     end
 
-    local tCandidates, nTotal = {}, 0
-    for spell, value in pairs(hBasicPool) do
-        if value > 0 and IsPassiveSpellName(spell.name) then
-            local bOk = true
-
-            -- not already picked, and compatible with the hero's abilities and the spells that stay
-            for i = 1, #basicAbilities do
-                if basicAbilities[i] == spell
-                or (i ~= nReplace and IsIncompatible(basicAbilities[i].name, spell.name)) then
-                    bOk = false
-                end
-            end
-            for i = 1, #ultimateAbilities do
-                if IsIncompatible(ultimateAbilities[i].name, spell.name) then bOk = false end
-            end
-            for i = 0, hero:GetAbilityCount() - 1 do
-                local hAbility = hero:GetAbilityByIndex(i)
-                if hAbility and IsIncompatible(hAbility:GetAbilityName(), spell.name) then bOk = false break end
-            end
-            for sPicked, _ in pairs(AbilityPickedList) do
-                if type(sPicked) == 'table' and IsIncompatible(sPicked.name, spell.name) then bOk = false break end
-            end
-
-            if bOk then
-                tCandidates[#tCandidates + 1] = { spell = spell, value = value }
-                nTotal = nTotal + value
-            end
-        end
+    local tKeep = {}
+    for i = 1, #basicAbilities do
+        if i ~= nReplace then tKeep[#tKeep + 1] = basicAbilities[i] end
     end
+    for i = 1, #ultimateAbilities do tKeep[#tKeep + 1] = ultimateAbilities[i] end
 
-    if #tCandidates == 0 then
+    local tPicked = PickPassiveSpell(hero, hBasicPool, tKeep)
+    if not tPicked then
         print('[SpellsMore] no passive spell available for ' .. hero:GetUnitName())
         return
     end
 
-    local nRoll, nAccum, tPicked = RandomFloat(0, nTotal), 0, tCandidates[#tCandidates].spell
-    for i = 1, #tCandidates do
-        nAccum = nAccum + tCandidates[i].value
-        if nRoll <= nAccum then tPicked = tCandidates[i].spell break end
-    end
-
     basicAbilities[nReplace] = tPicked
-    AbilityPickedList[tPicked] = true
 end
 
 local function GetSpellScore(spell, hero, nTeam)
@@ -838,6 +846,56 @@ local function RestoreUnlockedUpgrades(hero)
     end
 end
 
+-- helper abilities some spells need (added after all spells, so they don't take a hotkey slot)
+local SPELL_HELPERS = {
+    ['bristleback_bristleback'] = 'bristleback_quill_spray',
+    ['drow_ranger_multishot']   = 'drow_ranger_frost_arrows',
+    ['zuus_lightning_hands']    = 'zuus_arc_lightning',
+    ['luna_eclipse']            = 'luna_lucent_beam',
+}
+
+local function AddNewSpell(hero, sAbilityName, bBasic, tHelpers)
+    if hero:HasAbility(sAbilityName) then return end
+    hero:AddAbility(sAbilityName)
+
+    if bBasic then
+        -- invoker spells start at level 1, de-activate it first
+        if string.find(sAbilityName, 'invoker_') then
+            SetAbilityHidden(hero, sAbilityName, false)
+            SetAbilityActivated(hero, sAbilityName, false)
+        end
+
+        -- un-hide; shards/scepters
+        for _, spell in pairs(SPL['SpellsMap']) do
+            if spell and spell.name == sAbilityName then
+                if HasFlag(spell.type, SPL.SPELL_AGHANIMS_SHARD)
+                or HasFlag(spell.type, SPL.SPELL_AGHANIMS_SCEPTER)
+                then
+                    SetAbilityHidden(hero, sAbilityName, false)
+                end
+            end
+        end
+    end
+
+    if SPELL_HELPERS[sAbilityName] and (bBasic or sAbilityName == 'luna_eclipse') then
+        tHelpers[#tHelpers + 1] = SPELL_HELPERS[sAbilityName]
+    end
+end
+
+local function AddHelperAbilities(hero, tHelpers)
+    for _, sHelper in ipairs(tHelpers) do
+        hero:AddAbility(sHelper)
+        SetAbilityLevel(hero, sHelper, 4)
+        SetAbilityActivated(hero, sHelper, false)
+    end
+end
+
+local function RemoveNewSpell(hero, sAbilityName)
+    hero:RemoveAbility(sAbilityName)
+    local sHelper = SPELL_HELPERS[sAbilityName]
+    if sHelper and hero:HasAbility(sHelper) then hero:RemoveAbility(sHelper) end
+end
+
 -- heroes that only get PASSIVE new spells, so no hotkey is needed. Invoker's bar has no free slot (Q W E orbs,
 -- D F invoked spells, R invoke) and the game re-lays out his abilities on every Invoke, which hides anything
 -- placed past slot 5; Rubick's bar rearranges itself the same way. Their passives work while hidden, so the
@@ -939,53 +997,9 @@ function SM.InitMoreSpells(hero, nTeams)
 
         -- helper abilities some spells need are added after all spells, so they don't take a hotkey slot
         local tHelpers = {}
-
-        for i = 1, #basicAbilities do
-            local sAbilityName = basicAbilities[i].name
-            if not hero:HasAbility(sAbilityName) then
-                hero:AddAbility(sAbilityName)
-
-                -- invoker spells start at level 1, de-activate it first
-                if string.find(sAbilityName, 'invoker_') then
-                    SetAbilityHidden(hero, sAbilityName, false)
-                    SetAbilityActivated(hero, sAbilityName, false)
-                end
-
-                -- un-hide; shards/scepters
-                for _, spell in pairs(SPL['SpellsMap']) do
-                    if spell and spell.name == sAbilityName then
-                        if HasFlag(spell.type, SPL.SPELL_AGHANIMS_SHARD)
-                        or HasFlag(spell.type, SPL.SPELL_AGHANIMS_SCEPTER)
-                        then
-                            SetAbilityHidden(hero, sAbilityName, false)
-                        end
-                    end
-                end
-
-                if sAbilityName == 'bristleback_bristleback' then
-                    tHelpers[#tHelpers + 1] = 'bristleback_quill_spray'
-                elseif sAbilityName == 'drow_ranger_multishot' then
-                    tHelpers[#tHelpers + 1] = 'drow_ranger_frost_arrows'
-                elseif sAbilityName == 'zuus_lightning_hands' then
-                    tHelpers[#tHelpers + 1] = 'zuus_arc_lightning'
-                end
-            end
-        end
-
-        for i = 1, #ultimateAbilities do
-            if not hero:HasAbility(ultimateAbilities[i].name) then
-                hero:AddAbility(ultimateAbilities[i].name)
-                if ultimateAbilities[i].name == 'luna_eclipse' then
-                    tHelpers[#tHelpers + 1] = 'luna_lucent_beam'
-                end
-            end
-        end
-
-        for _, sHelper in ipairs(tHelpers) do
-            hero:AddAbility(sHelper)
-            SetAbilityLevel(hero, sHelper, 4)
-            SetAbilityActivated(hero, sHelper, false)
-        end
+        for i = 1, #basicAbilities do AddNewSpell(hero, basicAbilities[i].name, true, tHelpers) end
+        for i = 1, #ultimateAbilities do AddNewSpell(hero, ultimateAbilities[i].name, false, tHelpers) end
+        AddHelperAbilities(hero, tHelpers)
 
         -- move new spells into hotkey slots
         PrintHotkeySlots(hero, 'before')
@@ -1012,14 +1026,72 @@ function SM.InitMoreSpells(hero, nTeams)
             end
         end
         -- basics first: they are cast far more often than the ultimate, which gets any leftover slot
+        local tBasicResults, tUltResults = {}, {}
         for i = 1, #basicAbilities do
-            local sResult = GiveHotkeySlot(hero, basicAbilities[i].name, tTaken, true)
-            tHotkeyResults[#tHotkeyResults + 1] = basicAbilities[i].name .. ' ' .. sResult
+            tBasicResults[i] = GiveHotkeySlot(hero, basicAbilities[i].name, tTaken, true)
+            tHotkeyResults[#tHotkeyResults + 1] = basicAbilities[i].name .. ' ' .. tBasicResults[i]
         end
         for i = 1, #ultimateAbilities do
-            local sResult = GiveHotkeySlot(hero, ultimateAbilities[i].name, tTaken, false)
-            tHotkeyResults[#tHotkeyResults + 1] = ultimateAbilities[i].name .. ' ' .. sResult
+            tUltResults[i] = GiveHotkeySlot(hero, ultimateAbilities[i].name, tTaken, false)
+            tHotkeyResults[#tHotkeyResults + 1] = ultimateAbilities[i].name .. ' ' .. tUltResults[i]
         end
+
+        -- at most ONE castable new spell may stay without a hotkey; any others become passive spells
+        local tNoSlot = {}
+        for i = 1, #basicAbilities do
+            if tBasicResults[i] == 'NO-SLOT' then
+                tNoSlot[#tNoSlot + 1] = { list = basicAbilities, idx = i, pool = abilities.basic }
+            end
+        end
+        for i = 1, #ultimateAbilities do
+            if tUltResults[i] == 'NO-SLOT' then
+                tNoSlot[#tNoSlot + 1] = { list = ultimateAbilities, idx = i, pool = abilities.ult, fallback = abilities.basic, ult = true }
+            end
+        end
+
+        if #tNoSlot > 1 then
+            -- the one that may stay click-only: the ultimate if it has no key, otherwise the first basic
+            local nKeep = 1
+            for i = 1, #tNoSlot do
+                if tNoSlot[i].ult then nKeep = i end
+            end
+
+            for i = 1, #tNoSlot do
+                if i ~= nKeep then
+                    local tEntry = tNoSlot[i]
+                    local tOld = tEntry.list[tEntry.idx]
+
+                    local tKeep = {}
+                    for _, tList in ipairs({basicAbilities, ultimateAbilities}) do
+                        for j = 1, #tList do
+                            if tList[j] ~= tOld then tKeep[#tKeep + 1] = tList[j] end
+                        end
+                    end
+
+                    local tNew = PickPassiveSpell(hero, tEntry.pool, tKeep)
+                    if not tNew and tEntry.fallback then tNew = PickPassiveSpell(hero, tEntry.fallback, tKeep) end
+
+                    if tNew then
+                        RemoveNewSpell(hero, tOld.name)
+                        local tNewHelpers = {}
+                        AddNewSpell(hero, tNew.name, true, tNewHelpers)
+                        AddHelperAbilities(hero, tNewHelpers)
+                        PrecacheUnits(nTeams, { tNew }, {})
+                        tEntry.list[tEntry.idx] = tNew
+                        tHotkeyResults[#tHotkeyResults + 1] = tOld.name .. ' -> passive ' .. tNew.name
+                    else
+                        tHotkeyResults[#tHotkeyResults + 1] = tOld.name .. ' (no passive replacement; click-only)'
+                    end
+                end
+            end
+
+            -- remember the final list of added spells
+            tAddedNames = {}
+            for i = 1, #basicAbilities do tAddedNames[#tAddedNames + 1] = basicAbilities[i].name end
+            for i = 1, #ultimateAbilities do tAddedNames[#tAddedNames + 1] = ultimateAbilities[i].name end
+            hero.spellAddedNames = tAddedNames
+        end
+
         PrintHotkeySlots(hero, 'after')
         DebugSay(hero, table.concat(tHotkeyResults, ', '))
 
