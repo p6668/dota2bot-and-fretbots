@@ -39,7 +39,7 @@ local XPNeeded = {
 }
 
 -- just eyeballed
-function XP.UpdateXP(bot, nTeam)
+function XP.UpdateXP(bot, nTeam, godmode)
     local gameTime = Helper.DotaTime() / 60
     local botPos = Helper.GetPosition(bot, nTeam)
 
@@ -59,8 +59,13 @@ function XP.UpdateXP(bot, nTeam)
         xp = 35
     end
 
+    -- For OMG 4+2 mode, the bot XP bonus is reduced to 75%
+    if godmode.DifficultyMode == 2 then
+        xp = xp*0.75
+    end
+
     if gameTime > 0 then
-        bot:AddExperience(math.floor(xp*0.75), 0, false, true)
+        bot:AddExperience(math.floor(xp), 0, false, true)
     end
 end
 

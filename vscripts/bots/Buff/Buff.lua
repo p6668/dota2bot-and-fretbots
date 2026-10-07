@@ -236,7 +236,7 @@ function Buff:Init()
                         if (bBuffFlags.xpm.radiant and nTeam == DOTA_TEAM_GOODGUYS)
                         or (bBuffFlags.xpm.dire and nTeam == DOTA_TEAM_BADGUYS)
                         then
-                            XP.UpdateXP(hero, HeroTable.all[hero:GetTeam()])
+                            XP.UpdateXP(hero, HeroTable.all[hero:GetTeam()], bBuffFlags.godmode)
                         end
 
                         if (bBuffFlags.stats.radiant and nTeam == DOTA_TEAM_GOODGUYS)
