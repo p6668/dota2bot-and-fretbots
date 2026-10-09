@@ -18,12 +18,7 @@ function Stats.UpdateStats(bot, godmode)
 
     if gameTime >= 10 and gameTime <=20 then 
         local stat
-        local bonus
-        if godmode.DifficultyMode == 0 then
-            bonus = unitStats * 0 -- add 0 stats per min 
-        else 
-            bonus = unitStats * 0.5 -- add 0.5 stats per min 
-        end
+        local bonus = unitStats * 0.5 -- add 0.5 stats per min 
         stat = bot:GetBaseStrength()
         bot:SetBaseStrength(stat + bonus)
         stat = bot:GetBaseAgility()
@@ -33,12 +28,7 @@ function Stats.UpdateStats(bot, godmode)
         return false
     elseif gameTime > 20 and gameTime <=30 then 
         local stat
-        local bonus
-        if godmode.DifficultyMode == 0 then
-            bonus = unitStats * 0 -- add 0 stats per min 
-        else
-            bonus = unitStats * 0.5 -- add 1 stats per min
-        end
+        local bonus = unitStats * 0.5 -- add 0.5 stats per min
         stat = bot:GetBaseStrength()
         bot:SetBaseStrength(stat + bonus)
         stat = bot:GetBaseAgility()
@@ -48,12 +38,7 @@ function Stats.UpdateStats(bot, godmode)
         return false
     elseif gameTime > 30 and gameTime <=40 then
         local stat
-        local bonus
-        if godmode.DifficultyMode == 0 then
-            bonus = unitStats * 0.5 -- add 0.5 stats per min 
-        else
-            bonus = unitStats * 1 -- add 1 stats per min
-        end
+        local bonus = unitStats * 1 -- add 1 stats per min
         stat = bot:GetBaseStrength()
         bot:SetBaseStrength(stat + bonus)
         stat = bot:GetBaseAgility()

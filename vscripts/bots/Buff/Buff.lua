@@ -125,12 +125,13 @@ function Buff:Init()
     if bBuffFlags.godmode.StartTime == 0 then
         bBuffFlags.godmode.DifficultyMode = RandomInt(0, 2)
         if bBuffFlags.godmode.DifficultyMode == 0 then
-            GameRules:SendCustomMessage('Game Mode: Normal (Difficulty: Easy--mainly for 4 vs. 5)', 0, 0)
+            GameRules:SendCustomMessage('Game Mode: Normal', 0, 0)
         elseif bBuffFlags.godmode.DifficultyMode == 1 then
-            GameRules:SendCustomMessage('Game Mode: Normal (Difficulty: Medium)', 0, 0)
+            bBuffFlags.morespells.enable = true 
+            GameRules:SendCustomMessage('Game Mode: OMG 4+2 (Full Bot XP Bonus)', 0, 0)
         elseif bBuffFlags.godmode.DifficultyMode == 2 then
             bBuffFlags.morespells.enable = true
-            GameRules:SendCustomMessage('Game Mode: OMG 4+2 (Difficulty: Medium)', 0, 0)
+            GameRules:SendCustomMessage('Game Mode: OMG 4+2 (80% Bot XP Bonus)', 0, 0)
         end
         bBuffFlags.godmode.StartTime = RandomInt(40, 59)
         bBuffFlags.godmode.KillThreshold = RandomInt(40, 49)
