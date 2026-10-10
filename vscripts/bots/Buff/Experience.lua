@@ -42,6 +42,7 @@ local XPNeeded = {
 function XP.UpdateXP(bot, nTeam, godmode)
     local gameTime = Helper.DotaTime() / 60
     local botPos = Helper.GetPosition(bot, nTeam)
+    local xp
 
     if gameTime <= 5 then
         xp = 0
