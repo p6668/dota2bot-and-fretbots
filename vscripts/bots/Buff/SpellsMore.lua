@@ -896,6 +896,43 @@ local function RemoveNewSpell(hero, sAbilityName)
     if sHelper and hero:HasAbility(sHelper) then hero:RemoveAbility(sHelper) end
 end
 
+-- OMGRefresh (bots/Buff/mode/refresh.lua) bumps BuffSpellRefreshGen; every hero whose spells were handed out
+-- under an older value gets them removed and re-rolled. A global, so it survives script_reload_code.
+local nPickedListGen = BuffSpellRefreshGen or 0
+
+-- undo InitMoreSpells: put the hero's own abilities back into the hotkey slots they started in, then remove
+-- the new spells (+ helpers). The freed slots are filled again by AddAbility on the next roll.
+local function RemoveAddedSpells(hero)
+    local tOrig = hero.spellOrigSlots or {}
+    for i = 0, 5 do
+        local sOrig = tOrig[i]
+        local hCur = hero:GetAbilityByIndex(i)
+        if sOrig and sOrig ~= 'generic_hidden' and hCur then
+            local sCur = hCur:GetAbilityName()
+            local hOrig = hero:FindAbilityByName(sOrig)
+            -- SwapAbilities finds abilities by name, so never swap a 'generic_hidden'
+            if hOrig and sCur ~= sOrig and sCur ~= 'generic_hidden' then
+                local bOrigHidden, bOrigActivated = hOrig:IsHidden(), hOrig:IsActivated()
+                local bCurHidden, bCurActivated = hCur:IsHidden(), hCur:IsActivated()
+                hero:SwapAbilities(sCur, sOrig, false, true)
+                hOrig:SetHidden(bOrigHidden); hOrig:SetActivated(bOrigActivated)
+                hCur:SetHidden(bCurHidden);   hCur:SetActivated(bCurActivated)
+            end
+        end
+    end
+
+    for _, sName in ipairs(hero.spellAddedNames or {}) do
+        if hero:HasAbility(sName) then RemoveNewSpell(hero, sName) end
+    end
+
+    hero.spellAddedNames        = nil
+    hero.spellDisplacedUpgrades = nil
+    hero.spellPassiveOnly       = nil
+    hero.spellLevelUpList       = {}
+    hero.spellLevelPrev         = 0 -- the new spells catch up to the hero's level right after the roll
+    hero.spellInitDone          = nil
+end
+
 -- heroes that only get PASSIVE new spells, so no hotkey is needed. Invoker's bar has no free slot (Q W E orbs,
 -- D F invoked spells, R invoke) and the game re-lays out his abilities on every Invoke, which hides anything
 -- placed past slot 5; Rubick's bar rearranges itself the same way. Their passives work while hidden, so the
@@ -913,7 +950,26 @@ function SM.InitMoreSpells(hero, nTeams)
     if hero.spellLevelPrev   == nil then hero.spellLevelPrev   = 0 end
     if hero.spellLevelUpList == nil then hero.spellLevelUpList = {} end
 
+    -- OMGRefresh: every hero re-rolls, so ultimates picked by others are free again
+    local nRefreshGen = BuffSpellRefreshGen or 0
+    if nPickedListGen ~= nRefreshGen then
+        nPickedListGen = nRefreshGen
+        AbilityPickedList = {}
+    end
+    if hero.spellInitDone and (hero.spellRefreshGen or 0) ~= nRefreshGen then
+        RemoveAddedSpells(hero)
+    end
+
     if not hero.spellInitDone and fDotaTime >= fPreviousTime + 0.65 then
+        -- the hero's own hotkey layout, so OMGRefresh can restore it before re-rolling
+        if not hero.spellOrigSlots then
+            hero.spellOrigSlots = {}
+            for i = 0, 5 do
+                local hSlot = hero:GetAbilityByIndex(i)
+                if hSlot then hero.spellOrigSlots[i] = hSlot:GetAbilityName() end
+            end
+        end
+
         local abilities = { basic = {}, ult = {} }
         local sHeroName = hero:GetUnitName()
         local nHeroPosition = Helper.GetPosition(hero, nTeams[hero:GetTeam()])
@@ -1107,13 +1163,14 @@ function SM.InitMoreSpells(hero, nTeams)
         hero.spellLevelUpList = BuildAbilityLevelUpList(abilities.basic, abilities.ult, tHeroRules)
 
         hero.spellInitDone = true
+        hero.spellRefreshGen = nRefreshGen
         fPreviousTime = fDotaTime
     end
 
     RestoreUnlockedUpgrades(hero)
 
-    -- level up
-    if hero:GetLevel() > hero.spellLevelPrev and #hero.spellLevelUpList > 0 then
+    -- level up (a loop, so re-rolled spells catch up to the hero's level at once)
+    while hero:GetLevel() > hero.spellLevelPrev and #hero.spellLevelUpList > 0 do
         hero.spellLevelPrev = hero.spellLevelPrev + 1
         for _, w in ipairs(hero.spellLevelUpList) do
             if w.level == hero.spellLevelPrev then

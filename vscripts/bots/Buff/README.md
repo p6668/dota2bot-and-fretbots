@@ -16,6 +16,7 @@ alias OMG80  "sv_cheats 1; script_reload_code bots/Buff/mode/omg80"
 alias OMG    "sv_cheats 1; script_reload_code bots/Buff/mode/omg"
 alias Normal "sv_cheats 1; script_reload_code bots/Buff/mode/normal"
 alias Random "sv_cheats 1; script_reload_code bots/Buff/mode/random"
+alias OMGRefresh "sv_cheats 1; script_reload_code bots/Buff/mode/refresh"
 ```
 
 | Command  | Mode |
@@ -24,6 +25,7 @@ alias Random "sv_cheats 1; script_reload_code bots/Buff/mode/random"
 | `OMG`    | OMG 4+2, bots get the full XP bonus |
 | `Normal` | Normal game (no extra spells), full XP bonus |
 | `Random` | One of the three above at random |
+| `OMGRefresh` | In-game, OMG / OMG80 only: re-roll every hero's extra spells (any number of times) |
 
 - You can change your mind during the pick phase: just type another command. Once pre-game starts the mode is locked.
 - The old `sv_cheats 1; script_reload_code bots/Buff/buff` still works and behaves like `Random`.
