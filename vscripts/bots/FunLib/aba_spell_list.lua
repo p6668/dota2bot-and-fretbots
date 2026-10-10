@@ -9778,7 +9778,7 @@ X['SpellsMap'] = {
         name    = 'ogre_magi_multicast',
         owner   = 'npc_dota_hero_ogre_magi',
         type    = X.SPELL_TYPE_ULTIMATE,
-        banned  = false,
+        banned  = true, -- the engine only multicasts Ogre's own spells outside Ability Draft
         weight  = 1.0,
         roles   = { melee=1, range=1, rightclicker=1, caster=1 },
         tags    = {
