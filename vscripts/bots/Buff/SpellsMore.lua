@@ -630,6 +630,10 @@ end
 -- true: use those slots as a last resort; the upgrade spell can then disappear once unlocked.
 local ALLOW_UPGRADE_SLOT_DISPLACEMENT = false
 
+-- how many castable new spells a human hero may keep without a hotkey (click only). Console binds such as
+-- 'dota_ability_execute' are blocked, so 0: a castable spell that gets no slot is replaced by a passive spell.
+local MAX_CLICK_ONLY_SPELLS = 0
+
 -- names of abilities that can be swapped out of a hotkey slot, best first
 -- tTaken: spells we already moved into a hotkey slot (never displaced) + the '__ghBlocked' flag
 -- bPreferQWE: new BASIC spells take the passive slots on Q/W/E first (the easiest keys), then the rest
@@ -1092,7 +1096,9 @@ function SM.InitMoreSpells(hero, nTeams)
             tHotkeyResults[#tHotkeyResults + 1] = ultimateAbilities[i].name .. ' ' .. tUltResults[i]
         end
 
-        -- at most ONE castable new spell may stay without a hotkey; any others become passive spells
+        -- at most MAX_CLICK_ONLY_SPELLS castable new spells may stay without a hotkey (humans; bots cast
+        -- without hotkeys and keep the old limit of one); any others become passive spells
+        local nMaxClickOnly = IsHumanHero(hero) and MAX_CLICK_ONLY_SPELLS or 1
         local tNoSlot = {}
         for i = 1, #basicAbilities do
             if tBasicResults[i] == 'NO-SLOT' then
@@ -1105,15 +1111,20 @@ function SM.InitMoreSpells(hero, nTeams)
             end
         end
 
-        if #tNoSlot > 1 then
-            -- the one that may stay click-only: the ultimate if it has no key, otherwise the first basic
-            local nKeep = 1
-            for i = 1, #tNoSlot do
-                if tNoSlot[i].ult then nKeep = i end
+        if #tNoSlot > nMaxClickOnly then
+            -- the ones that may stay click-only: the ultimate first if it has no key, then the basics in order
+            local tClickOnly, nClickOnly = {}, 0
+            for _, bUlt in ipairs({true, false}) do
+                for i = 1, #tNoSlot do
+                    if nClickOnly < nMaxClickOnly and not tClickOnly[i] and (tNoSlot[i].ult == true) == bUlt then
+                        tClickOnly[i] = true
+                        nClickOnly = nClickOnly + 1
+                    end
+                end
             end
 
             for i = 1, #tNoSlot do
-                if i ~= nKeep then
+                if not tClickOnly[i] then
                     local tEntry = tNoSlot[i]
                     local tOld = tEntry.list[tEntry.idx]
 
