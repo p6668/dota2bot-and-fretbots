@@ -116,30 +116,69 @@ local bBuffFlags = {
     },
 }
 
+-- Game modes, selected by the console aliases (see bots/Buff/mode/ and README.md).
+-- DifficultyMode is read by Experience.lua.
+local GameModes = {
+    normal = { DifficultyMode = 0, moreSpells = false, label = 'Normal' },
+    omg    = { DifficultyMode = 1, moreSpells = true,  label = 'OMG 4+2 (Full Bot XP Bonus)' },
+    omg80  = { DifficultyMode = 2, moreSpells = true,  label = 'OMG 4+2 (80% Bot XP Bonus)' },
+}
+local RandomModes = { 'normal', 'omg', 'omg80' }
+
+-- Picks the mode for this load. Returns the mode key.
+-- Globals (BuffActiveMode, BuffGodmode) survive script_reload_code, locals do not.
+local function SelectGameMode()
+    local sRequest = BuffModeRequest
+    BuffModeRequest = nil
+
+    -- Once pre-game starts, extra spells may already be handed out, so the mode can't change any more.
+    if BuffActiveMode and GameRules:State_Get() >= DOTA_GAMERULES_STATE_PRE_GAME then
+        if sRequest and sRequest ~= BuffActiveMode then
+            GameRules:SendCustomMessage('Game Mode is locked after pre-game starts. Still: '..GameModes[BuffActiveMode].label, 0, 0)
+        end
+        return BuffActiveMode
+    end
+
+    -- No request (old 'script_reload_code bots/Buff/buff' command) behaves like Random.
+    if sRequest == nil or sRequest == 'random' or GameModes[sRequest] == nil then
+        if sRequest and sRequest ~= 'random' then
+            GameRules:SendCustomMessage('Unknown game mode "'..tostring(sRequest)..'", picking at random.', 0, 0)
+        end
+        sRequest = RandomModes[RandomInt(1, #RandomModes)]
+    end
+
+    BuffActiveMode = sRequest
+    BuffGodmode = nil -- re-roll god mode for the new mode
+    GameRules:SendCustomMessage('Game Mode: '..GameModes[sRequest].label, 0, 0)
+    return sRequest
+end
+
 function Buff:Init()
     if not BuffEnabled then
         GameRules:SendCustomMessage('Buff mode enabled!', 0, 0)
         BuffEnabled = true
     end
 
-    if bBuffFlags.godmode.StartTime == 0 then
-        bBuffFlags.godmode.DifficultyMode = RandomInt(0, 2)
-        if bBuffFlags.godmode.DifficultyMode == 0 then
-            GameRules:SendCustomMessage('Game Mode: Normal', 0, 0)
-        elseif bBuffFlags.godmode.DifficultyMode == 1 then
-            bBuffFlags.morespells.enable = true 
-            GameRules:SendCustomMessage('Game Mode: OMG 4+2 (Full Bot XP Bonus)', 0, 0)
-        elseif bBuffFlags.godmode.DifficultyMode == 2 then
-            bBuffFlags.morespells.enable = true
-            GameRules:SendCustomMessage('Game Mode: OMG 4+2 (80% Bot XP Bonus)', 0, 0)
-        end
-        bBuffFlags.godmode.StartTime = RandomInt(40, 59)
-        bBuffFlags.godmode.KillThreshold = RandomInt(40, 49)
-        -- GameRules:SendCustomMessage("Godmode StartTime:"..tostring(bBuffFlags.godmode.StartTime), -1, 0)
-        -- GameRules:SendCustomMessage("Godmode KillThreshold:"..tostring(bBuffFlags.godmode.KillThreshold), -1, 0)
+    local tMode = GameModes[SelectGameMode()]
+    bBuffFlags.morespells.enable = tMode.moreSpells
+
+    -- Keep god mode state across reloads so it can't be re-rolled or re-triggered mid-game.
+    if BuffGodmode == nil then
+        BuffGodmode = bBuffFlags.godmode
+        BuffGodmode.StartTime = RandomInt(40, 59)
+        BuffGodmode.KillThreshold = RandomInt(40, 49)
+        -- GameRules:SendCustomMessage("Godmode StartTime:"..tostring(BuffGodmode.StartTime), -1, 0)
+        -- GameRules:SendCustomMessage("Godmode KillThreshold:"..tostring(BuffGodmode.KillThreshold), -1, 0)
+    end
+    BuffGodmode.DifficultyMode = tMode.DifficultyMode
+    bBuffFlags.godmode = BuffGodmode
+
+    -- Reloading must not stack a second think loop on top of the old one.
+    if BuffTimerName then
+        Timers:RemoveTimer(BuffTimerName)
     end
 
-    Timers:CreateTimer(function()
+    BuffTimerName = Timers:CreateTimer(function()
         CheckHeroTables()
 
         local nBotHeroes = GetHeroes(HeroTable.bot)
