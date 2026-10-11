@@ -173,6 +173,48 @@ function Buff:Init()
     BuffGodmode.DifficultyMode = tMode.DifficultyMode
     bBuffFlags.godmode = BuffGodmode
 
+    -- How many times each player may use '-omgrefresh'. Set in the console with 'omg_refresh_limit <n>'.
+    -- Globals, so the convar is registered once and the used counts survive script_reload_code.
+    if not BuffRefreshConvarRegistered then
+        Convars:RegisterConvar('omg_refresh_limit', '2', "Times each player may use -omgrefresh (OMG / OMG80)", 0)
+        BuffRefreshConvarRegistered = true
+    end
+    if BuffRefreshUsed == nil then BuffRefreshUsed = {} end
+
+    -- '-omgrefresh' in chat: re-roll only the extra spells of the player who typed it.
+    -- Reloading must not stack a second listener, so the old one is removed first.
+    if BuffChatListener then
+        StopListenToGameEvent(BuffChatListener)
+    end
+    BuffChatListener = ListenToGameEvent('player_chat', function(event)
+        local sText = string.lower(string.gsub(tostring(event.text or ''), '^%s*(.-)%s*$', '%1'))
+        if sText ~= '-omgrefresh' then return end
+
+        local nPlayerID = event.playerid
+        if nPlayerID == nil or not PlayerResource:IsValidPlayerID(nPlayerID) then return end
+        local sPlayerName = PlayerResource:GetPlayerName(nPlayerID)
+
+        if not bBuffFlags.morespells.enable then
+            GameRules:SendCustomMessage('-omgrefresh only works in OMG / OMG80 mode.', 0, 0)
+            return
+        end
+
+        local nLimit = math.max(Convars:GetInt('omg_refresh_limit') or 2, 0)
+        local nUsed = BuffRefreshUsed[nPlayerID] or 0
+        if nUsed >= nLimit then
+            GameRules:SendCustomMessage(sPlayerName..': no -omgrefresh left (limit '..nLimit..').', 0, 0)
+            return
+        end
+
+        local hero = PlayerResource:GetSelectedHeroEntity(nPlayerID)
+        if SpellMode.RequestRefresh(hero) then
+            BuffRefreshUsed[nPlayerID] = nUsed + 1
+            GameRules:SendCustomMessage('Refreshing '..sPlayerName..'\'s extra spells... ('..(nLimit - nUsed - 1)..' left)', 0, 0)
+        else
+            GameRules:SendCustomMessage(sPlayerName..': your extra spells aren\'t ready (not handed out yet, or a refresh is in progress).', 0, 0)
+        end
+    end, nil)
+
     -- Reloading must not stack a second think loop on top of the old one.
     if BuffTimerName then
         Timers:RemoveTimer(BuffTimerName)

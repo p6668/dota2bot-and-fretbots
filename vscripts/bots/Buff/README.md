@@ -27,6 +27,8 @@ alias OMGRefresh "sv_cheats 1; script_reload_code bots/Buff/mode/refresh"
 | `Random` | One of the three above at random |
 | `OMGRefresh` | In-game, OMG / OMG80 only: re-roll every hero's extra spells (any number of times) |
 
+- Any player can type `-omgrefresh` in **chat** (OMG / OMG80, after pre-game starts) to re-roll only their own hero's extra spells. No console needed. Each player gets 2 uses by default; after `OMG` / `OMG80` has been typed, the host can change this in the console with `omg_refresh_limit <n>` (e.g. `omg_refresh_limit 5`, `0` disables it). It can be changed at any time, and uses already spent still count.
+
 - You can change your mind during the pick phase: just type another command. Once pre-game starts the mode is locked.
 - The old `sv_cheats 1; script_reload_code bots/Buff/buff` still works and behaves like `Random`.
 
