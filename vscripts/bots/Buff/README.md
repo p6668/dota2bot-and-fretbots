@@ -14,6 +14,8 @@ One-time setup: copy `cfg/autoexec.cfg` from the root of this repo to `<SteamDir
 ```
 alias OMG80  "sv_cheats 1; script_reload_code bots/Buff/mode/omg80"
 alias OMG    "sv_cheats 1; script_reload_code bots/Buff/mode/omg"
+alias OMGRA80 "sv_cheats 1; script_reload_code bots/Buff/mode/omgra80"
+alias OMGRA   "sv_cheats 1; script_reload_code bots/Buff/mode/omgra"
 alias Normal "sv_cheats 1; script_reload_code bots/Buff/mode/normal"
 alias Random "sv_cheats 1; script_reload_code bots/Buff/mode/random"
 alias OMGRefresh "sv_cheats 1; script_reload_code bots/Buff/mode/refresh"
@@ -23,11 +25,13 @@ alias OMGRefresh "sv_cheats 1; script_reload_code bots/Buff/mode/refresh"
 |----------|------|
 | `OMG80`  | OMG 4+2, bots get 80% of the XP bonus |
 | `OMG`    | OMG 4+2, bots get the full XP bonus |
+| `OMGRA80` | Like `OMG80`, but every hero's extra spells are re-rolled each time it dies |
+| `OMGRA`  | Like `OMG`, but every hero's extra spells are re-rolled each time it dies |
 | `Normal` | Normal game (no extra spells), full XP bonus |
-| `Random` | One of the three above at random |
-| `OMGRefresh` | In-game, OMG / OMG80 only: re-roll every hero's extra spells (any number of times) |
+| `Random` | One of `OMG80`, `OMG`, `Normal` at random |
+| `OMGRefresh` | In-game, OMG modes only: re-roll every hero's extra spells (any number of times) |
 
-- Any player can type `-omgrefresh` in **chat** (OMG / OMG80, after pre-game starts) to re-roll only their own hero's extra spells. No console needed. Each player gets 2 uses by default; after `OMG` / `OMG80` has been typed, the host can change this in the console with `omg_refresh_limit <n>` (e.g. `omg_refresh_limit 5`, `0` disables it). It can be changed at any time, and uses already spent still count.
+- Any player can type `-omgrefresh` in **chat** (any OMG mode, after pre-game starts) to re-roll only their own hero's extra spells. No console needed. Each player gets 2 uses by default; after an OMG mode command has been typed, the host can change this in the console with `omg_refresh_limit <n>` (e.g. `omg_refresh_limit 5`, `0` disables it). It can be changed at any time, and uses already spent still count.
 
 - You can change your mind during the pick phase: just type another command. Once pre-game starts the mode is locked.
 - The old `sv_cheats 1; script_reload_code bots/Buff/buff` still works and behaves like `Random`.
