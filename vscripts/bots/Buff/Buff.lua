@@ -124,8 +124,9 @@ local GameModes = {
     omg80   = { DifficultyMode = 2, moreSpells = true,  label = 'OMG 4+2 (80% Bot XP Bonus)' },
     omgra   = { DifficultyMode = 1, moreSpells = true,  rerollOnDeath = true, label = 'OMG 4+2, Re-roll on Death (Full Bot XP Bonus)' },
     omgra80 = { DifficultyMode = 2, moreSpells = true,  rerollOnDeath = true, label = 'OMG 4+2, Re-roll on Death (80% Bot XP Bonus)' },
+    omgra60 = { DifficultyMode = 3, moreSpells = true,  rerollOnDeath = true, label = 'OMG 4+2, Re-roll on Death (60% Bot XP Bonus)' },
 }
-local RandomModes = { 'normal', 'omg', 'omg80' }
+local RandomModes = { 'normal', 'omg', 'omg80', 'omgra', 'omgra80', 'omgra60' }
 
 -- Picks the mode for this load. Returns the mode key.
 -- Globals (BuffActiveMode, BuffGodmode) survive script_reload_code, locals do not.
