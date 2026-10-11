@@ -939,6 +939,33 @@ local function RemoveAddedSpells(hero)
     hero.spellInitDone          = nil
 end
 
+-- '-omgrefresh' re-rolls one hero only: its spells go back into the pool, unless another hero also has them
+local function ReleasePickedSpells(hero)
+    local tMine = {}
+    for _, sName in ipairs(hero.spellAddedNames or {}) do tMine[sName] = true end
+
+    local tOthers = {}
+    for _, hOther in ipairs(HeroList:GetAllHeroes()) do
+        if hOther ~= hero then
+            for _, sName in ipairs(hOther.spellAddedNames or {}) do tOthers[sName] = true end
+        end
+    end
+
+    for spell, _ in pairs(AbilityPickedList) do
+        if type(spell) == 'table' and tMine[spell.name] and not tOthers[spell.name] then
+            AbilityPickedList[spell] = nil
+        end
+    end
+end
+
+-- called from the '-omgrefresh' chat command (bots/Buff/Buff.lua); the re-roll happens on the next tick
+function SM.RequestRefresh(hero)
+    if not hero then return false end
+    if not hero.spellInitDone or hero.spellRefreshRequest then return false end
+    hero.spellRefreshRequest = true
+    return true
+end
+
 -- heroes that only get PASSIVE new spells, so no hotkey is needed. Invoker's bar has no free slot (Q W E orbs,
 -- D F invoked spells, R invoke) and the game re-lays out his abilities on every Invoke, which hides anything
 -- placed past slot 5; Rubick's bar rearranges itself the same way. Their passives work while hidden, so the
@@ -964,7 +991,11 @@ function SM.InitMoreSpells(hero, nTeams)
     end
     if hero.spellInitDone and (hero.spellRefreshGen or 0) ~= nRefreshGen then
         RemoveAddedSpells(hero)
+    elseif hero.spellInitDone and hero.spellRefreshRequest then
+        ReleasePickedSpells(hero)
+        RemoveAddedSpells(hero)
     end
+    hero.spellRefreshRequest = nil
 
     if not hero.spellInitDone and fDotaTime >= fPreviousTime + 0.65 then
         -- the hero's own hotkey layout, so OMGRefresh can restore it before re-rolling
