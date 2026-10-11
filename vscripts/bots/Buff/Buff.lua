@@ -117,11 +117,13 @@ local bBuffFlags = {
 }
 
 -- Game modes, selected by the console aliases (see bots/Buff/mode/ and README.md).
--- DifficultyMode is read by Experience.lua.
+-- DifficultyMode is read by Experience.lua. rerollOnDeath: a hero's extra spells are re-rolled every time it dies.
 local GameModes = {
-    normal = { DifficultyMode = 0, moreSpells = false, label = 'Normal' },
-    omg    = { DifficultyMode = 1, moreSpells = true,  label = 'OMG 4+2 (Full Bot XP Bonus)' },
-    omg80  = { DifficultyMode = 2, moreSpells = true,  label = 'OMG 4+2 (80% Bot XP Bonus)' },
+    normal  = { DifficultyMode = 0, moreSpells = false, label = 'Normal' },
+    omg     = { DifficultyMode = 1, moreSpells = true,  label = 'OMG 4+2 (Full Bot XP Bonus)' },
+    omg80   = { DifficultyMode = 2, moreSpells = true,  label = 'OMG 4+2 (80% Bot XP Bonus)' },
+    omgra   = { DifficultyMode = 1, moreSpells = true,  rerollOnDeath = true, label = 'OMG 4+2, Re-roll on Death (Full Bot XP Bonus)' },
+    omgra80 = { DifficultyMode = 2, moreSpells = true,  rerollOnDeath = true, label = 'OMG 4+2, Re-roll on Death (80% Bot XP Bonus)' },
 }
 local RandomModes = { 'normal', 'omg', 'omg80' }
 
@@ -161,6 +163,7 @@ function Buff:Init()
 
     local tMode = GameModes[SelectGameMode()]
     bBuffFlags.morespells.enable = tMode.moreSpells
+    bBuffFlags.morespells.rerollOnDeath = tMode.rerollOnDeath == true
 
     -- Keep god mode state across reloads so it can't be re-rolled or re-triggered mid-game.
     if BuffGodmode == nil then
@@ -176,7 +179,7 @@ function Buff:Init()
     -- How many times each player may use '-omgrefresh'. Set in the console with 'omg_refresh_limit <n>'.
     -- Globals, so the convar is registered once and the used counts survive script_reload_code.
     if not BuffRefreshConvarRegistered then
-        Convars:RegisterConvar('omg_refresh_limit', '2', "Times each player may use -omgrefresh (OMG / OMG80)", 0)
+        Convars:RegisterConvar('omg_refresh_limit', '2', "Times each player may use -omgrefresh (OMG modes)", 0)
         BuffRefreshConvarRegistered = true
     end
     if BuffRefreshUsed == nil then BuffRefreshUsed = {} end
@@ -195,7 +198,7 @@ function Buff:Init()
         local sPlayerName = PlayerResource:GetPlayerName(nPlayerID)
 
         if not bBuffFlags.morespells.enable then
-            GameRules:SendCustomMessage('-omgrefresh only works in OMG / OMG80 mode.', 0, 0)
+            GameRules:SendCustomMessage('-omgrefresh only works in OMG modes.', 0, 0)
             return
         end
 
@@ -255,6 +258,19 @@ function Buff:Init()
             local hHeroList = (bBuffFlags.morespells.humans and nAllHeroes) or nBotHeroes
             for _, hero in pairs(hHeroList) do
                 if hero then
+                    -- OMGRA: a hero that died re-rolls its extra spells while it is dead. Retried every tick
+                    -- until accepted (spells not handed out yet, or a refresh still in progress).
+                    if bBuffFlags.morespells.rerollOnDeath then
+                        if hero:IsAlive() then
+                            hero.spellDeathReroll = nil
+                        elseif hero.spellDeathReroll == nil and not hero:IsReincarnating() then
+                            hero.spellDeathReroll = false
+                        end
+                        if hero.spellDeathReroll == false and SpellMode.RequestRefresh(hero) then
+                            hero.spellDeathReroll = true
+                        end
+                    end
+
                     SpellMode.InitMoreSpells(hero, HeroTable.all)
                 end
             end
