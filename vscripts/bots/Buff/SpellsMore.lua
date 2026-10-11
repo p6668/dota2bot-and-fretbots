@@ -164,7 +164,7 @@ local function BuildAbilityLevelUpList(nBasicNames, nUltNames, rules)
     local maxLvl = rules.heroLevelMax or 30
 
     -- according to set rules
-    local function BindNames(names, ruleset)
+    local function BindNames(names, ruleset, bUlt)
         assert(#names == #ruleset, string.format('mismatch: %d names but %d rule entries', #names, #ruleset))
         local defs = {}
         for i, name in ipairs(names) do
@@ -182,6 +182,8 @@ local function BuildAbilityLevelUpList(nBasicNames, nUltNames, rules)
                 if spell and not spell.banned and spell.name == name then
                     if HasFlag(spell.type, SPL.SPELL_AGHANIMS_SHARD) or HasFlag(spell.type, SPL.SPELL_AGHANIMS_SCEPTER) then
                         maxLevel = 1 -- they are 1 point level ups
+                    elseif bUlt and HasFlag(spell.type, SPL.SPELL_TYPE_BASIC) then
+                        maxLevel = 4 -- a basic spell in the ult slot (e.g. Aftershock) has 4 levels, not 3
                     end
                 end
             end
@@ -196,7 +198,7 @@ local function BuildAbilityLevelUpList(nBasicNames, nUltNames, rules)
         return defs
     end
 
-    local nUltDefs = BindNames(nUltNames,   rules.ults   or {})
+    local nUltDefs = BindNames(nUltNames,   rules.ults   or {}, true)
     local nBasicDefs = BindNames(nBasicNames, rules.basics or {})
 
     -- union of all valid ult hero levels across every ult def, then deduplicate and sort.
