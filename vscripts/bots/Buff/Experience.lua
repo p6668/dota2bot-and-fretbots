@@ -60,9 +60,11 @@ function XP.UpdateXP(bot, nTeam, godmode)
         xp = 35
     end
 
-    -- The bot XP bonus is reduced to 80% in OMG 4+2 mode
+    -- The bot XP bonus is reduced to 80% in OMG80 / OMGRA80 and to 60% in OMGRA60
     if godmode.DifficultyMode == 2 then
         xp = xp*0.8
+    elseif godmode.DifficultyMode == 3 then
+        xp = xp*0.6
     end
 
     if gameTime > 0 then
