@@ -40,4 +40,12 @@ alias OMGRefresh "sv_cheats 1; script_reload_code bots/Buff/mode/refresh"
 
 See `bBuffFlags` for the script flags.
 
+## Extra spell flags (OMG modes)
+In `SpellsMore.lua`:
+
+| Flag | Default | What it does |
+|------|---------|--------------|
+| `ENABLE_HUMAN_ONLY_SPELLS` | `true` | Human players can roll the spells marked `botBanned = true` in `aba_spell_list.lua` (e.g. Ball Lightning, Time Walk, Rot). Bots never roll them either way. `false`: nobody rolls them. |
+| `HUMAN_SPELLS_IGNORE_POSITION` | `true` | Human players can sit in any slot, so their spells are weighted by the hero's own roles instead of their slot position. Bots always use their position. `false`: humans use their slot position too. |
+
 It can be use with other bot scripts; just change some stuff accordingly, to suit whichever script. Or use fretbots.
