@@ -473,6 +473,53 @@ local function EnsurePassiveSpell(hero, basicAbilities, ultimateAbilities, hBasi
     basicAbilities[nReplace] = tPicked
 end
 
+local function IsHumanHero(hero)
+    local nPlayerID = hero:GetPlayerOwnerID()
+    return nPlayerID ~= nil and nPlayerID >= 0 and not PlayerResource:IsFakeClient(nPlayerID)
+end
+
+-- Humans can sit in any slot, so their slot position says nothing about how the hero is played.
+-- true: humans pick spells by the hero's own roles (GetRoleRelevance / GetClickerRole below).
+-- false: humans pick by their slot position, like bots.
+local HUMAN_SPELLS_IGNORE_POSITION = true
+
+local function UsesPosition(hero)
+    return not HUMAN_SPELLS_IGNORE_POSITION or not IsHumanHero(hero)
+end
+
+-- role weights for humans come from the hero's own roles: 0.2 for a role the hero lacks, up to 1.2 for
+-- its strongest role (the same range as posRoleRelevance).
+local function GetRoleRelevance(hero, nPos)
+    if UsesPosition(hero) then return posRoleRelevance[nPos] end
+
+    local tHeroRoles = Role['hero_roles'][hero:GetUnitName()]
+    local nMax = 0
+    for r, _ in pairs(posRoleRelevance[1]) do
+        nMax = math.max(nMax, tHeroRoles[r] or 0)
+    end
+
+    local tRelevance = {}
+    for r, _ in pairs(posRoleRelevance[1]) do
+        tRelevance[r] = 0.2 + (nMax > 0 and (tHeroRoles[r] or 0) / nMax or 0)
+    end
+    return tRelevance
+end
+
+-- the hero's clicker type ({r, c}); humans: right-clicker/caster if the hero is one in any position
+local function GetClickerRole(hero, nPos)
+    local tClicker = Role['hero_roles'][hero:GetUnitName()]['clicker']
+    if UsesPosition(hero) then return tClicker[nPos] end
+
+    local tRole = { r = 0, c = 0 }
+    for i = 1, 5 do
+        if tClicker[i] then
+            if tClicker[i].r == 1 then tRole.r = 1 end
+            if tClicker[i].c == 1 then tRole.c = 1 end
+        end
+    end
+    return tRole
+end
+
 local function GetSpellScore(spell, hero, nTeam)
     if not hero then return 0 end
     if not spell or spell == '' then return 0 end
@@ -496,7 +543,7 @@ local function GetSpellScore(spell, hero, nTeam)
             end
         end
 
-        for r, v in pairs(posRoleRelevance[nPos]) do
+        for r, v in pairs(GetRoleRelevance(hero, nPos)) do
             local heroVal = totalRole[r] or 0
             score = score + heroVal * v
         end
@@ -561,11 +608,6 @@ end
 -- Hero sub-abilities that the game shows/hides itself (e.g. Morphling) are never touched.
 -- set to true to print what sits in each hotkey slot (D/F = slots 3/4) to the console
 local DEBUG_HOTKEY_SLOTS = false
-
-local function IsHumanHero(hero)
-    local nPlayerID = hero:GetPlayerOwnerID()
-    return nPlayerID ~= nil and nPlayerID >= 0 and not PlayerResource:IsFakeClient(nPlayerID)
-end
 
 -- prints to the console, and also to the in-game chat for human players (no console needed)
 local function DebugSay(hero, sMsg)
@@ -975,6 +1017,15 @@ local PASSIVE_ONLY_HEROES = {
     ['npc_dota_hero_rubick']  = true,
 }
 
+-- human-only spells: the ones marked botBanned in aba_spell_list (Ball Lightning, Rot, ...). They work for
+-- humans, but bots can't use them well, so bots never roll them, whatever this flag says.
+-- true: humans can roll them too. false: nobody rolls them (as if they were banned).
+local ENABLE_HUMAN_ONLY_SPELLS = true
+
+local function IsBotBanned(spell, hero)
+    return spell.botBanned and (not ENABLE_HUMAN_ONLY_SPELLS or not IsHumanHero(hero))
+end
+
 function SM.InitMoreSpells(hero, nTeams)
     if not hero then return end
 
@@ -1015,10 +1066,11 @@ function SM.InitMoreSpells(hero, nTeams)
         for _, spell in pairs(SPL['SpellsMap']) do
             if  spell
             and not spell.banned
+            and not IsBotBanned(spell, hero)
             and not string.find(spell.name, sHeroNameStripped)
             and spell.roles[IsRangedAttacker(hero) and 'range' or 'melee'] == 1
             then
-                local nClickerRole = Role['hero_roles'][sHeroName]['clicker'][nHeroPosition]
+                local nClickerRole = GetClickerRole(hero, nHeroPosition)
                 local bHasProperClickerRole = (nClickerRole.r == 1 and spell.roles.rightclicker == 1) or (nClickerRole.c == 1 and spell.roles.caster == 1)
 
                 if bHasProperClickerRole or (nClickerRole.r == 0 and nClickerRole.c == 0) then -- if doesn't have the same pos assignment as current/(this script)
