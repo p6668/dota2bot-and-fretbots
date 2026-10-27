@@ -4,7 +4,7 @@ Banned:
     - shard/scepter that requires a native ability (eg Wolf Bite).
     - hero specific (eg Life Break)
     - summons
-    - auto-cast
+    - auto-cast / toggle (except AUTOCAST_SPELLS, for humans)
     - weak
     - etc
 ]]
@@ -105,6 +105,10 @@ AddIncompatible('muerta_spectral_slug',
             )
 AddIncompatible('life_stealer_rage',
                 'juggernaut_blade_fury'
+            )
+-- Multishot already brings Frost Arrows as its (inactive) helper
+AddIncompatible('drow_ranger_multishot',
+                'drow_ranger_frost_arrows'
             )
 
 local function IsIncompatible(sAbilityName1, sAbilityName2)
@@ -932,9 +936,12 @@ end
 
 local function AddHelperAbilities(hero, tHelpers)
     for _, sHelper in ipairs(tHelpers) do
-        hero:AddAbility(sHelper)
-        SetAbilityLevel(hero, sHelper, 4)
-        SetAbilityActivated(hero, sHelper, false)
+        -- the helper may have been rolled as a spell itself (Frost Arrows); keep that one usable
+        if not hero:HasAbility(sHelper) then
+            hero:AddAbility(sHelper)
+            SetAbilityLevel(hero, sHelper, 4)
+            SetAbilityActivated(hero, sHelper, false)
+        end
     end
 end
 
@@ -1026,6 +1033,37 @@ local function IsBotBanned(spell, hero)
     return spell.botBanned and (not ENABLE_HUMAN_ONLY_SPELLS or not IsHumanHero(hero))
 end
 
+-- auto-cast and toggle spells that are banned in aba_spell_list but work on any hero: the orbs, Tar Bomb (thrown
+-- at the attack target while auto-cast is on), Split Shot, Phantom Rush and Pulse Nova. Their roles there are
+-- mostly 0, so the roles to roll them with are set here. Human-only: bots can't manage auto-cast or toggles.
+-- The ones that are not banned (Quill Spray, Bloodlust, Leech Seed, ...) are rolled as usual.
+-- true: humans can roll them. false: they stay banned.
+local ENABLE_AUTOCAST_SPELLS = true
+local AUTOCAST_SPELLS = {
+    ['ancient_apparition_chilling_touch'] = { melee=1, range=1, rightclicker=1, caster=1 },
+    ['clinkz_searing_arrows']             = { melee=1, range=1, rightclicker=1, caster=0 },
+    ['clinkz_tar_bomb']                   = { melee=1, range=1, rightclicker=1, caster=1 },
+    ['drow_ranger_frost_arrows']          = { melee=1, range=1, rightclicker=1, caster=0 },
+    ['enchantress_impetus']               = { melee=0, range=1, rightclicker=1, caster=0 },
+    ['huskar_burning_spear']              = { melee=1, range=1, rightclicker=1, caster=0 },
+    ['jakiro_liquid_fire']                = { melee=1, range=1, rightclicker=1, caster=1 },
+    ['leshrac_pulse_nova']                = { melee=1, range=1, rightclicker=0, caster=1 },
+    ['medusa_split_shot']                 = { melee=0, range=1, rightclicker=1, caster=0 },
+    ['obsidian_destroyer_arcane_orb']     = { melee=1, range=1, rightclicker=1, caster=1 },
+    ['phantom_lancer_phantom_edge']       = { melee=1, range=1, rightclicker=1, caster=0 },
+    ['silencer_glaives_of_wisdom']        = { melee=1, range=1, rightclicker=1, caster=1 },
+    ['slark_saltwater_shiv']              = { melee=1, range=0, rightclicker=1, caster=0 },
+    ['viper_poison_attack']               = { melee=1, range=1, rightclicker=1, caster=0 },
+}
+
+local function IsUnlockedAutoCast(spell, hero)
+    return ENABLE_AUTOCAST_SPELLS and AUTOCAST_SPELLS[spell.name] ~= nil and IsHumanHero(hero)
+end
+
+local function GetSpellRoles(spell, hero)
+    return IsUnlockedAutoCast(spell, hero) and AUTOCAST_SPELLS[spell.name] or spell.roles
+end
+
 function SM.InitMoreSpells(hero, nTeams)
     if not hero then return end
 
@@ -1065,13 +1103,14 @@ function SM.InitMoreSpells(hero, nTeams)
 
         for _, spell in pairs(SPL['SpellsMap']) do
             if  spell
-            and not spell.banned
+            and (not spell.banned or IsUnlockedAutoCast(spell, hero))
             and not IsBotBanned(spell, hero)
             and not string.find(spell.name, sHeroNameStripped)
-            and spell.roles[IsRangedAttacker(hero) and 'range' or 'melee'] == 1
+            and GetSpellRoles(spell, hero)[IsRangedAttacker(hero) and 'range' or 'melee'] == 1
             then
+                local tRoles = GetSpellRoles(spell, hero)
                 local nClickerRole = GetClickerRole(hero, nHeroPosition)
-                local bHasProperClickerRole = (nClickerRole.r == 1 and spell.roles.rightclicker == 1) or (nClickerRole.c == 1 and spell.roles.caster == 1)
+                local bHasProperClickerRole = (nClickerRole.r == 1 and tRoles.rightclicker == 1) or (nClickerRole.c == 1 and tRoles.caster == 1)
 
                 if bHasProperClickerRole or (nClickerRole.r == 0 and nClickerRole.c == 0) then -- if doesn't have the same pos assignment as current/(this script)
                     local spellScore = GetSpellScore(spell, hero, nTeams[hero:GetTeam()])
