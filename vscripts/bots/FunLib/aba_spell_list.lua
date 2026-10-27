@@ -98,8 +98,9 @@ X['SpellsMap'] = {
         owner   = 'npc_dota_hero_abaddon',
         type    = X.SPELL_TYPE_ULTIMATE,
         banned  = false,
+        botBanned = true, -- humans only
         weight  = 1.0,
-        roles   = { melee=0, range=0, rightclicker=1, caster=1 },
+        roles   = { melee=1, range=1, rightclicker=1, caster=1 },
         tags    = {
             ['carry']     = 1,
             ['disabler']  = 0,
@@ -1695,7 +1696,7 @@ X['SpellsMap'] = {
         type    = X.SPELL_TYPE_ULTIMATE,
         banned  = false,
         weight  = 1.0,
-        roles   = { melee=1, range=1, rightclicker=1, caster=1 },
+        roles   = { melee=1, range=0, rightclicker=1, caster=1 },
         tags    = {
             ['carry']     = 2,
             ['disabler']  = 0,
@@ -14808,7 +14809,7 @@ X['SpellsMap'] = {
         type    = X.SPELL_TYPE_ULTIMATE,
         banned  = false,
         weight  = 1.0,
-        roles   = { melee=1, range=1, rightclicker=1, caster=0 },
+        roles   = { melee=1, range=1, rightclicker=1, caster=1 }, -- tanks only, see SPELL_MIN_HERO_ROLES in Buff/SpellsMore.lua
         tags    = {
             ['carry']     = 1,
             ['disabler']  = 0,
@@ -16934,7 +16935,7 @@ X['SpellsMap'] = {
         type    = X.SPELL_TYPE_ULTIMATE,
         banned  = false,
         weight  = 0.4,
-        roles   = { melee=0, range=0, rightclicker=0, caster=1 },
+        roles   = { melee=1, range=1, rightclicker=0, caster=1 },
         tags    = {
             ['carry']     = 0,
             ['disabler']  = 0,

@@ -375,9 +375,19 @@ local posRoleRelevance = {
     [4] = { carry = 0.2, disabler = 1.3, durable = 0.3, escape = 0.4, initiator = 0.6, jungler = 0.1, nuker = 0.6, support = 1.3, pusher = 0.3, healer = 0.4 },
     [5] = { carry = 0.2, disabler = 1.3, durable = 0.3, escape = 0.4, initiator = 0.5, jungler = 0.1, nuker = 0.6, support = 1.3, pusher = 0.3, healer = 0.6 },
 }
--- is the spell a passive? read from the ability KV data, so it works before the spell is added to the hero
+-- active spells that are rolled like passives: they need no hotkey (Borrowed Time triggers by itself, Thundergod's
+-- Wrath is cast rarely and stays click-only) and may be picked where a passive spell is wanted
+local PASSIVE_LIKE_SPELLS = {
+    ['abaddon_borrowed_time']  = true,
+    ['zuus_thundergods_wrath'] = true,
+}
+
+-- is the spell a passive? read from the ability KV data, so it works before the spell is added to the hero.
+-- bStrict: real passives only (not PASSIVE_LIKE_SPELLS)
 local bWarnedNoKV = false
-local function IsPassiveSpellName(sAbilityName)
+local function IsPassiveSpellName(sAbilityName, bStrict)
+    if not bStrict and PASSIVE_LIKE_SPELLS[sAbilityName] then return true end
+
     if not GetAbilityKeyValuesByName then
         if not bWarnedNoKV then
             bWarnedNoKV = true
@@ -747,7 +757,7 @@ local function GiveHotkeySlot(hero, sAbilityName, tTaken, bPreferQWE)
     if not hNew then return 'MISSING' end
 
     -- a passive spell can't be cast, so don't spend a hotkey slot on it
-    if hNew:IsPassive() then return 'PASSIVE' end
+    if hNew:IsPassive() or PASSIVE_LIKE_SPELLS[sAbilityName] then return 'PASSIVE' end
 
     -- AddAbility may already have put it into a freed placeholder slot
     local nIdx = GetAbilityIndex(hero, sAbilityName)
@@ -1064,6 +1074,21 @@ local function GetSpellRoles(spell, hero)
     return IsUnlockedAutoCast(spell, hero) and AUTOCAST_SPELLS[spell.name] or spell.roles
 end
 
+-- spells only heroes with these hero roles (aba_role hero_roles, 0-3) can roll; Grow is too slow for anyone but tanks
+local SPELL_MIN_HERO_ROLES = {
+    ['tiny_grow'] = { durable = 2 },
+}
+
+local function HasSpellHeroRoles(spell, hero)
+    local tMin = SPELL_MIN_HERO_ROLES[spell.name]
+    if not tMin then return true end
+    local tHeroRoles = Role['hero_roles'][hero:GetUnitName()] or {}
+    for sRole, nMin in pairs(tMin) do
+        if (tHeroRoles[sRole] or 0) < nMin then return false end
+    end
+    return true
+end
+
 function SM.InitMoreSpells(hero, nTeams)
     if not hero then return end
 
@@ -1107,6 +1132,7 @@ function SM.InitMoreSpells(hero, nTeams)
             and not IsBotBanned(spell, hero)
             and not string.find(spell.name, sHeroNameStripped)
             and GetSpellRoles(spell, hero)[IsRangedAttacker(hero) and 'range' or 'melee'] == 1
+            and HasSpellHeroRoles(spell, hero)
             then
                 local tRoles = GetSpellRoles(spell, hero)
                 local nClickerRole = GetClickerRole(hero, nHeroPosition)
@@ -1131,10 +1157,10 @@ function SM.InitMoreSpells(hero, nTeams)
         if bPassiveOnly then
             hero.spellPassiveOnly = true
             for spell, _ in pairs(abilities.basic) do
-                if not IsPassiveSpellName(spell.name) then abilities.basic[spell] = nil end
+                if not IsPassiveSpellName(spell.name, true) then abilities.basic[spell] = nil end
             end
             for spell, _ in pairs(abilities.ult) do
-                if not IsPassiveSpellName(spell.name) then abilities.ult[spell] = nil end
+                if not IsPassiveSpellName(spell.name, true) then abilities.ult[spell] = nil end
             end
         end
 

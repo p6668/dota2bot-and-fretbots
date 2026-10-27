@@ -49,4 +49,8 @@ In `SpellsMore.lua`:
 | `ENABLE_AUTOCAST_SPELLS` | `true` | Human players can roll the auto-cast and toggle spells listed in `AUTOCAST_SPELLS` (orbs such as Frost Arrows, Arcane Orb, Burning Spear, plus Tar Bomb, Split Shot, Phantom Rush and Pulse Nova), which are banned in `aba_spell_list.lua`. Bots never roll them. `false`: they stay banned. The ones that are not banned (Quill Spray, Bloodlust, Leech Seed, ...) are rolled as usual. |
 | `HUMAN_SPELLS_IGNORE_POSITION` | `true` | Human players can sit in any slot, so their spells are weighted by the hero's own roles instead of their slot position. Bots always use their position. `false`: humans use their slot position too. |
 
+Two tables in the same file tune single spells:
+- `PASSIVE_LIKE_SPELLS`: active spells rolled like passives (Borrowed Time, Thundergod's Wrath). They take no hotkey slot, stay click-only, and can be picked where a passive spell is wanted.
+- `SPELL_MIN_HERO_ROLES`: spells only heroes with these hero roles can roll (Grow: `durable` 2 or more).
+
 It can be use with other bot scripts; just change some stuff accordingly, to suit whichever script. Or use fretbots.
