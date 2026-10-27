@@ -46,6 +46,7 @@ In `SpellsMore.lua`:
 | Flag | Default | What it does |
 |------|---------|--------------|
 | `ENABLE_HUMAN_ONLY_SPELLS` | `true` | Human players can roll the spells marked `botBanned = true` in `aba_spell_list.lua` (e.g. Ball Lightning, Time Walk, Rot). Bots never roll them either way. `false`: nobody rolls them. |
+| `ENABLE_AUTOCAST_SPELLS` | `true` | Human players can roll the auto-cast and toggle spells listed in `AUTOCAST_SPELLS` (orbs such as Frost Arrows, Arcane Orb, Burning Spear, plus Tar Bomb, Split Shot, Phantom Rush and Pulse Nova), which are banned in `aba_spell_list.lua`. Bots never roll them. `false`: they stay banned. The ones that are not banned (Quill Spray, Bloodlust, Leech Seed, ...) are rolled as usual. |
 | `HUMAN_SPELLS_IGNORE_POSITION` | `true` | Human players can sit in any slot, so their spells are weighted by the hero's own roles instead of their slot position. Bots always use their position. `false`: humans use their slot position too. |
 
 It can be use with other bot scripts; just change some stuff accordingly, to suit whichever script. Or use fretbots.
