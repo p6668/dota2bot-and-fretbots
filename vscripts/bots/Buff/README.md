@@ -17,6 +17,7 @@ alias OMG    "sv_cheats 1; script_reload_code bots/Buff/mode/omg"
 alias OMGRA80 "sv_cheats 1; script_reload_code bots/Buff/mode/omgra80"
 alias OMGRA60 "sv_cheats 1; script_reload_code bots/Buff/mode/omgra60"
 alias OMGRA   "sv_cheats 1; script_reload_code bots/Buff/mode/omgra"
+alias OMGAR   "sv_cheats 1; script_reload_code bots/Buff/mode/omgar"
 alias Normal "sv_cheats 1; script_reload_code bots/Buff/mode/normal"
 alias Random "sv_cheats 1; script_reload_code bots/Buff/mode/random"
 alias OMGRefresh "sv_cheats 1; script_reload_code bots/Buff/mode/refresh"
@@ -29,12 +30,14 @@ alias OMGRefresh "sv_cheats 1; script_reload_code bots/Buff/mode/refresh"
 | `OMGRA80` | Like `OMG80`, but every hero's extra spells are re-rolled each time it dies |
 | `OMGRA60` | Like `OMGRA80`, but bots get 60% of the XP bonus |
 | `OMGRA`  | Like `OMG`, but every hero's extra spells are re-rolled each time it dies |
+| `OMGAR`  | OMG All Random: every hero's own spells are removed (talents and innate stay) and it gets 3 random spells + 1 random ultimate instead, with their sub-abilities. Bots get the full XP bonus |
 | `Normal` | Normal game (no extra spells), full XP bonus |
-| `Random` | Any of the modes above at random |
+| `Random` | Any of the modes above at random, except `OMGAR` |
 | `OMGRefresh` | In-game, OMG modes only: re-roll every hero's extra spells (any number of times) |
 
 - Any player can type `-omgrefresh` in **chat** (any OMG mode, after pre-game starts) to re-roll only their own hero's extra spells. No console needed. Each player gets 2 uses by default; after an OMG mode command has been typed, the host can change this in the console with `omg_refresh_limit <n>` (e.g. `omg_refresh_limit 5`, `0` disables it). It can be changed at any time, and uses already spent still count.
 
+- `OMGAR`: humans level their new spells with their own ability points (spent points come back on a re-roll); bots get theirs leveled for them. The new spells sit on Q W E and R, sub-abilities that need a key of their own (Activate Fire Remnant, Shadow Poison Release) on D/F. Heroes in `OMGAR_EXCLUDED_HEROES` (Invoker, Kez, Lone Druid, Meepo, Morphling, Rubick, Troll Warlord) keep their own spells and get the normal OMG extra spells. `OMGAR_SPELLS` in `SpellsMore.lua` lists the spells that are banned elsewhere because of their sub-ability (X Marks the Spot, Fire Remnant, Ice Blast, ...) and are rolled in `OMGAR` only. `-omgrefresh` and `OMGRefresh` work here too.
 - You can change your mind during the pick phase: just type another command. Once pre-game starts the mode is locked.
 - The old `sv_cheats 1; script_reload_code bots/Buff/buff` still works and behaves like `Random`.
 

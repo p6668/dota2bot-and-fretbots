@@ -118,6 +118,8 @@ local bBuffFlags = {
 
 -- Game modes, selected by the console aliases (see bots/Buff/mode/ and README.md).
 -- DifficultyMode is read by Experience.lua. rerollOnDeath: a hero's extra spells are re-rolled every time it dies.
+-- allRandom (OMGAR): a hero's own spells are removed (talents and innate kept) and it gets random ones instead.
+-- Not in RandomModes.
 local GameModes = {
     normal  = { DifficultyMode = 0, moreSpells = false, label = 'Normal' },
     omg     = { DifficultyMode = 1, moreSpells = true,  label = 'OMG 4+2 (Full Bot XP Bonus)' },
@@ -125,6 +127,7 @@ local GameModes = {
     omgra   = { DifficultyMode = 1, moreSpells = true,  rerollOnDeath = true, label = 'OMG 4+2, Re-roll on Death (Full Bot XP Bonus)' },
     omgra80 = { DifficultyMode = 2, moreSpells = true,  rerollOnDeath = true, label = 'OMG 4+2, Re-roll on Death (80% Bot XP Bonus)' },
     omgra60 = { DifficultyMode = 3, moreSpells = true,  rerollOnDeath = true, label = 'OMG 4+2, Re-roll on Death (60% Bot XP Bonus)' },
+    omgar   = { DifficultyMode = 1, moreSpells = true,  allRandom = true, label = 'OMG All Random (Full Bot XP Bonus)' },
 }
 local RandomModes = { 'normal', 'omg', 'omg80', 'omgra', 'omgra80', 'omgra60' }
 
@@ -165,6 +168,7 @@ function Buff:Init()
     local tMode = GameModes[SelectGameMode()]
     bBuffFlags.morespells.enable = tMode.moreSpells
     bBuffFlags.morespells.rerollOnDeath = tMode.rerollOnDeath == true
+    bBuffFlags.morespells.allRandom = tMode.allRandom == true
 
     -- Keep god mode state across reloads so it can't be re-rolled or re-triggered mid-game.
     if BuffGodmode == nil then
@@ -272,7 +276,7 @@ function Buff:Init()
                         end
                     end
 
-                    SpellMode.InitMoreSpells(hero, HeroTable.all)
+                    SpellMode.InitMoreSpells(hero, HeroTable.all, bBuffFlags.morespells.allRandom)
                 end
             end
         end

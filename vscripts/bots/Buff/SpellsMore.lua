@@ -986,10 +986,30 @@ local function RemoveAddedSpells(hero)
         end
     end
 
+    -- OMGAR: humans spent their own ability points on the spells, so they get them back
+    if hero.spellAllRandom and IsHumanHero(hero) then
+        local nSpent = 0
+        for _, sName in ipairs(hero.spellAddedNames or {}) do
+            local hAbility = hero:FindAbilityByName(sName)
+            if hAbility then nSpent = nSpent + hAbility:GetLevel() end
+        end
+        if nSpent > 0 then hero:SetAbilityPoints(hero:GetAbilityPoints() + nSpent) end
+    end
+
     for _, sName in ipairs(hero.spellAddedNames or {}) do
         if hero:HasAbility(sName) then RemoveNewSpell(hero, sName) end
     end
 
+    -- OMGAR: the sub-abilities and the 'generic_hidden' placeholders of the layout
+    for _, sName in ipairs(hero.spellSubNames or {}) do
+        if hero:HasAbility(sName) then hero:RemoveAbility(sName) end
+    end
+    for _, hFiller in ipairs(hero.spellFillers or {}) do
+        if hFiller and not hFiller:IsNull() then hero:RemoveAbilityByHandle(hFiller) end
+    end
+
+    hero.spellSubNames          = nil
+    hero.spellFillers           = nil
     hero.spellAddedNames        = nil
     hero.spellDisplacedUpgrades = nil
     hero.spellPassiveOnly       = nil
@@ -1089,7 +1109,230 @@ local function HasSpellHeroRoles(spell, hero)
     return true
 end
 
-function SM.InitMoreSpells(hero, nTeams)
+-- OMG All Random (OMGAR, bots/Buff/mode/omgar.lua): the hero's own spells are removed (talents and innate stay)
+-- and it rolls OMGAR_COUNT_BASIC basics + OMGAR_COUNT_ULTIMATE ultimate instead, with their sub-abilities.
+-- Basics go on Q W E, the ultimate on R, sub-abilities that need their own key (OMGAR_SPELLS slot) on D/F; the
+-- other sub-abilities stay past slot 5 and their spell swaps them into its slot by itself (Kunkka's Return).
+-- Humans spend their own ability points on the new spells; bots get them leveled by the script (omgarRules).
+local OMGAR_COUNT_BASIC    = 3
+local OMGAR_COUNT_ULTIMATE = 1
+-- should match above count; a normal hero build (ultimate at 6/12/18)
+local omgarRules = {
+    heroLevelMax = 30,
+    basics = {
+        { maxLevel = 4, startLevel = 1, cooldown = 2 },
+        { maxLevel = 4, startLevel = 1, cooldown = 2 },
+        { maxLevel = 4, startLevel = 1, cooldown = 2 },
+    },
+    ults = {
+        { maxLevel = 3, startLevel = 6, cooldown = 6 },
+    },
+}
+
+-- heroes whose own spells are bound to the hero itself (spell bar re-layout, clones, attack type, ...); in OMGAR
+-- they keep them and get the normal OMG extra spells
+local OMGAR_EXCLUDED_HEROES = {
+    ['npc_dota_hero_invoker']       = true,
+    ['npc_dota_hero_kez']           = true,
+    ['npc_dota_hero_lone_druid']    = true,
+    ['npc_dota_hero_meepo']         = true,
+    ['npc_dota_hero_morphling']     = true,
+    ['npc_dota_hero_rubick']        = true,
+    ['npc_dota_hero_troll_warlord'] = true,
+}
+
+local function Tags(t)
+    local tTags = { carry=0, disabler=0, durable=0, escape=0, initiator=0, jungler=0, nuker=0, support=0, pusher=0, healer=0 }
+    for k, v in pairs(t) do tTags[k] = v end
+    return tTags
+end
+
+-- spells banned in aba_spell_list for their sub-ability; OMGAR rolls them together with it. Their roles and
+-- tags there are 0, so the ones to roll them with are set here. slot: the sub-ability has a hotkey of its own.
+local OMGAR_SPELLS = {
+    ['alchemist_unstable_concoction']  = { sub = 'alchemist_unstable_concoction_throw',  roles = { melee=1, range=1, rightclicker=0, caster=1 }, tags = Tags{ disabler=2, nuker=1 } },
+    ['ancient_apparition_ice_blast']   = { sub = 'ancient_apparition_ice_blast_release', roles = { melee=1, range=1, rightclicker=1, caster=1 }, tags = Tags{ nuker=2, support=2 } },
+    ['bane_nightmare']                 = { sub = 'bane_nightmare_end',                   roles = { melee=1, range=1, rightclicker=0, caster=1 }, tags = Tags{ disabler=2, support=2 } },
+    ['dawnbreaker_celestial_hammer']   = { sub = 'dawnbreaker_converge',                 roles = { melee=1, range=1, rightclicker=1, caster=1 }, tags = Tags{ nuker=1, escape=1, initiator=1, disabler=1 } },
+    ['ember_spirit_fire_remnant']      = { sub = 'ember_spirit_activate_fire_remnant',   roles = { melee=1, range=1, rightclicker=1, caster=1 }, tags = Tags{ escape=3, nuker=2, carry=1 }, slot = true },
+    ['grimstroke_spirit_walk']         = { sub = 'grimstroke_return',                    roles = { melee=1, range=1, rightclicker=0, caster=1 }, tags = Tags{ disabler=2, support=2, nuker=1 } },
+    ['hoodwink_sharpshooter']          = { sub = 'hoodwink_sharpshooter_release',        roles = { melee=1, range=1, rightclicker=0, caster=1 }, tags = Tags{ nuker=3, disabler=1, carry=1 } },
+    ['keeper_of_the_light_illuminate'] = { sub = 'keeper_of_the_light_illuminate_end',   roles = { melee=1, range=1, rightclicker=0, caster=1 }, tags = Tags{ nuker=2, pusher=2 } },
+    ['kunkka_x_marks_the_spot']        = { sub = 'kunkka_return',                        roles = { melee=1, range=1, rightclicker=0, caster=1 }, tags = Tags{ disabler=1, support=1, initiator=1, escape=1 } },
+    ['naga_siren_song_of_the_siren']   = { sub = 'naga_siren_song_of_the_siren_cancel',  roles = { melee=1, range=1, rightclicker=1, caster=1 }, tags = Tags{ disabler=2, support=1, escape=1, initiator=1 } },
+    ['pangolier_gyroshell']            = { sub = 'pangolier_gyroshell_stop',             roles = { melee=1, range=1, rightclicker=0, caster=1 }, tags = Tags{ initiator=3, disabler=2, escape=2, durable=1 } },
+    ['phoenix_icarus_dive']            = { sub = 'phoenix_icarus_dive_stop',             roles = { melee=1, range=1, rightclicker=1, caster=1 }, tags = Tags{ escape=2, initiator=2, nuker=1 } },
+    ['phoenix_fire_spirits']           = { sub = 'phoenix_launch_fire_spirit',           roles = { melee=1, range=1, rightclicker=0, caster=1 }, tags = Tags{ nuker=2 } },
+    ['primal_beast_onslaught']         = { sub = 'primal_beast_onslaught_release',       roles = { melee=1, range=1, rightclicker=0, caster=1 }, tags = Tags{ initiator=2, disabler=2, escape=1, nuker=1 } },
+    ['rubick_telekinesis']             = { sub = 'rubick_telekinesis_land',              roles = { melee=1, range=1, rightclicker=0, caster=1 }, tags = Tags{ disabler=2, support=1 } },
+    ['shadow_demon_shadow_poison']     = { sub = 'shadow_demon_shadow_poison_release',   roles = { melee=1, range=1, rightclicker=0, caster=1 }, tags = Tags{ nuker=2, support=1 }, slot = true },
+    ['shredder_chakram']               = { sub = 'shredder_return_chakram',              roles = { melee=1, range=1, rightclicker=0, caster=1 }, tags = Tags{ nuker=2, pusher=1, durable=1 } },
+    ['techies_reactive_tazer']         = { sub = 'techies_reactive_tazer_stop',          roles = { melee=1, range=1, rightclicker=1, caster=1 }, tags = Tags{ disabler=1, escape=1 } },
+    ['tiny_tree_grab']                 = { sub = 'tiny_toss_tree',                       roles = { melee=1, range=0, rightclicker=1, caster=0 }, tags = Tags{ carry=2, pusher=1 } },
+    ['tusk_snowball']                  = { sub = 'tusk_launch_snowball',                 roles = { melee=1, range=1, rightclicker=1, caster=1 }, tags = Tags{ initiator=2, disabler=1, escape=1 } },
+    ['wisp_tether']                    = { sub = 'wisp_tether_break',                    roles = { melee=1, range=1, rightclicker=0, caster=1 }, tags = Tags{ support=2, healer=2 } },
+}
+
+-- the aba_spell_list entry as OMGAR rolls it: OMGAR_SPELLS get their roles and tags (one table per spell, so
+-- AbilityPickedList still sees the same spell for every hero)
+local tOmgarSpellCache = {}
+local function GetOmgarSpell(spell)
+    local tInfo = OMGAR_SPELLS[spell.name]
+    if not tInfo then return spell end
+    if not tOmgarSpellCache[spell.name] then
+        tOmgarSpellCache[spell.name] = setmetatable({ omgar = true, roles = tInfo.roles, tags = tInfo.tags }, { __index = spell })
+    end
+    return tOmgarSpellCache[spell.name]
+end
+
+-- OMGAR rolls whole spells only: no Aghanim's upgrades (1 level), and no Invoker spells (they need the script
+-- to activate them, and humans level their spells themselves)
+local function IsAllRandomPoolSpell(spell)
+    return not HasFlag(spell.type, SPL.SPELL_AGHANIMS_SHARD)
+       and not HasFlag(spell.type, SPL.SPELL_AGHANIMS_SCEPTER)
+       and not string.find(spell.name, '^invoker_')
+end
+
+local GENERIC_ABILITY_PREFIXES = { '^generic_hidden', '^special_bonus', '^ability_', '^abyssal_underlord_portal_warp',
+                                   '^twin_gate_portal_warp', '^plus_', '^seasonal_' }
+
+local function IsGenericAbility(sAbilityName)
+    for _, sPrefix in ipairs(GENERIC_ABILITY_PREFIXES) do
+        if string.find(sAbilityName, sPrefix) then return true end
+    end
+    return false
+end
+
+local function IsInnateAbility(sAbilityName)
+    if GetAbilityKeyValuesByName then
+        local ok, tKV = pcall(GetAbilityKeyValuesByName, sAbilityName)
+        if ok and type(tKV) == 'table' and tostring(tKV['Innate']) == '1' then return true end
+    end
+    for _, spell in pairs(SPL['SpellsMap']) do
+        if spell.name == sAbilityName then return HasFlag(spell.type, SPL.SPELL_TYPE_INNATE) end
+    end
+    return false
+end
+
+-- removes the hero's own spells (and their sub/upgrade abilities) and the 'generic_hidden' placeholders in the
+-- hotkey slots; talents, innate and generic abilities stay. Returns the ability points spent on them.
+local function RemoveOwnSpells(hero)
+    local sHeroName = hero:GetUnitName()
+    local sPrefix = '^' .. string.gsub(sHeroName, 'npc_dota_hero_', '') .. '_'
+    local tOwn = {}
+    for _, spell in pairs(SPL['SpellsMap']) do
+        if spell.owner == sHeroName then tOwn[spell.name] = true end
+    end
+
+    local tRemove, nSpent = {}, 0
+    for i = 0, hero:GetAbilityCount() - 1 do
+        local hAbility = hero:GetAbilityByIndex(i)
+        if hAbility then
+            local sName = hAbility:GetAbilityName()
+            if sName == 'generic_hidden' then
+                if i <= 5 then tRemove[#tRemove + 1] = hAbility end
+            elseif not IsGenericAbility(sName) and (tOwn[sName] or string.find(sName, sPrefix)) and not IsInnateAbility(sName) then
+                tRemove[#tRemove + 1] = hAbility
+                if i <= 5 and not hAbility:IsHidden() then nSpent = nSpent + hAbility:GetLevel() end
+            end
+        end
+    end
+
+    for _, hAbility in ipairs(tRemove) do
+        -- a removed passive can leave its modifier behind
+        for _, hModifier in pairs(hero:FindAllModifiers()) do
+            if hModifier:GetAbility() == hAbility then hModifier:Destroy() end
+        end
+        hero:RemoveAbilityByHandle(hAbility)
+    end
+
+    return nSpent
+end
+
+-- adds the rolled spells in the OMGAR layout. AddAbility fills the lowest free ability slot, so the free hotkey
+-- slots are filled in order; the ones nothing is planned for get a 'generic_hidden' placeholder, like the D/F
+-- of a normal hero.
+local function AddAllRandomSpells(hero, tBasicNames, tUltNames)
+    local tKind = {}
+    for _, sName in ipairs(tBasicNames) do tKind[sName] = 'basic' end
+    for _, sName in ipairs(tUltNames) do tKind[sName] = 'ult' end
+
+    local tFree = {}
+    for i = 0, 5 do
+        if hero:GetAbilityByIndex(i) == nil then tFree[i] = true end
+    end
+
+    local tPlan, tLeft = {}, {}
+    local function Place(sName, tOrder)
+        for _, i in ipairs(tOrder) do
+            if tFree[i] and not tPlan[i] then tPlan[i] = sName return end
+        end
+        tLeft[#tLeft + 1] = sName -- no free hotkey slot (the innate takes one): added after the others
+    end
+
+    for _, sName in ipairs(tBasicNames) do Place(sName, {0, 1, 2, 3, 4, 5}) end
+    for _, sName in ipairs(tUltNames) do Place(sName, {5, 4, 3, 2, 1, 0}) end
+
+    local tSubs = {}
+    for _, tList in ipairs({tBasicNames, tUltNames}) do
+        for _, sName in ipairs(tList) do
+            local tInfo = OMGAR_SPELLS[sName]
+            if tInfo and tInfo.sub then
+                tSubs[#tSubs + 1] = tInfo.sub
+                tKind[tInfo.sub] = 'sub'
+                if tInfo.slot then Place(tInfo.sub, {3, 4, 2, 1, 0}) end
+            end
+        end
+    end
+
+    local tHelpers, tFillers = {}, {}
+    local function Add(sName)
+        if hero:HasAbility(sName) then return end
+        if tKind[sName] == 'sub' then
+            hero:AddAbility(sName)
+        else
+            AddNewSpell(hero, sName, tKind[sName] == 'basic', tHelpers)
+        end
+    end
+
+    for i = 0, 5 do
+        if tFree[i] then
+            local sName = tPlan[i]
+            if sName then
+                Add(sName)
+                if GetAbilityIndex(hero, sName) ~= i then
+                    DebugSay(hero, string.format('%s landed in slot %d, not %d', sName, GetAbilityIndex(hero, sName), i))
+                end
+            else
+                tFillers[#tFillers + 1] = hero:AddAbility('generic_hidden')
+            end
+        end
+    end
+    for _, sName in ipairs(tLeft) do Add(sName) end
+    for _, sName in ipairs(tSubs) do Add(sName) end
+    AddHelperAbilities(hero, tHelpers)
+
+    hero.spellSubNames = tSubs
+    hero.spellFillers  = tFillers
+end
+
+-- a sub-ability is leveled with its spell (the engine only does that for the spell's own hero)
+local function SyncSubAbilityLevels(hero)
+    for _, sName in ipairs(hero.spellAddedNames or {}) do
+        local tInfo = OMGAR_SPELLS[sName]
+        if tInfo and tInfo.sub then
+            local hSpell = hero:FindAbilityByName(sName)
+            local hSub = hero:FindAbilityByName(tInfo.sub)
+            if hSpell and hSub then
+                local nLevel = math.min(hSpell:GetLevel(), hSub:GetMaxLevel())
+                if hSub:GetLevel() < nLevel then hSub:SetLevel(nLevel) end
+            end
+        end
+    end
+end
+
+-- bAllRandom: OMGAR (see OMGAR_COUNT_BASIC above)
+function SM.InitMoreSpells(hero, nTeams, bAllRandom)
     if not hero then return end
 
     local fDotaTime = GameRules:GetDOTATime(false, true)
@@ -1121,14 +1364,29 @@ function SM.InitMoreSpells(hero, nTeams)
             end
         end
 
-        local abilities = { basic = {}, ult = {} }
         local sHeroName = hero:GetUnitName()
+
+        -- OMGAR: the hero's own spells go once, before the first roll (re-rolls only swap the new spells)
+        if hero.spellAllRandom == nil then
+            hero.spellAllRandom = bAllRandom == true and not OMGAR_EXCLUDED_HEROES[sHeroName]
+        end
+        if hero.spellAllRandom and not hero.spellOwnRemoved then
+            local nSpent = RemoveOwnSpells(hero)
+            hero.spellOwnRemoved = true
+            if nSpent > 0 and IsHumanHero(hero) then
+                hero:SetAbilityPoints(hero:GetAbilityPoints() + math.min(nSpent, hero:GetLevel()))
+            end
+        end
+
+        local abilities = { basic = {}, ult = {} }
         local nHeroPosition = Helper.GetPosition(hero, nTeams[hero:GetTeam()])
         local sHeroNameStripped = string.gsub(sHeroName, 'npc_dota_hero_', '')
 
-        for _, spell in pairs(SPL['SpellsMap']) do
+        for _, tSpell in pairs(SPL['SpellsMap']) do
+            local spell = hero.spellAllRandom and GetOmgarSpell(tSpell) or tSpell
             if  spell
-            and (not spell.banned or IsUnlockedAutoCast(spell, hero))
+            and (not spell.banned or IsUnlockedAutoCast(spell, hero) or spell.omgar)
+            and (not hero.spellAllRandom or IsAllRandomPoolSpell(spell))
             and not IsBotBanned(spell, hero)
             and not string.find(spell.name, sHeroNameStripped)
             and GetSpellRoles(spell, hero)[IsRangedAttacker(hero) and 'range' or 'melee'] == 1
@@ -1164,8 +1422,10 @@ function SM.InitMoreSpells(hero, nTeams)
             end
         end
 
-        local basicAbilities    = GetAbilityBuild(hero, COUNT_BASIC, abilities.basic, true)
-        local ultimateAbilities = GetAbilityBuild(hero, COUNT_ULTIMATE, abilities.ult, false)
+        local nCountBasic    = hero.spellAllRandom and OMGAR_COUNT_BASIC or COUNT_BASIC
+        local nCountUltimate = hero.spellAllRandom and OMGAR_COUNT_ULTIMATE or COUNT_ULTIMATE
+        local basicAbilities    = GetAbilityBuild(hero, nCountBasic, abilities.basic, true)
+        local ultimateAbilities = GetAbilityBuild(hero, nCountUltimate, abilities.ult, false)
 
         -- passive ultimates are rare: if there is none, the third passive comes from the basic pool
         if bPassiveOnly and #ultimateAbilities < COUNT_ULTIMATE then
@@ -1177,8 +1437,10 @@ function SM.InitMoreSpells(hero, nTeams)
             end
         end
 
-        -- at least one passive among the new spells
-        EnsurePassiveSpell(hero, basicAbilities, ultimateAbilities, abilities.basic)
+        -- at least one passive among the new spells (OMGAR: every spell has a hotkey, so no need)
+        if not hero.spellAllRandom then
+            EnsurePassiveSpell(hero, basicAbilities, ultimateAbilities, abilities.basic)
+        end
 
         PrecacheUnits(nTeams, basicAbilities, ultimateAbilities)
 
@@ -1206,10 +1468,19 @@ function SM.InitMoreSpells(hero, nTeams)
         end
 
         -- helper abilities some spells need are added after all spells, so they don't take a hotkey slot
-        local tHelpers = {}
-        for i = 1, #basicAbilities do AddNewSpell(hero, basicAbilities[i].name, true, tHelpers) end
-        for i = 1, #ultimateAbilities do AddNewSpell(hero, ultimateAbilities[i].name, false, tHelpers) end
-        AddHelperAbilities(hero, tHelpers)
+        -- OMGAR: the spells are added straight into their hotkey slots, so the hotkey moves below find
+        -- nothing to do (all of them already sit in slots 0-5)
+        if hero.spellAllRandom then
+            local tBasicNames, tUltNames = {}, {}
+            for i = 1, #basicAbilities do tBasicNames[i] = basicAbilities[i].name end
+            for i = 1, #ultimateAbilities do tUltNames[i] = ultimateAbilities[i].name end
+            AddAllRandomSpells(hero, tBasicNames, tUltNames)
+        else
+            local tHelpers = {}
+            for i = 1, #basicAbilities do AddNewSpell(hero, basicAbilities[i].name, true, tHelpers) end
+            for i = 1, #ultimateAbilities do AddNewSpell(hero, ultimateAbilities[i].name, false, tHelpers) end
+            AddHelperAbilities(hero, tHelpers)
+        end
 
         -- move new spells into hotkey slots
         PrintHotkeySlots(hero, 'before')
@@ -1317,11 +1588,17 @@ function SM.InitMoreSpells(hero, nTeams)
         for i = 1, #ultimateAbilities do abilities.ult[#abilities.ult+1] = ultimateAbilities[i].name end
 
         -- fewer spells than expected (e.g. no passive spell available): trim the rules to match
-        local tHeroRules = { heroLevelMax = rules.heroLevelMax, basics = {}, ults = {} }
-        for i = 1, #abilities.basic do tHeroRules.basics[i] = rules.basics[i] end
-        for i = 1, #abilities.ult do tHeroRules.ults[i] = rules.ults[i] end
+        local tRules = hero.spellAllRandom and omgarRules or rules
+        local tHeroRules = { heroLevelMax = tRules.heroLevelMax, basics = {}, ults = {} }
+        for i = 1, #abilities.basic do tHeroRules.basics[i] = tRules.basics[i] end
+        for i = 1, #abilities.ult do tHeroRules.ults[i] = tRules.ults[i] end
 
-        hero.spellLevelUpList = BuildAbilityLevelUpList(abilities.basic, abilities.ult, tHeroRules)
+        -- OMGAR: humans level the new spells with their own ability points
+        if hero.spellAllRandom and IsHumanHero(hero) then
+            hero.spellLevelUpList = {}
+        else
+            hero.spellLevelUpList = BuildAbilityLevelUpList(abilities.basic, abilities.ult, tHeroRules)
+        end
 
         hero.spellInitDone = true
         hero.spellRefreshGen = nRefreshGen
@@ -1330,6 +1607,8 @@ function SM.InitMoreSpells(hero, nTeams)
 
     RestoreUnlockedUpgrades(hero)
 
+    if hero.spellAllRandom then SyncSubAbilityLevels(hero) end
+
     -- level up (a loop, so re-rolled spells catch up to the hero's level at once)
     while hero:GetLevel() > hero.spellLevelPrev and #hero.spellLevelUpList > 0 do
         hero.spellLevelPrev = hero.spellLevelPrev + 1
@@ -1337,7 +1616,9 @@ function SM.InitMoreSpells(hero, nTeams)
             if w.level == hero.spellLevelPrev then
                 for i = 0, hero:GetAbilityCount() - 1 do
                     local ability = hero:GetAbilityByIndex(i)
-                    if ability and (not ability:IsHidden() or hero.spellPassiveOnly) then
+                    -- OMGAR: a spell hidden by its sub-ability (Kunkka's X Mark while Return is up) is
+                    -- still leveled, or the level would be lost
+                    if ability and (not ability:IsHidden() or hero.spellPassiveOnly or hero.spellAllRandom) then
                         local sAbilityName = ability:GetAbilityName()
                         if sAbilityName == w.ability then
                             if string.find(sAbilityName, 'invoker_') and not ability:IsActivated() then
@@ -1347,7 +1628,7 @@ function SM.InitMoreSpells(hero, nTeams)
                             local nBefore = ability:GetLevel()
                             ability:UpgradeAbility(true)
                             -- a hidden ability may refuse the upgrade call; set the level directly
-                            if hero.spellPassiveOnly and ability:GetLevel() == nBefore and nBefore < ability:GetMaxLevel() then
+                            if (hero.spellPassiveOnly or hero.spellAllRandom) and ability:GetLevel() == nBefore and nBefore < ability:GetMaxLevel() then
                                 ability:SetLevel(nBefore + 1)
                             end
                         end

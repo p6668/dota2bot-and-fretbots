@@ -7870,6 +7870,29 @@ local function HandleNonNativeAbility(hAbility)
     if abilityUsage and abilityUsage.SkillsComplement then abilityUsage.SkillsComplement() end
 end
 
+-- OMG All Random (bots/Buff, OMGAR) removes the hero's own spells (innate and talents stay). The bot script
+-- can't read the Buff game mode, so it checks whether any of the hero's own spells is still there.
+local tOwnSpellNames = {}
+for _, spell in pairs(SPL['SpellsMap']) do
+	if spell.owner == bot:GetUnitName() and math.floor(spell.type / SPL.SPELL_TYPE_INNATE) % 2 == 0 then
+		table.insert(tOwnSpellNames, spell.name)
+	end
+end
+
+local bAllRandom = false
+local tAllRandomErrors = {} -- printed once per spell
+local function IsAllRandom()
+	if bAllRandom or #tOwnSpellNames == 0 then return bAllRandom end
+	if GetGameState() ~= GAME_STATE_PRE_GAME and GetGameState() ~= GAME_STATE_GAME_IN_PROGRESS then return false end
+
+	for _, sName in ipairs(tOwnSpellNames) do
+		if bot:GetAbilityByName(sName) ~= nil then return false end
+	end
+
+	bAllRandom = true
+	return true
+end
+
 function ItemUsageThink()
 	if bot.farm and bot.farm.state == 2 then return end
 	if bot.AbilityUsage == nil then bot.AbilityUsage = {} end
@@ -7878,18 +7901,31 @@ function ItemUsageThink()
     if t < 0.5 then
         ItemUsageComplement()
 	else
-		BotBuild.SkillsComplement()
+		-- OMGAR: the hero's own spell logic has nothing left to cast
+		local bOmgar = IsAllRandom()
+		if not bOmgar then BotBuild.SkillsComplement() end
 
 		-- for added spells
 		if not bot:IsAlive() then return end
 
-		for i = 35, 1, -1 do
+		-- OMGAR: the new spells sit on Q too (slot 0)
+		for i = 35, bOmgar and 0 or 1, -1 do
 			local hAbility = bot:GetAbilityInSlot(i)
 			if hAbility then
 				local sAbilityName = hAbility:GetName()
 				if not string.find(sAbilityName, sHeroNameStripped) and not J.IsGenericAbility(sAbilityName) then
 					if J.CanCastAbility(hAbility) then
-						HandleNonNativeAbility(hAbility)
+						-- OMGAR rolls spells whose hero logic never ran on another hero (Kunkka's X Mark, ...):
+						-- an error there must not stop the other spells
+						if bOmgar then
+							local bOk, sError = pcall(HandleNonNativeAbility, hAbility)
+							if not bOk and not tAllRandomErrors[sAbilityName] then
+								tAllRandomErrors[sAbilityName] = true
+								print('[OMGAR] '..bot:GetUnitName()..' '..sAbilityName..': '..tostring(sError))
+							end
+						else
+							HandleNonNativeAbility(hAbility)
+						end
 					end
 				end
 			end
