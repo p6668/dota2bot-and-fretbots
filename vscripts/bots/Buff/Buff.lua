@@ -180,7 +180,7 @@ function Buff:Init()
     -- How many times each player may use '-omgrefresh'. Set in the console with 'omg_refresh_limit <n>'.
     -- Globals, so the convar is registered once and the used counts survive script_reload_code.
     if not BuffRefreshConvarRegistered then
-        Convars:RegisterConvar('omg_refresh_limit', '2', "Times each player may use -omgrefresh (OMG modes)", 0)
+        Convars:RegisterConvar('omg_refresh_limit', '5', "Times each player may use -omgrefresh (OMG modes)", 0)
         BuffRefreshConvarRegistered = true
     end
     if BuffRefreshUsed == nil then BuffRefreshUsed = {} end
@@ -203,7 +203,7 @@ function Buff:Init()
             return
         end
 
-        local nLimit = math.max(Convars:GetInt('omg_refresh_limit') or 2, 0)
+        local nLimit = math.max(Convars:GetInt('omg_refresh_limit') or 5, 0)
         local nUsed = BuffRefreshUsed[nPlayerID] or 0
         if nUsed >= nLimit then
             GameRules:SendCustomMessage(sPlayerName..': no -omgrefresh left (limit '..nLimit..').', 0, 0)
