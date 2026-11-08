@@ -34,8 +34,10 @@ In any OMG game (`OMG`, `OMG80`, `OMGRA`, `OMGRA80`, `OMGRA60`), type `OMGRefres
 Any player can also type `-omgrefresh` in the game **chat** (not the console) to re-roll only their own hero's extra spells. Each player can do this 2 times by default; after typing an OMG mode command, the host can change the limit in the console, e.g. `omg_refresh_limit 5`.
 In an OMG / OMG80 game, type `OMGRefresh` at any time after pre-game starts to re-roll the extra spells of every hero (humans and bots). The new spells are leveled straight up to each hero's current level. You can use it as often as you like.
 
-Any player can also type `-omgrefresh` in the game **chat** (not the console) to re-roll only their own hero's extra spells. Each player can do this 2 times by default; after typing `OMG` / `OMG80`, the host can change the limit in the console, e.g. `omg_refresh_limit 5`.
-If a command says "Unknown command", step 2 didn't take effect. You can still type the full command, e.g. `sv_cheats 1; script_reload_code bots/Buff/mode/omg80`.
+Any player can also type `-omgrefresh` in the game **chat** (not the console) to re-roll only their own hero's extra spells. Each player can do this 5 times by default; after typing `OMG` / `OMG80`, the host can change the limit in the console, e.g. `omg_refresh_limit 5`.
+If a command says "Unknown command", step 2 didn't take effect. You can still type the full command, e.g. `sv_cheats 1; script_reload_code bots/Buff/mode/omg80`. The `-omgrefresh` is only available in the first 5 mins. After that, the player cannot re-roll the extra spells. The host can change the deadline in the console, e.g. `omg_refresh_deadline 10`. In addition, any player can type `-omgrefreshbot` in the game **chat** (not the console) to re-roll only the bots' extra spells. There is no limits and each time all 5 bots' extra spells will be refreshed. 
+
+Any player can also type `-key d f` in the game **chat** (not the console) to swap spells from hotkey 'd' to 'f'. Players can also swap unassigned spell to assigned spell, e.g., `-key f 2`. To view all extra spells, see `-keys`. 
 
 6. The script is now running (`Buff mode enabled!` and `Game Mode: ...` messages in chat).
 7. The script allows manual hero selection for the enemy team. For example, typing `/all puck` in chat will pick Puck for the enemy.

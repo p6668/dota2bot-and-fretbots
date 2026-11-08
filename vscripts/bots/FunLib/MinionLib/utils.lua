@@ -257,6 +257,7 @@ function U.IsAttackingWard(unit)
     return unit_name == "npc_dota_shadow_shaman_ward_1"
 	    or unit_name == "npc_dota_shadow_shaman_ward_2"
 	    or unit_name == "npc_dota_shadow_shaman_ward_3"
+		or unit_name == "npc_dota_venomancer_plague_ward"
 	    or unit_name == "npc_dota_venomancer_plague_ward_1"
 	    or unit_name == "npc_dota_venomancer_plague_ward_2"
 	    or unit_name == "npc_dota_venomancer_plague_ward_3"

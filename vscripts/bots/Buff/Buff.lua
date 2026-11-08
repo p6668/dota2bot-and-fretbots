@@ -185,6 +185,13 @@ function Buff:Init()
     end
     if BuffRefreshUsed == nil then BuffRefreshUsed = {} end
 
+    -- '-omgrefresh' stops working this many minutes after the game clock starts. Set in the console with
+    -- 'omg_refresh_deadline <minutes>'.
+    if not BuffRefreshDeadlineConvarRegistered then
+        Convars:RegisterConvar('omg_refresh_deadline', '5', "Minutes after the game starts until -omgrefresh stops working (OMG modes)", 0)
+        BuffRefreshDeadlineConvarRegistered = true
+    end
+
     -- '-omgrefresh' in chat: re-roll only the extra spells of the player who typed it.
     -- Reloading must not stack a second listener, so the old one is removed first.
     if BuffChatListener then
@@ -200,6 +207,13 @@ function Buff:Init()
 
         if not bBuffFlags.morespells.enable then
             GameRules:SendCustomMessage('-omgrefresh only works in OMG modes.', 0, 0)
+            return
+        end
+
+        -- too late: the game clock is past the deadline (the clock is negative before the horn)
+        local nDeadline = math.max(Convars:GetInt('omg_refresh_deadline') or 5, 0)
+        if GameRules:GetDOTATime(false, false) > nDeadline * 60 then
+            GameRules:SendCustomMessage(sPlayerName..': -omgrefresh is only available in the first '..nDeadline..' minutes of the game.', 0, 0)
             return
         end
 
