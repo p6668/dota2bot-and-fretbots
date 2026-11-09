@@ -195,7 +195,7 @@ function Buff:Init()
     -- '-omgrefresh' in chat: re-roll only the extra spells of the player who typed it.
     -- Reloading must not stack a second listener, so the old one is removed first.
     if BuffChatListener then
-        StopListenToGameEvent(BuffChatListener)
+        StopListeningToGameEvent(BuffChatListener)
     end
     BuffChatListener = ListenToGameEvent('player_chat', function(event)
         local sText = string.lower(string.gsub(tostring(event.text or ''), '^%s*(.-)%s*$', '%1'))
