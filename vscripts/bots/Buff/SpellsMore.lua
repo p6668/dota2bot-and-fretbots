@@ -1604,9 +1604,9 @@ function SM.InitMoreSpells(hero, nTeams)
         PrintHotkeySlots(hero, 'after')
         DebugSay(hero, table.concat(tHotkeyResults, ', '))
 
-        if IsHumanHero(hero) and not bPassiveOnly then
-            SayToAll('[SpellsMore] change a hotkey:  -key e d  (swap E and D),  -key e 2  (swap E with new spell 2),  -keys  (show the keys)')
-        end
+        -- if IsHumanHero(hero) and not bPassiveOnly then
+        --     SayToAll('[SpellsMore] change a hotkey:  -key e d  (swap E and D),  -key e 2  (swap E with new spell 2),  -keys  (show the keys)')
+        -- end
 
         abilities = { basic = {}, ult = {} }
         for i = 1, #basicAbilities do abilities.basic[#abilities.basic+1] = basicAbilities[i].name end
