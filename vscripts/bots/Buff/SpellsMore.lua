@@ -992,6 +992,7 @@ local function RemoveAddedSpells(hero)
 
     hero.spellAddedNames        = nil
     hero.spellDisplacedUpgrades = nil
+    hero.spellOutsideNatives    = nil
     hero.spellPassiveOnly       = nil
     hero.spellLevelUpList       = {}
     hero.spellLevelPrev         = 0 -- the new spells catch up to the hero's level right after the roll
@@ -1023,6 +1024,35 @@ function SM.RequestRefresh(hero)
     if not hero.spellInitDone or hero.spellRefreshRequest then return false end
     hero.spellRefreshRequest = true
     return true
+end
+
+-- Safety net: an Aghanim ability that stays hidden although the hero owns the upgrade (e.g. Keeper of the Light's
+-- Will-O-Wisp after buying the Scepter). The engine normally unhides it itself; if a swap in this script left a
+-- "hidden" flag behind, it never does. Unhide it (and unlock it, level 1) once the matching upgrade is owned.
+-- Only abilities inside the bar (slots 0-5) are touched: the engine can't show anything past slot 5.
+local function EnsureUpgradeAbilitiesVisible(hero)
+    local bScepter = hero:HasScepter()
+    local bShard = hero:HasModifier('modifier_item_aghanims_shard')
+    if not bScepter and not bShard then return end
+
+    for i = 0, 5 do
+        local hAbility = hero:GetAbilityByIndex(i)
+        if hAbility and not hAbility:IsNull() and hAbility:IsHidden() then
+            local sName = hAbility:GetAbilityName()
+            if sName ~= 'generic_hidden' then
+                local sKind = GetUpgradeKind(sName)
+                if (sKind == 'scepter' and bScepter) or (sKind == 'shard' and bShard) then
+                    if hAbility:GetLevel() == 0 then
+                        hAbility:UpgradeAbility(true)
+                        if hAbility:GetLevel() == 0 then hAbility:SetLevel(1) end
+                    end
+                    hAbility:SetHidden(false)
+                    hAbility:SetActivated(true)
+                    DebugSay(hero, string.format('%s was still hidden after the %s; unlocked it (slot %d)', sName, sKind, i))
+                end
+            end
+        end
+    end
 end
 
 -- heroes that only get PASSIVE new spells, so no hotkey is needed. Invoker's bar has no free slot (Q W E orbs,
@@ -1146,6 +1176,11 @@ local function DescribeNewSpells(hero)
         else sKey = 'no hotkey' end
         t[#t + 1] = nIdx .. ':' .. ShortAbilityName(hero, sName) .. '(' .. sKey .. ')'
     end
+
+    -- the hero's own abilities that were pushed out of the bar by -key
+    for nIdx, sName in ipairs(hero.spellOutsideNatives or {}) do
+        t[#t + 1] = ('xyz'):sub(nIdx, nIdx) .. ':' .. ShortAbilityName(hero, sName) .. '(out of bar)'
+    end
     return table.concat(t, '  ')
 end
 
@@ -1241,24 +1276,38 @@ local function MoveOutsideSpellToEmptySlot(hero, hSpell, hPlaceholder, nTo)
     return GetAbilityIndex(hero, sName) == nTo
 end
 
--- swap the ability on a key with a new spell that has no hotkey; returns ok, message
--- the ability on the key must itself be a new spell (it becomes the click-only one) or an empty key: the hero's own
--- abilities can't leave the bar, the engine would not show them again
-local function ChangeHotkeyWithOutsideSpell(hero, nSlot, sOutsideSpell)
+-- swap the ability on a key with an ability that is outside the bar (a new spell without a hotkey, or a hero
+-- ability that an earlier -key pushed out); returns ok, message.
+-- When the key holds one of the hero's own abilities, that ability leaves the bar (like a click-only spell). It is
+-- remembered as x / y / z, so  -key e x  brings it back. A refresh puts it back as well.
+local function ChangeHotkeyWithOutside(hero, nSlot, sOutside)
     local hSlot = hero:GetAbilityByIndex(nSlot)
-    local hOutside = hero:FindAbilityByName(sOutsideSpell)
+    local hOutside = hero:FindAbilityByName(sOutside)
     if not hSlot or not hOutside then return false, 'ability not found' end
 
     local sSlot = hSlot:GetAbilityName()
     if sSlot == 'generic_hidden' then
+        if not GetNewSpellIndex(hero, sOutside) then
+            return false, "the hero's own ability can't be moved onto an empty key"
+        end
         return MoveOutsideSpellToEmptySlot(hero, hOutside, hSlot, nSlot), 'moved'
     end
 
-    if not GetNewSpellIndex(hero, sSlot) then
-        return false, "that key holds the hero's own ability; it can only be swapped with another key, not with a click-only spell"
+    local bNativeLeaves = not GetNewSpellIndex(hero, sSlot)
+    hero.spellOutsideNatives = hero.spellOutsideNatives or {}
+    if bNativeLeaves and #hero.spellOutsideNatives >= 3 then
+        return false, 'at most 3 of the hero\'s own abilities can be outside the bar; bring one back first (-key <key> x)'
     end
 
-    return SwapSlotAbilities(hero, hSlot, hOutside), 'swapped'
+    local bOk = SwapSlotAbilities(hero, hSlot, hOutside)
+    if bOk then
+        -- the ability that came back into the bar is no longer outside
+        for i = #hero.spellOutsideNatives, 1, -1 do
+            if hero.spellOutsideNatives[i] == sOutside then table.remove(hero.spellOutsideNatives, i) end
+        end
+        if bNativeLeaves then hero.spellOutsideNatives[#hero.spellOutsideNatives + 1] = sSlot end
+    end
+    return bOk, 'swapped'
 end
 
 -- remember where the player wants each new spell (1st/2nd/3rd), keyed by position in spellAddedNames
@@ -1338,6 +1387,16 @@ local function HandleHotkeyChat(tEvent)
     local function Resolve(sArg)
         if KEY_SLOT[sArg] then return { slot = KEY_SLOT[sArg] } end
 
+        -- x / y / z: the hero's own abilities that an earlier -key pushed out of the bar
+        local nNative = ({ x = 1, y = 2, z = 3 })[sArg]
+        if nNative then
+            local sNative = (hero.spellOutsideNatives or {})[nNative]
+            if not sNative then return nil end
+            local nNativeSlot = GetAbilityIndex(hero, sNative)
+            if nNativeSlot >= 0 and nNativeSlot <= 5 then return { slot = nNativeSlot } end
+            return { spell = sNative }
+        end
+
         local nNumber = tonumber(sArg)
         local sSpell = nNumber and hero.spellAddedNames[nNumber]
         if not sSpell then return nil end
@@ -1349,7 +1408,7 @@ local function HandleHotkeyChat(tEvent)
 
     local tA, tB = Resolve(sArg1), Resolve(sArg2)
     if not tA or not tB then
-        SayToAll('[SpellsMore] use keys Q W E D F R or a new spell number, e.g.  -key e d   or   -key e 2   (see -keys)')
+        SayToAll('[SpellsMore] use keys Q W E D F R, a new spell number, or x/y/z (a hero ability pushed out of the bar), e.g.  -key e d   -key e 2   -key e x   (see -keys)')
         return
     end
 
@@ -1358,9 +1417,9 @@ local function HandleHotkeyChat(tEvent)
         if tA.slot == tB.slot then return end
         ok, sMsg = ChangeHotkey(hero, tA.slot, tB.slot)
     elseif tA.slot and tB.spell then
-        ok, sMsg = ChangeHotkeyWithOutsideSpell(hero, tA.slot, tB.spell)
+        ok, sMsg = ChangeHotkeyWithOutside(hero, tA.slot, tB.spell)
     elseif tA.spell and tB.slot then
-        ok, sMsg = ChangeHotkeyWithOutsideSpell(hero, tB.slot, tA.spell)
+        ok, sMsg = ChangeHotkeyWithOutside(hero, tB.slot, tA.spell)
     else
         SayToAll('[SpellsMore] pick at least one key: both spells have no hotkey')
         return
@@ -1604,9 +1663,9 @@ function SM.InitMoreSpells(hero, nTeams)
         PrintHotkeySlots(hero, 'after')
         DebugSay(hero, table.concat(tHotkeyResults, ', '))
 
-        -- if IsHumanHero(hero) and not bPassiveOnly then
-        --     SayToAll('[SpellsMore] change a hotkey:  -key e d  (swap E and D),  -key e 2  (swap E with new spell 2),  -keys  (show the keys)')
-        -- end
+        if IsHumanHero(hero) and not bPassiveOnly then
+            SayToAll('[SpellsMore] change a hotkey:  -key e d  (swap E and D),  -key e 2  (swap E with new spell 2),  -keys  (show the keys)')
+        end
 
         abilities = { basic = {}, ult = {} }
         for i = 1, #basicAbilities do abilities.basic[#abilities.basic+1] = basicAbilities[i].name end
@@ -1625,6 +1684,7 @@ function SM.InitMoreSpells(hero, nTeams)
     end
 
     RestoreUnlockedUpgrades(hero)
+    EnsureUpgradeAbilitiesVisible(hero)
 
     -- level up (a loop, so re-rolled spells catch up to the hero's level at once)
     while hero:GetLevel() > hero.spellLevelPrev and #hero.spellLevelUpList > 0 do
