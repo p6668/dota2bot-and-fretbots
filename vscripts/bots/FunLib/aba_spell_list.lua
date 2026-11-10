@@ -3877,7 +3877,7 @@ X['SpellsMap'] = {
     {
         name    = 'earthshaker_aftershock',
         owner   = 'npc_dota_hero_earthshaker',
-        type    = X.SPELL_TYPE_BASIC + X.SPELL_TYPE_ULTIMATE, -- also rolled as an ultimate
+        type    = X.SPELL_TYPE_BASIC,
         banned  = false,
         weight  = 1.0,
         roles   = { melee=1, range=1, rightclicker=1, caster=1 },
@@ -3888,7 +3888,7 @@ X['SpellsMap'] = {
             ['escape']    = 0,
             ['initiator'] = 2,
             ['jungler']   = 0,
-            ['nuker']     = 2,
+            ['nuker']     = 1,
             ['support']   = 1,
             ['pusher']    = 0,
             ['healer']    = 0,
