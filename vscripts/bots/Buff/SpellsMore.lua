@@ -835,6 +835,8 @@ end
 -- how many basic/ultimate (kim level 30 ceiling, cooldown, lag, memory)
 local COUNT_BASIC    = 2
 local COUNT_ULTIMATE = 1
+-- bots get 4 new spells: the basics above plus this many ultimates (humans keep COUNT_ULTIMATE)
+local COUNT_ULTIMATE_BOT = 2
 -- should match above count
 local rules = {
     heroLevelMax = 30,
@@ -844,6 +846,8 @@ local rules = {
     },
     ults = {
         { maxLevel = 3, startLevel = 11, cooldown = 4 },
+        -- second ultimate (bots): interleaves with the first, 13/17/21 next to 11/15/19
+        { maxLevel = 3, startLevel = 13, cooldown = 4 },
     },
 }
 
@@ -1513,12 +1517,14 @@ function SM.InitMoreSpells(hero, nTeams)
             end
         end
 
+        local nUltCount = IsHumanHero(hero) and COUNT_ULTIMATE or COUNT_ULTIMATE_BOT
+
         local basicAbilities    = GetAbilityBuild(hero, COUNT_BASIC, abilities.basic, true)
-        local ultimateAbilities = GetAbilityBuild(hero, COUNT_ULTIMATE, abilities.ult, false)
+        local ultimateAbilities = GetAbilityBuild(hero, nUltCount, abilities.ult, false)
 
         -- passive ultimates are rare: if there is none, the third passive comes from the basic pool
-        if bPassiveOnly and #ultimateAbilities < COUNT_ULTIMATE then
-            local tThree = GetAbilityBuild(hero, COUNT_BASIC + COUNT_ULTIMATE, abilities.basic, true)
+        if bPassiveOnly and #ultimateAbilities < nUltCount then
+            local tThree = GetAbilityBuild(hero, COUNT_BASIC + nUltCount, abilities.basic, true)
             basicAbilities, ultimateAbilities = {}, {}
             for i = 1, #tThree do
                 if i <= COUNT_BASIC then basicAbilities[#basicAbilities + 1] = tThree[i]
@@ -1595,9 +1601,9 @@ function SM.InitMoreSpells(hero, nTeams)
             tHotkeyResults[#tHotkeyResults + 1] = ultimateAbilities[i].name .. ' ' .. tUltResults[i]
         end
 
-        -- at most MAX_CLICK_ONLY_SPELLS castable new spells may stay without a hotkey (humans; bots cast
-        -- without hotkeys and keep the old limit of one); any others become passive spells
-        local nMaxClickOnly = IsHumanHero(hero) and MAX_CLICK_ONLY_SPELLS or 1
+        -- at most MAX_CLICK_ONLY_SPELLS castable new spells may stay without a hotkey (humans); any others become
+        -- passive spells. Bots cast without hotkeys and keep all of their (4) spells.
+        local nMaxClickOnly = IsHumanHero(hero) and MAX_CLICK_ONLY_SPELLS or math.huge
         local tNoSlot = {}
         for i = 1, #basicAbilities do
             if tBasicResults[i] == 'NO-SLOT' then
