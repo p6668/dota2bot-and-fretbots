@@ -132,7 +132,7 @@ local Tier5NeutralItems = {
     -- --[[Seer Stone]]            "item_seer_stone",
     -- --[[Mirror Shield]]         "item_mirror_shield",
     -- --[[Apex]]                  "item_apex",
-    --[[Book of the Dead]]      "item_demonicon",
+    -- --[[Book of the Dead]]      "item_demonicon",
     -- --[[Arcanist's Armor]]      "item_force_field",
     -- --[[Pirate Hat]]            "item_pirate_hat",
     -- --[[Giant's Ring]]          "item_giants_ring",
