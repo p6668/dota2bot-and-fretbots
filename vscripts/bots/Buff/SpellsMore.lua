@@ -835,8 +835,6 @@ end
 -- how many basic/ultimate (kim level 30 ceiling, cooldown, lag, memory)
 local COUNT_BASIC    = 2
 local COUNT_ULTIMATE = 1
--- bots get 4 new spells: the basics above plus this many ultimates (humans keep COUNT_ULTIMATE)
-local COUNT_ULTIMATE_BOT = 2
 -- should match above count
 local rules = {
     heroLevelMax = 30,
@@ -850,6 +848,13 @@ local rules = {
         { maxLevel = 3, startLevel = 13, cooldown = 4 },
     },
 }
+
+-- how many ultimates each BOT gets (humans always get COUNT_ULTIMATE). 1 = the usual 2 basic + 1 ultimate;
+-- 2 = 2 basic + 2 ultimate (the 'omgult' mode in Buff.lua sets this). Never more than there are rules.ults entries.
+SM.botUltimateCount = COUNT_ULTIMATE
+function SM.SetBotUltimateCount(nCount)
+    SM.botUltimateCount = math.max(COUNT_ULTIMATE, math.min(tonumber(nCount) or COUNT_ULTIMATE, #rules.ults))
+end
 
 local fPreviousTime = -math.huge
 
@@ -1517,7 +1522,7 @@ function SM.InitMoreSpells(hero, nTeams)
             end
         end
 
-        local nUltCount = IsHumanHero(hero) and COUNT_ULTIMATE or COUNT_ULTIMATE_BOT
+        local nUltCount = IsHumanHero(hero) and COUNT_ULTIMATE or SM.botUltimateCount
 
         local basicAbilities    = GetAbilityBuild(hero, COUNT_BASIC, abilities.basic, true)
         local ultimateAbilities = GetAbilityBuild(hero, nUltCount, abilities.ult, false)
@@ -1601,9 +1606,11 @@ function SM.InitMoreSpells(hero, nTeams)
             tHotkeyResults[#tHotkeyResults + 1] = ultimateAbilities[i].name .. ' ' .. tUltResults[i]
         end
 
-        -- at most MAX_CLICK_ONLY_SPELLS castable new spells may stay without a hotkey (humans); any others become
-        -- passive spells. Bots cast without hotkeys and keep all of their (4) spells.
-        local nMaxClickOnly = IsHumanHero(hero) and MAX_CLICK_ONLY_SPELLS or math.huge
+        -- at most MAX_CLICK_ONLY_SPELLS castable new spells may stay without a hotkey (humans; bots cast
+        -- without hotkeys and keep the old limit of one); any others become passive spells.
+        -- exception: with 2 ultimates per bot (omgult) the bots keep all 4 of their spells.
+        local nMaxClickOnly = IsHumanHero(hero) and MAX_CLICK_ONLY_SPELLS
+            or ((SM.botUltimateCount > COUNT_ULTIMATE) and math.huge or 1)
         local tNoSlot = {}
         for i = 1, #basicAbilities do
             if tBasicResults[i] == 'NO-SLOT' then

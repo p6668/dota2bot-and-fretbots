@@ -125,8 +125,10 @@ local GameModes = {
     omgra   = { DifficultyMode = 1, moreSpells = true,  rerollOnDeath = true, label = 'OMG 4+2, Re-roll on Death (Full Bot XP Bonus)' },
     omgra80 = { DifficultyMode = 2, moreSpells = true,  rerollOnDeath = true, label = 'OMG 4+2, Re-roll on Death (80% Bot XP Bonus)' },
     omgra60 = { DifficultyMode = 3, moreSpells = true,  rerollOnDeath = true, label = 'OMG 4+2, Re-roll on Death (60% Bot XP Bonus)' },
+    -- botUltimates: ultimates per bot (default 1). Bots get 2 basic + 2 ultimate here; players keep 2 basic + 1 ultimate.
+    omgult  = { DifficultyMode = 2, moreSpells = true,  botUltimates = 2, label = 'OMG 4+2, Bots with 2 Ultimates (80% Bot XP Bonus)' },
 }
-local RandomModes = { 'normal', 'omg', 'omg80', 'omgra', 'omgra80', 'omgra60' }
+local RandomModes = { 'normal', 'omg', 'omg80', 'omgra', 'omgra80', 'omgra60', 'omgult' }
 
 -- Picks the mode for this load. Returns the mode key.
 -- Globals (BuffActiveMode, BuffGodmode) survive script_reload_code, locals do not.
@@ -165,6 +167,9 @@ function Buff:Init()
     local tMode = GameModes[SelectGameMode()]
     bBuffFlags.morespells.enable = tMode.moreSpells
     bBuffFlags.morespells.rerollOnDeath = tMode.rerollOnDeath == true
+    if SpellMode.SetBotUltimateCount then
+        SpellMode.SetBotUltimateCount(tMode.botUltimates or 1)
+    end
 
     -- Keep god mode state across reloads so it can't be re-rolled or re-triggered mid-game.
     if BuffGodmode == nil then
