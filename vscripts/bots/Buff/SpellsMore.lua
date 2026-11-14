@@ -623,18 +623,25 @@ end
 -- set to true to print what sits in each hotkey slot (D/F = slots 3/4) to the console
 local DEBUG_HOTKEY_SLOTS = false
 
+-- heroes (also bots) whose spell picks and slot layout are always reported to the chat, even when
+-- DEBUG_HOTKEY_SLOTS is false. Used to find out why a hero does not get an expected spell.
+local DEBUG_CHAT_HEROES = {
+    ['npc_dota_hero_bane'] = true,
+}
+
 -- prints to the console, and also to the in-game chat for human players (no console needed)
 local function DebugSay(hero, sMsg)
-    if not DEBUG_HOTKEY_SLOTS then return end
+    local bListed = DEBUG_CHAT_HEROES[hero:GetUnitName()] == true
+    if not DEBUG_HOTKEY_SLOTS and not bListed then return end
     print('[SpellsMore] ' .. sMsg)
     local nPlayerID = hero:GetPlayerOwnerID()
-    if nPlayerID and nPlayerID >= 0 and not PlayerResource:IsFakeClient(nPlayerID) then
+    if bListed or (nPlayerID and nPlayerID >= 0 and not PlayerResource:IsFakeClient(nPlayerID)) then
         GameRules:SendCustomMessage('[SpellsMore] ' .. sMsg, 0, 0)
     end
 end
 
 local function PrintHotkeySlots(hero, sLabel)
-    if not DEBUG_HOTKEY_SLOTS then return end
+    if not DEBUG_HOTKEY_SLOTS and not DEBUG_CHAT_HEROES[hero:GetUnitName()] then return end
     local t = {}
     for i = 0, 5 do
         local hAbility = hero:GetAbilityByIndex(i)
@@ -781,6 +788,8 @@ local function GiveHotkeySlot(hero, sAbilityName, tTaken, bPreferQWE)
         return 'OK'
     end
 
+    local bNewHidden, bNewActivated = hNew:IsHidden(), hNew:IsActivated()
+
     for _, sSlotName in ipairs(GetFreeHotkeySlotNames(hero, tTaken, bPreferQWE)) do
         local hDisplaced = hero:FindAbilityByName(sSlotName)
         local bDisplacedHidden = hDisplaced and hDisplaced:IsHidden()
@@ -827,6 +836,11 @@ local function GiveHotkeySlot(hero, sAbilityName, tTaken, bPreferQWE)
         if sSlotName == 'generic_hidden' then
             tTaken['__ghBlocked'] = true
         end
+
+        -- a swap that missed leaves the new spell hidden: the engine refuses to show it past slot 5
+        -- ("trying to unhide in a slot > 5"). Put its flags back, or a spell without a key would vanish.
+        hNew:SetHidden(bNewHidden)
+        hNew:SetActivated(bNewActivated)
     end
 
     return 'NO-SLOT'
@@ -1447,6 +1461,32 @@ end
 if SpellsMoreChatListener then StopListeningToGameEvent(SpellsMoreChatListener) end
 SpellsMoreChatListener = ListenToGameEvent('player_chat', HandleHotkeyChat, nil)
 
+-- Fallback ultimate pools, built only when the normal (strict) pool gave a hero fewer ultimates than expected
+-- (e.g. a bot support whose role filters leave no ultimate that bots may use). Hard rules stay: not banned, not
+-- bot-banned (for bots), not the hero's own spell.
+--   tier 1: melee/range still has to fit, the role and clicker-role filters are dropped
+--   tier 2: only the hard rules
+-- every spell gets at least a small score, so the weighted pick can choose it
+local function BuildRelaxedUltPools(hero, sHeroNameStripped, nTeam)
+    local tTier1, tTier2 = {}, {}
+    local sAttack = IsRangedAttacker(hero) and 'range' or 'melee'
+
+    for _, spell in pairs(SPL['SpellsMap']) do
+        if spell
+        and HasFlag(spell.type, SPL.SPELL_TYPE_ULTIMATE)
+        and (not spell.banned or IsUnlockedAutoCast(spell, hero))
+        and not IsBotBanned(spell, hero)
+        and not string.find(spell.name, sHeroNameStripped)
+        then
+            local nScore = math.max(GetSpellScore(spell, hero, nTeam), 0.01)
+            tTier2[spell] = nScore
+            if GetSpellRoles(spell, hero)[sAttack] == 1 then tTier1[spell] = nScore end
+        end
+    end
+
+    return tTier1, tTier2
+end
+
 function SM.InitMoreSpells(hero, nTeams)
     if not hero then return end
 
@@ -1537,8 +1577,46 @@ function SM.InitMoreSpells(hero, nTeams)
             end
         end
 
+        -- the strict pool left a shortfall: fill up from the relaxed pools (tier 1, then tier 2)
+        if not bPassiveOnly and #ultimateAbilities < nUltCount then
+            local tTier1, tTier2 = BuildRelaxedUltPools(hero, sHeroNameStripped, nTeams[hero:GetTeam()])
+            for nTier, tPool in ipairs({ tTier1, tTier2 }) do
+                if #ultimateAbilities >= nUltCount then break end
+                local tExtra = GetAbilityBuild(hero, nUltCount - #ultimateAbilities, tPool, false)
+                for _, spell in ipairs(tExtra) do ultimateAbilities[#ultimateAbilities + 1] = spell end
+                if #tExtra > 0 then
+                    local sMsg = string.format('[SpellsMore] %s: strict ultimate pool too small, picked %d from relaxed pool %d',
+                        sHeroName, #tExtra, nTier)
+                    print(sMsg)
+                    GameRules:SendCustomMessage(sMsg, 0, 0)
+                end
+            end
+        end
+
+        -- diagnostics: a hero that got fewer ultimates than expected (empty / used-up / zero-score ultimate pool)
+        if #ultimateAbilities < nUltCount then
+            local nPool, nPositive, nTaken = 0, 0, 0
+            for spell, value in pairs(abilities.ult) do
+                nPool = nPool + 1
+                if value > 0 then nPositive = nPositive + 1 end
+                if AbilityPickedList[spell] then nTaken = nTaken + 1 end
+            end
+            local sMsg = string.format('[SpellsMore] %s got %d of %d ultimates (ult pool: %d spells, %d with a score > 0, %d already taken)',
+                sHeroName, #ultimateAbilities, nUltCount, nPool, nPositive, nTaken)
+            print(sMsg)
+            GameRules:SendCustomMessage(sMsg, 0, 0)
+        end
+
         -- at least one passive among the new spells
         EnsurePassiveSpell(hero, basicAbilities, ultimateAbilities, abilities.basic)
+
+        do
+            local tBasicNames, tUltNames = {}, {}
+            for i = 1, #basicAbilities do tBasicNames[#tBasicNames + 1] = basicAbilities[i].name end
+            for i = 1, #ultimateAbilities do tUltNames[#tUltNames + 1] = ultimateAbilities[i].name end
+            DebugSay(hero, string.format('%s picked basics: [%s]  ultimates: [%s]  (bot=%s)', sHeroName,
+                table.concat(tBasicNames, ', '), table.concat(tUltNames, ', '), tostring(not IsHumanHero(hero))))
+        end
 
         PrecacheUnits(nTeams, basicAbilities, ultimateAbilities)
 
@@ -1570,6 +1648,14 @@ function SM.InitMoreSpells(hero, nTeams)
         for i = 1, #basicAbilities do AddNewSpell(hero, basicAbilities[i].name, true, tHelpers) end
         for i = 1, #ultimateAbilities do AddNewSpell(hero, ultimateAbilities[i].name, false, tHelpers) end
         AddHelperAbilities(hero, tHelpers)
+
+        for _, tList in ipairs({ basicAbilities, ultimateAbilities }) do
+            for i = 1, #tList do
+                if not hero:HasAbility(tList[i].name) then
+                    DebugSay(hero, 'ADD FAILED: ' .. tList[i].name .. ' is not on the hero after AddAbility')
+                end
+            end
+        end
 
         -- move new spells into hotkey slots
         PrintHotkeySlots(hero, 'before')
