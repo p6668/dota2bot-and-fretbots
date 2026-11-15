@@ -677,7 +677,12 @@ local ALLOW_DISPLACE_LOCKED_PASSIVES = true
 -- a passive can't be cast, so it never needs a hotkey: visible ones (innates, Counter Helix, ...) waste it,
 -- and hidden ones that are already active (e.g. Gyrocopter's Afterburner, level 1) are not shown anyway
 local function IsPassiveSlotAbility(hAbility)
-    if hAbility:GetAbilityName() == 'generic_hidden' or not hAbility:IsPassive() then return false end
+    local sName = hAbility:GetAbilityName()
+    if sName == 'generic_hidden' or not hAbility:IsPassive() then return false end
+
+    -- '<hero>_empty1', '<hero>_empty2': slots the game fills itself while playing (Doom's Devour puts the eaten
+    -- creep's spells there; Invoker, Rubick, ...). They look like passives, but must never be given to a new spell.
+    if string.find(sName, '_empty%d+$') then return false end
     if hAbility:IsHidden() and hAbility:GetLevel() == 0 and not ALLOW_DISPLACE_LOCKED_PASSIVES then return false end
     return true
 end
@@ -1085,6 +1090,7 @@ end
 local PASSIVE_ONLY_HEROES = {
     ['npc_dota_hero_invoker'] = true,
     ['npc_dota_hero_rubick']  = true,
+    ['npc_dota_hero_doom_bringer'] = true, -- Devour refills his D/F keys with the eaten creep's spells
 }
 
 -- human-only spells: the ones marked botBanned in aba_spell_list (Ball Lightning, Rot, ...). They work for
