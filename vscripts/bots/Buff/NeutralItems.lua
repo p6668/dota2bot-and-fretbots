@@ -14,142 +14,63 @@ local isTierFiveDone  = false
 -- Neutrals
 
 local Tier1NeutralItems = {
-    -- --[[Trusty Shovel]]         "item_trusty_shovel",
-    -- --[[Arcane Ring]]           "item_arcane_ring",
-    -- --[[Fairy's Trinket]]       "item_mysterious_hat",
-    -- --[[Pig Pole]]              "item_unstable_wand",
-    -- --[[Safety Bubble]]         "item_safety_bubble",
-    -- --[[Seeds of Serenity]]     "item_seeds_of_serenity",
-    -- --[[Lance of Pursuit]]      "item_lance_of_pursuit",
-    --[[Occult Bracelet]]       "item_occult_bracelet",
-    --[[Duelist Gloves]]        "item_duelist_gloves",
-    -- --[[Broom Handle]]          "item_broom_handle",
-    -- --[[Royal Jelly]]           "item_royal_jelly",
-    -- --[[Faded Broach]]          "item_faded_broach",
-    -- --[[Spark Of Courage]]      "item_spark_of_courage",
-    -- --[[Ironwood Tree]]         "item_ironwood_tree",
-    -- --[[Mana Draught]]          "item_mana_draught",
-    --[[Polliwog Charm]]        "item_polliwog_charm",
-    -- --[[Ripper's Lash]]         "item_rippers_lash",
-    -- -- [[Orb of Destruction]]    "item_orb_of_destruction",
-    --[[Chipped Vest]]          "item_chipped_vest",
-    --[[Dormant Curio]]         "item_dormant_curio",
-    --[[Kobold Cup]]            "item_kobold_cup",
-    -- --[[Sister's Shroud]]       "item_sisters_shroud",
-    --[[Ash Legion Shield]]     "item_ash_legion_shield",
-    --[[Weighted Dice]]         "item_weighted_dice",
-    --[[Dagger Of Ristul]]      "item_dagger_of_ristul",
-    --[[Forager's Kit]]         "item_foragers_kit",
-    --[[Possessed Mask]]        "item_possessed_mask",
-    --[[Stonefeather Satchel]]  "item_stonefeather_satchel",
+    --[[Seeds of Serenity]]   "item_seeds_of_serenity",
+    --[[Polliwog Charm]]      "item_polliwog_charm",
+    --[[Chipped Vest]]        "item_chipped_vest",
+    --[[Dormant Curio]]       "item_dormant_curio",
+    --[[Red Ledger]]          "item_red_ledger",
+    --[[Kobold Cup]]          "item_kobold_cup",
+    --[[Ash Legion Shield]]   "item_ash_legion_shield",
+    --[[Weighted Dice]]       "item_weighted_dice",
+    --[[Forager's Kit]]       "item_foragers_kit",
+    --[[Possessed Mask]]      "item_possessed_mask",
+    --[[Stonefeather Satchel]] "item_stonefeather_satchel",
+    --[[Tumbler's Toy]]       "item_pogo_stick",
 }
 
 local Tier2NeutralItems = {
-    -- --[[Dragon Scale]]          "item_dragon_scale",
-    -- --[[Whisper of the Dread]]  "item_whisper_of_the_dread",
-    -- --[[Pupil's Gift]]          "item_pupils_gift",
-    -- --[[Grove Bow]]             "item_grove_bow",
-    -- --[[Philosopher's Stone]]   "item_philosophers_stone",
-    -- --[[Bullwhip]]              "item_bullwhip",
-    -- --[[Orb of Destruction]]    "item_orb_of_destruction",
-    -- --[[Specialist's Array]]    "item_specialists_array",
-    -- --[[Eye of the Vizier]]     "item_eye_of_the_vizier",
-    -- --[[Vampire Fangs]]         "item_vampire_fangs",
-    -- --[[Gossamer's Cape]]       "item_gossamer_cape",
-    -- --[[Light Collector]]       "item_light_collector",
-    -- --[[Iron Talon]]            "item_iron_talon",
-    --[[Essence Ring]]          "item_essence_ring",
-    --[[Searing Signet]]        "item_searing_signet",
-    -- --[[Brigand's Balde]]       "item_misericorde",
-    --[[Tumbler's Toy]]         "item_pogo_stick",
-    --[[Mana Draught]]          "item_mana_draught",
-    --[[Poor Man's Shield]]     "item_poor_mans_shield",
-    --[[Defiant Shell]]         "item_defiant_shell",
-    --[[Crippling Crossbow]]    "item_crippling_crossbow",
-    --[[Medallion of Courage]]  "item_medallion_of_courage",
-    --[[Seeds of Serenity]]     "item_seeds_of_serenity",
+    --[[Mana Draught]]        "item_mana_draught",
+    --[[Defiant Shell]]       "item_defiant_shell",
+    --[[Crippling Crossbow]]  "item_crippling_crossbow",
+    --[[Brick]]               "item_brick",
+    --[[Imp Claw]]            "item_imp_claw",
+    --[[Safety Bubble]]       "item_safety_bubble",
+    --[[Gunpowder Gauntlet]]  "item_gunpowder_gauntlets",
+    --[[Jidi Pollen Bag]]     "item_jidi_pollen_bag",
+    --[[Metamorphic Mandible]] "item_metamorphic_mandible",
+    --[[Partisan's Brand]]    "item_partisans_brand",
+    --[[Psychic Headband]]    "item_psychic_headband",
+    --[[Spellslinger]]        "item_spellslinger",
 }
 
 local Tier3NeutralItems = {
-    -- --[[Defiant Shell]]         "item_defiant_shell",
-    -- --[[Paladin Sword]]         "item_paladin_sword",
-    -- --[[Nemesis Curse]]         "item_nemesis_curse",
-    -- --[[Vindicator's Axe]]      "item_vindicators_axe",
-    -- --[[Dandelion Amulet]]      "item_dandelion_amulet",
-    -- --[[Craggy Coat]]           "item_craggy_coat",
-    -- --[[Enchanted Quiver]]      "item_enchanted_quiver",
-    -- --[[Elven Tunic]]           "item_elven_tunic",
-    --[[Cloak of Flames]]       "item_cloak_of_flames",
-    -- --[[Ceremonial Robe]]       "item_ceremonial_robe",
-    --[[Psychic Headband]]      "item_psychic_headband",
-    -- --[[Doubloon]]              "item_doubloon",
-    -- --[[Vambrace]]              "item_vambrace",
-    -- --[[Whisper of the Dread]]  "item_whisper_of_the_dread",
-    --[[Serrrated Shiv]]        "item_serrated_shiv",
-    -- --[[Gale Guard]]            "item_gale_guard",
-    --[[Gunpowder Gauntlet]]    "item_gunpowder_gauntlets",
-    -- --[[Ninja Gear]]            "item_ninja_gear",
-    --[[Jidi Pollen Bag]]       "item_jidi_pollen_bag",
-    --[[Unrelenting Eye]]       "item_unrelenting_eye",
-    --[[Partisan's Brand]]      "item_partisans_brand",
-    --[[Spellslinger]]          "item_spellslinger",
-    --[[Stormcrafter]]          "item_stormcrafter",
+    --[[Dandelion Amulet]]    "item_dandelion_amulet",
+    --[[Ceremonial Robe]]     "item_ceremonial_robe",
+    --[[Serrrated Shiv]]      "item_serrated_shiv",
+    --[[Stormcrafter]]        "item_stormcrafter",
+    --[[Balmhook]]            "item_balmhook",
+    --[[Revenant's Brooch]]   "item_revenants_brooch",
+    --[[Vile Phial]]          "item_vile_phial",
+    --[[Enchanter's Bauble]]  "item_enchanters_bauble",
+    --[[Harmonizer]]          "item_harmonizer",
+    --[[Idol of Scree'Auk]]   "item_idol_of_screeauk",
+    --[[Prophet's Pendulum]]  "item_prophets_pendulum",
+    --[[Rattlecage]]          "item_rattlecage",
 }
 
 local Tier4NeutralItems = {
-    -- --[[Timeless Relic]]        "item_timeless_relic",
-    -- --[[Ascetic Cap]]           "item_ascetic_cap",
-    -- --[[Aviana's Feather]]      "item_avianas_feather",
-    -- --[[Ninja Gear]]            "item_ninja_gear",
-    -- --[[Telescope]]             "item_spy_gadget",
-    -- --[[Trickster Cloak]]       "item_trickster_cloak",
-    -- --[[Stormcrafter]]          "item_stormcrafter",
-    -- --[[Ancient Guardian]]      "item_ancient_guardian",
-    -- --[[Havoc Hammer]]          "item_havoc_hammer",
-    -- --[[Mind Breaker]]          "item_mind_breaker",
-    -- --[[Martyr's Plate]]        "item_martyrs_plate",
-    --[[Rattlecage]]            "item_rattlecage",
-    -- --[[Ogre Seal Totem]]       "item_ogre_seal_totem",
-    -- --[[Crippling Crossbow]]    "item_crippling_crossbow",
-    -- --[[Magnifying Monocle]]    "item_magnifying_monocle",
-    -- --[[Ceremonial Robe]]       "item_ceremonial_robe",
-    -- --[[Pyrrhic Cloak]]         "item_pyrrhic_cloak",
-    -- --[[Dezun Bloodrite]]       "item_dezun_bloodrite",
-    --[[Giant's Maul]]          "item_giant_maul",
-    -- --[[Outworld Staff]]        "item_outworld_staff",
-    --[[Flayer's Bota]]         "item_flayers_bota",
-    --[[Idol of Scree'Auk]]     "item_idol_of_screeauk",
-    --[[Metamorphic Mandible]]  "item_metamorphic_mandible",
-    --[[Conjurer's Catalyst]]   "item_conjurers_catalyst",
-    --[[Dandelion Amulet]]      "item_dandelion_amulet",
-    --[[Enchanter's Bauble]]    "item_enchanters_bauble",
-    --[[Prophet's Pendulum]]    "item_prophets_pendulum",
-}
-
-local Tier5NeutralItems = {
-    -- --[[Force Boots]]           "item_force_boots",
-    --[[Stygian Desolator]]     "item_desolator_2",
-    -- --[[Seer Stone]]            "item_seer_stone",
-    -- --[[Mirror Shield]]         "item_mirror_shield",
-    -- --[[Apex]]                  "item_apex",
-    -- --[[Book of the Dead]]      "item_demonicon",
-    -- --[[Arcanist's Armor]]      "item_force_field",
-    -- --[[Pirate Hat]]            "item_pirate_hat",
-    -- --[[Giant's Ring]]          "item_giants_ring",
-    -- --[[Unwavering Condition]]  "item_unwavering_condition",
-    -- --[[Book of Shadows]]       "item_book_of_shadows",
-    -- --[[Magic Lamp]]            "item_panic_button",
-    --[[Fallen Sky]]            "item_fallen_sky",
-    --[[Minotaur Horn]]         "item_minotaur_horn",
-    --[[Spider Legs]]           "item_spider_legs",
-    -- --[[Unrelenting Eye]]       "item_unrelenting_eye",
-    --[[Divine Regalia]]        "item_divine_regalia",
-    -- -- [[Disgraced Regalia]]     "item_divine_regalia_broken", -- what 'item_divine_regalia' turns into
-    -- --[[Helm of the Undying]]   "item_helm_of_the_undying",
-    --[[Dezun Bloodrite]]       "item_dezun_bloodrite",
-    --[[Riftshadow Prism]]      "item_riftshadow_prism",
-    --[[Harmonizer]]            "item_harmonizer",
-    --[[Witchbane]]             "item_heavy_blade",
+    --[[Mind Breaker]]        "item_mind_breaker",
+    --[[Dezun Bloodrite]]     "item_dezun_bloodrite",
+    --[[Conjurer's Catalyst]] "item_conjurers_catalyst",
+    --[[Flicker]]             "item_flicker",
+    --[[Giant's Ring]]        "item_giants_ring",
+    --[[Helm of the Hivemind]] "item_helm_of_the_hivemind",
+    -- --[[Book of the Dead]]    "item_demonicon",  // removed to save some FPS on host PC
+    --[[Divine Regalia]]      "item_divine_regalia",
+    --[[Fallen Sky]]          "item_fallen_sky",
+    --[[Minotaur Horn]]       "item_minotaur_horn",
+    --[[Riftshadow Prism]]    "item_riftshadow_prism",
+    --[[Witchbane]]           "item_heavy_blade",
 }
 
 local hNeutralItemsList = {
@@ -157,7 +78,6 @@ local hNeutralItemsList = {
     [2] = Tier2NeutralItems,
     [3] = Tier3NeutralItems,
     [4] = Tier4NeutralItems,
-    [5] = Tier5NeutralItems,
 }
 
 -- Enhancements
@@ -177,11 +97,10 @@ local TierEnhancements = {
         "item_enhancement_mystical",
         "item_enhancement_quickened",
         "item_enhancement_tough",
+        "item_enhancement_vital",
 
         -- "item_enhancement_vast",
-        "item_enhancement_greedy",
         "item_enhancement_keen_eyed",
-        -- "item_enhancement_vampiric",
         "item_enhancement_crude",
         "item_enhancement_nimble",
         "item_enhancement_titanic",
@@ -196,29 +115,11 @@ local TierEnhancements = {
         -- "item_enhancement_vast",
         "item_enhancement_greedy",
         "item_enhancement_keen_eyed",
-        -- "item_enhancement_vampiric",
         "item_enhancement_crude",
         "item_enhancement_nimble",
         "item_enhancement_titanic",
     },
     [4] = {
-        "item_enhancement_alert",
-        "item_enhancement_brawny",
-        "item_enhancement_mystical",
-        "item_enhancement_quickened",
-        "item_enhancement_tough",
-
-        "item_enhancement_keen_eyed",
-        -- "item_enhancement_vampiric",
-        "item_enhancement_crude",
-        "item_enhancement_nimble",
-        "item_enhancement_titanic",
-
-        "item_enhancement_timeless",
-        "item_enhancement_titanic",
-        -- "item_enhancement_crude",
-    },
-    [5] = {
         "item_enhancement_timeless",
         -- "item_enhancement_titanic",
 
@@ -266,7 +167,6 @@ function NeutralItems.GiveNeutralItems(hHeroList)
                     [2] = { assign_time = 0, assigned = false, items = { neutral = '', enhancement = '' } },
                     [3] = { assign_time = 0, assigned = false, items = { neutral = '', enhancement = '' } },
                     [4] = { assign_time = 0, assigned = false, items = { neutral = '', enhancement = '' } },
-                    [5] = { assign_time = 0, assigned = false, items = { neutral = '', enhancement = '' } },
                 }
             end
 
@@ -277,13 +177,11 @@ function NeutralItems.GiveNeutralItems(hHeroList)
                     hero.neutral_items[2].assign_time = RandomFloat( 7.5,  9.5)
                     hero.neutral_items[3].assign_time = RandomFloat(12.5, 14.5)
                     hero.neutral_items[4].assign_time = RandomFloat(17.5, 19.5)
-                    hero.neutral_items[5].assign_time = RandomFloat(30.0, 32.0)
                 else
                     hero.neutral_items[1].assign_time = 2
-                    hero.neutral_items[2].assign_time = 7
-                    hero.neutral_items[3].assign_time = 17
+                    hero.neutral_items[2].assign_time = 9
+                    hero.neutral_items[3].assign_time = 18
                     hero.neutral_items[4].assign_time = 27
-                    hero.neutral_items[5].assign_time = 37
                 end
             end
         end
@@ -326,14 +224,14 @@ function NeutralItems.GiveNeutralItems(hHeroList)
         if h and h:HasItemInInventory('item_divine_regalia_broken') then
             local sItemName = ''
             local heroData = neutrals_data[h:GetUnitName()]['neutral']
-            if heroData and heroData[5] then
-                sItemName = NeutralItems.SelectItem(heroData[5])
+            if heroData and heroData[4] then
+                sItemName = NeutralItems.SelectItem(heroData[4])
             else
-                sItemName = Tier5NeutralItems[RandomInt(1, #Tier5NeutralItems)]
+                sItemName = Tier4NeutralItems[RandomInt(1, #Tier4NeutralItems)]
             end
 
             if sItemName ~= '' then
-                NeutralItems.GiveItem(sItemName, h, 5, true, true)
+                NeutralItems.GiveItem(sItemName, h, 4, true, true)
             end
         end
     end
@@ -440,7 +338,7 @@ function NeutralItems.SelectItem(hNeutralItemList)
 end
 
 function NeutralItems.GetCurrentTierWindow(bTurboMode, fCurrentTime)
-    local thresholds = bTurboMode and {2.5, 7.5, 12.5, 17.5, 30} or {2, 9, 16, 23, 30}
+    local thresholds = bTurboMode and {2.5, 7.5, 12.5, 17.5} or {2, 9, 18, 27}
     for i = #thresholds, 1, -1 do
         if fCurrentTime >= thresholds[i] * 60 then return i end
     end
@@ -449,7 +347,7 @@ function NeutralItems.GetCurrentTierWindow(bTurboMode, fCurrentTime)
 end
 
 function NeutralItems.GetItemTier(sItemName)
-    local itemList = { Tier1NeutralItems, Tier2NeutralItems, Tier3NeutralItems, Tier4NeutralItems, Tier5NeutralItems }
+    local itemList = { Tier1NeutralItems, Tier2NeutralItems, Tier3NeutralItems, Tier4NeutralItems }
     for tier, items in pairs(itemList) do
         for _, item in pairs(items) do
             if item == sItemName then
