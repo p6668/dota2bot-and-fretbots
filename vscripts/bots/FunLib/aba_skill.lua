@@ -11,6 +11,174 @@
 local X = {}
 
 
+local UltimateSet = {
+    ['abaddon_borrowed_time'] = true,
+    ['abyssal_underlord_dark_portal'] = true,
+    ['alchemist_chemical_rage'] = true,
+    ['ancient_apparition_ice_blast'] = true,
+    ['antimage_mana_void'] = true,
+    ['arc_warden_tempest_double'] = true,
+    ['axe_culling_blade'] = true,
+    ['bane_fiends_grip'] = true,
+    ['batrider_flaming_lasso'] = true,
+    ['beastmaster_primal_roar'] = true,
+    ['bloodseeker_rupture'] = true,
+    ['bounty_hunter_track'] = true,
+    ['brewmaster_primal_split'] = true,
+    ['bristleback_warpath'] = true,
+    ['broodmother_spawn_spiderlings'] = true,
+    ['centaur_stampede'] = true,
+    ['chaos_knight_phantasm'] = true,
+    ['chen_hand_of_god'] = true,
+    ['clinkz_wind_walk'] = true,
+    ['crystal_maiden_freezing_field'] = true,
+    ['dark_seer_wall_of_replica'] = true,
+    ['dark_willow_terrorize'] = true,
+    ['dawnbreaker_solar_guardian'] = true,
+    ['dazzle_nothl_projection'] = true,
+    ['dazzle_nothl_projection_end'] = true,
+    ['death_prophet_exorcism'] = true,
+    ['disruptor_static_storm'] = true,
+    ['doom_bringer_doom'] = true,
+    ['dragon_knight_elder_dragon_form'] = true,
+    ['drow_ranger_marksmanship'] = true,
+    ['earth_spirit_magnetize'] = true,
+    ['earthshaker_echo_slam'] = true,
+    ['elder_titan_earth_splitter'] = true,
+    ['enchantress_untouchable'] = true,
+    ['enigma_black_hole'] = true,
+    ['faceless_void_chronosphere'] = true,
+    ['faceless_void_time_zone'] = true,
+    ['furion_wrath_of_nature'] = true,
+    ['grimstroke_soul_chain'] = true,
+    ['gyrocopter_call_down'] = true,
+    ['hoodwink_sharpshooter'] = true,
+    ['huskar_life_break'] = true,
+    ['jakiro_macropyre'] = true,
+    ['juggernaut_omni_slash'] = true,
+    ['keeper_of_the_light_spirit_form'] = true,
+    ['kez_raptor_dance'] = true,
+    ['kez_ravens_veil'] = true,
+    ['kunkka_ghostship'] = true,
+    ['largo_amphibian_rhapsody'] = true,
+    ['legion_commander_duel'] = true,
+    ['leshrac_pulse_nova'] = true,
+    ['lich_chain_frost'] = true,
+    ['life_stealer_infest'] = true,
+    ['lina_laguna_blade'] = true,
+    ['lion_finger_of_death'] = true,
+    ['lone_druid_true_form'] = true,
+    ['luna_eclipse'] = true,
+    ['lycan_shapeshift'] = true,
+    ['magnataur_reverse_polarity'] = true,
+    ['marci_unleash'] = true,
+    ['mars_arena_of_blood'] = true,
+    ['medusa_stone_gaze'] = true,
+    ['mirana_invis'] = true,
+    ['monkey_king_wukongs_command'] = true,
+    ['muerta_pierce_the_veil'] = true,
+    ['naga_siren_song_of_the_siren'] = true,
+    ['necrolyte_reapers_scythe'] = true,
+    ['nevermore_requiem'] = true,
+    ['night_stalker_darkness'] = true,
+    ['nyx_assassin_vendetta'] = true,
+    ['obsidian_destroyer_sanity_eclipse'] = true,
+    ['ogre_magi_multicast'] = true,
+    ['omniknight_guardian_angel'] = true,
+    ['pangolier_gyroshell'] = true,
+    ['phantom_assassin_coup_de_grace'] = true,
+    ['phantom_lancer_juxtapose'] = true,
+    ['phoenix_supernova'] = true,
+    ['primal_beast_pulverize'] = true,
+    ['puck_dream_coil'] = true,
+    ['pudge_dismember'] = true,
+    ['pugna_life_drain'] = true,
+    ['queenofpain_sonic_wave'] = true,
+    ['rattletrap_hookshot'] = true,
+    ['razor_eye_of_the_storm'] = true,
+    ['riki_backstab'] = true,
+    ['ringmaster_wheel'] = true,
+    ['sandking_epicenter'] = true,
+    ['shadow_demon_demonic_purge'] = true,
+    ['shadow_shaman_mass_serpent_ward'] = true,
+    ['shredder_twisted_chakram'] = true,
+    ['silencer_global_silence'] = true,
+    ['skeleton_king_reincarnation'] = true,
+    ['skywrath_mage_mystic_flare'] = true,
+    ['slardar_amplify_damage'] = true,
+    ['slark_shadow_dance'] = true,
+    ['snapfire_mortimer_kisses'] = true,
+    ['sniper_assassinate'] = true,
+    ['spirit_breaker_nether_strike'] = true,
+    ['sven_gods_strength'] = true,
+    ['techies_land_mines'] = true,
+    ['templar_assassin_psionic_trap'] = true,
+    ['terrorblade_sunder'] = true,
+    ['tidehunter_ravage'] = true,
+    ['tiny_grow'] = true,
+    ['treant_overgrowth'] = true,
+    ['troll_warlord_battle_trance'] = true,
+    ['tusk_walrus_punch'] = true,
+    ['undying_flesh_golem'] = true,
+    ['ursa_enrage'] = true,
+    ['vengefulspirit_nether_swap'] = true,
+    ['venomancer_noxious_plague'] = true,
+    ['viper_viper_strike'] = true,
+    ['visage_summon_familiars'] = true,
+    ['void_spirit_astral_step'] = true,
+    ['warlock_rain_of_chaos'] = true,
+    ['weaver_time_lapse'] = true,
+    ['windrunner_focusfire'] = true,
+    ['winter_wyvern_winters_curse'] = true,
+    ['witch_doctor_death_ward'] = true,
+    ['zuus_thundergods_wrath'] = true,
+}
+
+
+function X.ReplaceUltimateIndex( nAbilityBuildList, sAbilityList )
+
+    -- Make a copy to avoid mutating the original config array
+    local nCopy = {}
+    for i, v in ipairs(nAbilityBuildList) do
+        nCopy[i] = v
+    end
+
+    -- Find the max value in the build (the hardcoded ultimate index)
+    local nMax = 0
+    for i, v in ipairs(nCopy) do
+        if v > nMax then
+            nMax = v
+        end
+    end
+
+    -- Find which ability name in sAbilityList is an ultimate
+    local nUltimateIndex = -1
+    for i, sName in ipairs(sAbilityList) do
+        if UltimateSet[sName] then
+            nUltimateIndex = i
+            break
+        end
+    end
+
+    -- If no ultimate found, return the copy unchanged
+    if nUltimateIndex <= 0 then
+        return nCopy
+    end
+
+    -- Replace all occurrences of the max value with the actual ultimate index
+    if nMax > 0 then
+        for i = 1, #nCopy do
+            if nCopy[i] == nMax then
+                nCopy[i] = nUltimateIndex
+            end
+        end
+    end
+
+    return nCopy
+
+end
+
+
 X['sAllyUnitAbilityIndex'] = {
 
 		["bloodseeker_bloodrage"] = true,

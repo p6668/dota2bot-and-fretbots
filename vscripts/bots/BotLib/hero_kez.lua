@@ -184,6 +184,7 @@ local sSelectedBuild = HeroBuild[sRole][RandomInt(1, #HeroBuild[sRole])]
 
 local nTalentBuildList = J.Skill.GetTalentBuild(J.Skill.GetRandomBuild(sSelectedBuild.talent))
 local nAbilityBuildList = J.Skill.GetRandomBuild(sSelectedBuild.ability)
+nAbilityBuildList = J.Skill.ReplaceUltimateIndex(nAbilityBuildList, sAbilityList)
 
 X['sBuyList'] = sSelectedBuild.buy_list
 X['sSellList'] = sSelectedBuild.sell_list

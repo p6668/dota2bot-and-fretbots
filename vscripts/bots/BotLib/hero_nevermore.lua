@@ -262,6 +262,7 @@ local sSelectedBuild = HeroBuild[sRole][build_idx]
 
 local nTalentBuildList = J.Skill.GetTalentBuild(J.Skill.GetRandomBuild(sSelectedBuild.talent))
 local nAbilityBuildList = J.Skill.GetRandomBuild(sSelectedBuild.ability)
+nAbilityBuildList = J.Skill.ReplaceUltimateIndex(nAbilityBuildList, sAbilityList)
 
 if build_idx == 2 then bMagicBuild = true end
 
