@@ -492,7 +492,7 @@ Item['item_bracer']	= GetItemComponents( 'item_bracer' )[1]
 
 Item['item_buckler']	= GetItemComponents( 'item_buckler' )[1]
 
-Item['item_butterfly']	= {"item_talisman_of_evasion", "item_claymore", "item_eagle"}
+Item['item_butterfly']	= {"item_talisman_of_evasion", "item_quarterstaff", "item_eagle"}
 
 Item['item_basher']	= GetItemComponents( 'item_basher' )[1]
 
