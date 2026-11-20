@@ -216,13 +216,13 @@ function Buff:Init()
         end
 
         -- too late: the game clock is past the deadline (the clock is negative before the horn)
-        local nDeadline = math.max(Convars:GetInt('omg_refresh_deadline') or 5, 0)
+        local nDeadline = math.max(Convars:GetInt('omg_refresh_deadline') or 10, 0)
         if GameRules:GetDOTATime(false, false) > nDeadline * 60 then
             GameRules:SendCustomMessage(sPlayerName..': -omgrefresh is only available in the first '..nDeadline..' minutes of the game.', 0, 0)
             return
         end
 
-        local nLimit = math.max(Convars:GetInt('omg_refresh_limit') or 5, 0)
+        local nLimit = math.max(Convars:GetInt('omg_refresh_limit') or 10, 0)
         local nUsed = BuffRefreshUsed[nPlayerID] or 0
         if nUsed >= nLimit then
             GameRules:SendCustomMessage(sPlayerName..': no -omgrefresh left (limit '..nLimit..').', 0, 0)
