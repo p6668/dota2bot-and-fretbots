@@ -16912,7 +16912,7 @@ X['SpellsMap'] = {
         name    = 'zuus_lightning_hands',
         owner   = 'npc_dota_hero_zuus',
         type    = X.SPELL_AGHANIMS_SHARD,
-        banned  = false,
+        banned  = true,
         weight  = 1.0,
         roles   = { melee=1, range=1, rightclicker=1, caster=0 },
         tags    = {
