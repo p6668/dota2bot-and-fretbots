@@ -1013,7 +1013,6 @@ end
 local SPELL_HELPERS = {
     ['bristleback_bristleback'] = 'bristleback_quill_spray',
     ['drow_ranger_multishot']   = 'drow_ranger_frost_arrows',
-    ['zuus_lightning_hands']    = 'zuus_arc_lightning',
     ['luna_eclipse']            = 'luna_lucent_beam',
 }
 
