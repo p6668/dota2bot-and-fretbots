@@ -690,7 +690,7 @@ end
 local function GetAbilityIndex(hero, sName)
     for i = 0, hero:GetAbilityCount() - 1 do
         local hAbility = hero:GetAbilityByIndex(i)
-        if hAbility and hAbility:GetAbilityName() == sName then return i end
+        if hAbility and not hAbility:IsNull() and hAbility:GetAbilityName() == sName then return i end
     end
     return -1
 end
@@ -763,6 +763,61 @@ local function GetFreeHotkeySlotNames(hero, tTaken, bPreferQWE)
     return tNames
 end
 
+-- SwapAbilities finds abilities by NAME and always takes the LAST 'generic_hidden'. Every swap with a placeholder
+-- parks the displaced placeholder outside the bar (where the new spell used to be), and from then on that copy is
+-- the one that gets picked. Removing the copies outside the bar (exact handles) keeps the placeholders inside the
+-- bar reachable, one after the other. Never remove the ones inside the bar: AddAbility does not refill an empty
+-- slot (it adds after the last ability), so that key would stay without an ability for the rest of the game.
+local function RemoveOutsidePlaceholders(hero)
+    for i = hero:GetAbilityCount() - 1, 6, -1 do
+        local hAbility = hero:GetAbilityByIndex(i)
+        if hAbility and hAbility:GetAbilityName() == 'generic_hidden' then
+            hero:RemoveAbilityByHandle(hAbility)
+        end
+    end
+end
+
+-- DIAGNOSTIC ONLY (nothing is changed): report every slot that points at the same ability after SetAbilityByIndex,
+-- to find out whether it leaves a copy on the old slot. Removing such a copy by deleting abilities left dangling
+-- slots behind and broke the script, so it is not touched.
+local function ReportAbilityCopies(hero, hAbility)
+    local tSlots = {}
+    for i = 0, hero:GetAbilityCount() - 1 do
+        local hSlot = hero:GetAbilityByIndex(i)
+        if hSlot and hSlot == hAbility then tSlots[#tSlots + 1] = i end
+    end
+    if #tSlots > 1 then
+        local sMsg = string.format('[SpellsMore] %s sits on %d slots after SetAbilityByIndex: %s',
+            hAbility:GetAbilityName(), #tSlots, table.concat(tSlots, ', '))
+        print(sMsg)
+        GameRules:SendCustomMessage(sMsg, 0, 0)
+    end
+end
+
+-- put an ability on a key that has NO ability at all (nil). SwapAbilities needs two abilities and AddAbility only
+-- adds after the last one, so neither can fill such a slot; SetAbilityByIndex can. Returns true if the ability
+-- really sits on that slot afterwards. Hidden/activated flags are put back as they were.
+local function SetAbilityOnEmptyKey(hero, hAbility, nSlot)
+    local sName = hAbility:GetAbilityName()
+    local bHidden, bActivated = hAbility:IsHidden(), hAbility:IsActivated()
+
+    local ok = pcall(function() hero:SetAbilityByIndex(hAbility, nSlot) end)
+    local bPlaced = ok and GetAbilityIndex(hero, sName) == nSlot
+
+    if bPlaced then ReportAbilityCopies(hero, hAbility) end
+
+    hAbility:SetHidden(bHidden); hAbility:SetActivated(bActivated)
+    return bPlaced
+end
+
+-- the first key inside the bar that has no ability at all, or nil
+local function FindEmptyKey(hero)
+    for i = 0, 5 do
+        if hero:GetAbilityByIndex(i) == nil then return i end
+    end
+    return nil
+end
+
 -- returns 'OK', 'NO-SLOT' (stays click-only), 'PASSIVE' (no hotkey needed) or 'MISSING'
 local function GiveHotkeySlot(hero, sAbilityName, tTaken, bPreferQWE)
     local hNew = hero:FindAbilityByName(sAbilityName)
@@ -794,6 +849,22 @@ local function GiveHotkeySlot(hero, sAbilityName, tTaken, bPreferQWE)
     end
 
     local bNewHidden, bNewActivated = hNew:IsHidden(), hNew:IsActivated()
+
+    -- a key with no ability at all (7.42): put the spell there, it costs the hero nothing. A basic still prefers
+    -- a passive on Q/W/E when there is one.
+    local bPassiveOnQWE = false
+    if bPreferQWE then
+        for _, i in ipairs({0, 1, 2}) do
+            local hSlot = hero:GetAbilityByIndex(i)
+            if hSlot and not tTaken[hSlot:GetAbilityName()] and IsPassiveSlotAbility(hSlot) then bPassiveOnQWE = true end
+        end
+    end
+    local nEmptyKey = FindEmptyKey(hero)
+    if nEmptyKey and not bPassiveOnQWE and SetAbilityOnEmptyKey(hero, hNew, nEmptyKey) then
+        if string.find(sAbilityName, 'invoker_') then SetAbilityActivated(hero, sAbilityName, false) end
+        tTaken[sAbilityName] = true
+        return 'OK'
+    end
 
     for _, sSlotName in ipairs(GetFreeHotkeySlotNames(hero, tTaken, bPreferQWE)) do
         local hDisplaced = hero:FindAbilityByName(sSlotName)
@@ -832,6 +903,8 @@ local function GiveHotkeySlot(hero, sAbilityName, tTaken, bPreferQWE)
             if string.find(sAbilityName, 'invoker_') then
                 SetAbilityActivated(hero, sAbilityName, false)
             end
+
+            if sSlotName == 'generic_hidden' then RemoveOutsidePlaceholders(hero) end
 
             tTaken[sAbilityName] = true
             return 'OK'
@@ -1180,8 +1253,8 @@ local function DescribeKeys(hero)
     local t = {}
     for i = 0, 5 do
         local hAbility = hero:GetAbilityByIndex(i)
-        local sName = 'nil'
-        if hAbility then
+        local sName = '-' -- no ability on that key
+        if hAbility and not hAbility:IsNull() then
             sName = ShortAbilityName(hero, hAbility:GetAbilityName())
             if sName == 'generic_hidden' then sName = '-' end
             if hAbility:IsHidden() and sName ~= '-' then sName = sName .. '(hidden)' end
@@ -1230,79 +1303,61 @@ local function SwapSlotAbilities(hero, hA, hB)
     return GetAbilityIndex(hero, sA) == nB and GetAbilityIndex(hero, sB) == nA
 end
 
--- move a NEW spell onto an empty key (a 'generic_hidden' placeholder). SwapAbilities can't address one of several
--- placeholders by name, so the spell and the placeholder are removed and added back in slot order
--- (AddAbility fills the lowest free slot). Level, flags, cooldown and auto-cast are carried over.
-local function MoveSpellToEmptySlot(hero, hSpell, nFrom, hPlaceholder, nTo)
+-- an empty key is either a 'generic_hidden' placeholder or, since 7.42 on many heroes, no ability at all (nil)
+local function IsEmptySlot(hAbility)
+    return hAbility == nil or hAbility:GetAbilityName() == 'generic_hidden'
+end
+
+-- move a NEW spell (inside or outside the bar) onto an empty key.
+-- An empty key holds a 'generic_hidden' placeholder: the spell is swapped with it by name. SwapAbilities always takes
+-- the last placeholder, so the ones outside the bar are removed after each swap and the swap is repeated until the
+-- spell sits on the wanted key (with two placeholders D and F: first the spell lands on F, then it moves on to D).
+-- A key that has no ability at all (nil) is filled with SetAbilityByIndex (AddAbility only adds after the last one).
+local function MoveSpellToSlot(hero, hSpell, nTo)
     local sName = hSpell:GetAbilityName()
-    local nLevel, bHidden, bActivated = hSpell:GetLevel(), hSpell:IsHidden(), hSpell:IsActivated()
-    local fCooldown = hSpell:GetCooldownTimeRemaining()
-    local bAutoCast = hSpell.GetAutoCastState and hSpell:GetAutoCastState() or false
-
-    hero:RemoveAbilityByHandle(hPlaceholder)
-    hero:RemoveAbilityByHandle(hSpell)
-
-    local tOrder = { nFrom, nTo }
-    table.sort(tOrder)
-    for _, nSlot in ipairs(tOrder) do
-        if nSlot == nTo then hero:AddAbility(sName) else hero:AddAbility('generic_hidden') end
+    if hero:GetAbilityByIndex(nTo) == nil then
+        -- no ability on that key at all: SetAbilityByIndex is the only way to put one there
+        if SetAbilityOnEmptyKey(hero, hSpell, nTo) then return true, 'moved' end
+        return false, 'that key has no ability slot and SetAbilityByIndex could not place the spell there'
     end
 
-    local hNew = hero:FindAbilityByName(sName)
-    if not hNew then return false end
+    local bHidden, bActivated = hSpell:IsHidden(), hSpell:IsActivated()
 
-    if nLevel > 0 then hNew:SetLevel(nLevel) end
-    hNew:SetHidden(bHidden); hNew:SetActivated(bActivated)
-    if fCooldown > 0 then hNew:StartCooldown(fCooldown) end
-    if bAutoCast and hNew.ToggleAutoCast and not hNew:GetAutoCastState() then hNew:ToggleAutoCast() end
+    RemoveOutsidePlaceholders(hero)
+    for _ = 1, 4 do
+        local nBefore = GetAbilityIndex(hero, sName)
+        if nBefore == nTo then break end
+        hero:SwapAbilities('generic_hidden', sName, false, true)
+        RemoveOutsidePlaceholders(hero)
+        if GetAbilityIndex(hero, sName) == nBefore then break end -- no placeholder left to swap with
+    end
 
-    return GetAbilityIndex(hero, sName) == nTo
+    hSpell:SetHidden(bHidden); hSpell:SetActivated(bActivated)
+
+    local nNow = GetAbilityIndex(hero, sName)
+    if nNow == nTo then return true, 'moved' end
+
+    local sWhere = (nNow >= 0 and nNow <= 5) and (KEY_LABELS[nNow + 1] .. ' key') or ('slot ' .. nNow .. ', outside the bar')
+    return false, 'the spell ended up on the ' .. sWhere .. ' instead of ' .. KEY_LABELS[nTo + 1]
 end
 
 -- returns ok, message
 local function ChangeHotkey(hero, nSlotA, nSlotB)
     local hA, hB = hero:GetAbilityByIndex(nSlotA), hero:GetAbilityByIndex(nSlotB)
-    if not hA or not hB then return false, 'that key has no ability slot' end
-
-    local sA, sB = hA:GetAbilityName(), hB:GetAbilityName()
-    local bEmptyA, bEmptyB = (sA == 'generic_hidden'), (sB == 'generic_hidden')
+    local bEmptyA, bEmptyB = IsEmptySlot(hA), IsEmptySlot(hB)
 
     if bEmptyA and bEmptyB then return false, 'both keys are empty' end
 
     if bEmptyA or bEmptyB then
         -- one empty key: only a new spell may move onto it
-        local hSpell, nFrom = (bEmptyA and hB) or hA, (bEmptyA and nSlotB) or nSlotA
-        local hPlaceholder, nTo = (bEmptyA and hA) or hB, (bEmptyA and nSlotA) or nSlotB
+        local hSpell, nTo = (bEmptyA and hB) or hA, (bEmptyA and nSlotA) or nSlotB
         if not GetNewSpellIndex(hero, hSpell:GetAbilityName()) then
             return false, "only a new spell can be moved onto an empty key (the hero's own abilities keep their keys)"
         end
-        return MoveSpellToEmptySlot(hero, hSpell, nFrom, hPlaceholder, nTo), 'moved'
+        return MoveSpellToSlot(hero, hSpell, nTo)
     end
 
     return SwapSlotAbilities(hero, hA, hB), 'swapped'
-end
-
--- a new spell that sits outside the bar (no hotkey) onto an empty key: remove the placeholder and the spell,
--- then add the spell again (AddAbility fills the lowest free slot). Level, flags, cooldown, auto-cast carried over.
-local function MoveOutsideSpellToEmptySlot(hero, hSpell, hPlaceholder, nTo)
-    local sName = hSpell:GetAbilityName()
-    local nLevel, bHidden, bActivated = hSpell:GetLevel(), hSpell:IsHidden(), hSpell:IsActivated()
-    local fCooldown = hSpell:GetCooldownTimeRemaining()
-    local bAutoCast = hSpell.GetAutoCastState and hSpell:GetAutoCastState() or false
-
-    hero:RemoveAbilityByHandle(hPlaceholder)
-    hero:RemoveAbilityByHandle(hSpell)
-    hero:AddAbility(sName)
-
-    local hNew = hero:FindAbilityByName(sName)
-    if not hNew then return false end
-
-    if nLevel > 0 then hNew:SetLevel(nLevel) end
-    hNew:SetHidden(bHidden); hNew:SetActivated(bActivated)
-    if fCooldown > 0 then hNew:StartCooldown(fCooldown) end
-    if bAutoCast and hNew.ToggleAutoCast and not hNew:GetAutoCastState() then hNew:ToggleAutoCast() end
-
-    return GetAbilityIndex(hero, sName) == nTo
 end
 
 -- swap the ability on a key with an ability that is outside the bar (a new spell without a hotkey, or a hero
@@ -1312,15 +1367,16 @@ end
 local function ChangeHotkeyWithOutside(hero, nSlot, sOutside)
     local hSlot = hero:GetAbilityByIndex(nSlot)
     local hOutside = hero:FindAbilityByName(sOutside)
-    if not hSlot or not hOutside then return false, 'ability not found' end
+    if not hOutside then return false, 'ability not found' end
 
-    local sSlot = hSlot:GetAbilityName()
-    if sSlot == 'generic_hidden' then
+    if IsEmptySlot(hSlot) then
         if not GetNewSpellIndex(hero, sOutside) then
             return false, "the hero's own ability can't be moved onto an empty key"
         end
-        return MoveOutsideSpellToEmptySlot(hero, hOutside, hSlot, nSlot), 'moved'
+        return MoveSpellToSlot(hero, hOutside, nSlot)
     end
+
+    local sSlot = hSlot:GetAbilityName()
 
     local bNativeLeaves = not GetNewSpellIndex(hero, sSlot)
     hero.spellOutsideNatives = hero.spellOutsideNatives or {}
@@ -1359,8 +1415,8 @@ local function ApplyKeyPrefs(hero)
         if sName and nTo then
             local nFrom = GetAbilityIndex(hero, sName)
             local hTo = hero:GetAbilityByIndex(nTo)
-            if nFrom >= 0 and nFrom <= 5 and nFrom ~= nTo and hTo
-            and (hTo:GetAbilityName() == 'generic_hidden' or hTo:IsPassive() or GetNewSpellIndex(hero, hTo:GetAbilityName()))
+            if nFrom >= 0 and nFrom <= 5 and nFrom ~= nTo
+            and (hTo == nil or hTo:GetAbilityName() == 'generic_hidden' or hTo:IsPassive() or GetNewSpellIndex(hero, hTo:GetAbilityName()))
             then
                 ChangeHotkey(hero, nFrom, nTo)
             end
@@ -1396,10 +1452,31 @@ local function HandleHotkeyChat(tEvent)
         if sArg1 then break end
     end
     local bShow = (sText == '-keys')
-    if not sArg1 and not bShow then return end
+    local bSlots = (sText == '-slots')
+    if not sArg1 and not bShow and not bSlots then return end
 
     local hero = PlayerResource:GetSelectedHeroEntity(tEvent.playerid)
     if not hero or not hero.spellInitDone or not hero.spellAddedNames then return end
+
+    -- -slots: every slot that holds an ability, also the ones outside the bar (to spot duplicates and strays)
+    if bSlots then
+        local tLine = {}
+        for i = 0, hero:GetAbilityCount() - 1 do
+            local hSlot = hero:GetAbilityByIndex(i)
+            if hSlot and not hSlot:IsNull() then
+                local sName = ShortAbilityName(hero, hSlot:GetAbilityName())
+                if sName ~= 'generic_hidden' and not string.find(sName, 'special_bonus', 1, true) then
+                    tLine[#tLine + 1] = i .. ':' .. sName .. (hSlot:IsHidden() and '(h)' or '')
+                        .. (GetNewSpellIndex(hero, hSlot:GetAbilityName()) and '*' or '')
+                end
+            end
+        end
+        -- chat lines are short: 6 entries per message
+        for nFrom = 1, #tLine, 6 do
+            SayToAll('[SpellsMore] slots  ' .. table.concat(tLine, '  ', nFrom, math.min(nFrom + 5, #tLine)))
+        end
+        return
+    end
 
     if bShow then
         SayToAll('[SpellsMore] ' .. DescribeKeys(hero) .. '   (* = new spell)')
@@ -1465,7 +1542,15 @@ end
 
 -- one listener only, also after script_reload_code
 if SpellsMoreChatListener then StopListeningToGameEvent(SpellsMoreChatListener) end
-SpellsMoreChatListener = ListenToGameEvent('player_chat', HandleHotkeyChat, nil)
+SpellsMoreChatListener = ListenToGameEvent('player_chat', function(tEvent)
+    -- 'debug' is not always available in this Lua environment (Timers.lua guards it the same way)
+    local fnErrHandler = (debug and debug.traceback) or tostring
+    local ok, sErr = xpcall(function() HandleHotkeyChat(tEvent) end, fnErrHandler)
+    if not ok then
+        print('[SpellsMore] chat command error: ' .. tostring(sErr))
+        SayToAll('[SpellsMore] chat command error: ' .. string.sub(tostring(sErr), 1, 180))
+    end
+end, nil)
 
 -- Fallback ultimate pools, built only when the normal (strict) pool gave a hero fewer ultimates than expected
 -- (e.g. a bot support whose role filters leave no ultimate that bots may use). Hard rules stay: not banned, not
@@ -1632,22 +1717,9 @@ function SM.InitMoreSpells(hero, nTeams)
         -- ^ for non-shards/ults only
         -- etc
 
-        -- Heroes like Earthshaker have several 'generic_hidden' placeholders in the D/F slots. SwapAbilities
-        -- finds abilities by NAME, so it can only ever reach one of them. Remove all but the last one (humans
-        -- only); AddAbility then fills the freed slots, so the first added spells land on those hotkeys.
-        if IsHumanHero(hero) and not bPassiveOnly then
-            local tPlaceholders = {}
-            for i = 0, 5 do
-                local hSlot = hero:GetAbilityByIndex(i)
-                if hSlot and hSlot:GetAbilityName() == 'generic_hidden' then
-                    tPlaceholders[#tPlaceholders + 1] = hSlot
-                end
-            end
-            for i = 1, #tPlaceholders - 1 do
-                hero:RemoveAbilityByHandle(tPlaceholders[i])
-            end
-
-        end
+        -- placeholders outside the bar would be picked first by SwapAbilities (it works by name): remove them.
+        -- The placeholders inside the bar (D/F) stay: AddAbility never refills an empty slot.
+        if not bPassiveOnly then RemoveOutsidePlaceholders(hero) end
 
         -- helper abilities some spells need are added after all spells, so they don't take a hotkey slot
         local tHelpers = {}
