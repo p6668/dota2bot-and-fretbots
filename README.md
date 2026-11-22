@@ -39,7 +39,7 @@ If a command says "Unknown command", step 2 didn't take effect. You can still ty
 
 Any player can also type `-key d f` in the game **chat** (not the console) to swap spells from hotkey `d` to `f`. Players can also swap unassigned spell to assigned spell, e.g., `-key f 2`. To view all extra spells, see `-keys`. 
 
-Any player can also choose a new spell themself: -spell <number> <name> e.g.  `-spell 1 poison_attack`. <number> is the number from -keys (1 = first new spell). <name> can be a part of the full name, e.g., poison_attack -> viper_poison_attack. The spell must be in aba_spell_list and not banned. 
+Any player can also choose a new spell themself: `-spell number name` e.g.  `-spell 1 poison_attack`. `number` is the number from -keys (1 = first new spell). `name` can be a part of the full name, e.g., poison_attack -> viper_poison_attack. The spell must be in aba_spell_list and not banned. 
 
 6. The script is now running (`Buff mode enabled!` and `Game Mode: ...` messages in chat).
 7. The script allows manual hero selection for the enemy team. For example, typing `/all puck` in chat will pick Puck for the enemy.
