@@ -51,10 +51,6 @@ function GPM.UpdateBotGold(bot, nTeam, godmode)
         targetGPM = targetGPM - 200
     end
 
-    -- if godmode.DifficultyMode == 0 then
-    --     targetGPM = targetGPM - 100
-    -- end
-
     local currentGPM = PlayerResource:GetGoldPerMin(bot:GetPlayerID())
     local expected = targetGPM * gameTime
     local actual = currentGPM * gameTime

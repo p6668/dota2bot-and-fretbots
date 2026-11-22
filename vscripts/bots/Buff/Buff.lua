@@ -109,7 +109,7 @@ local bBuffFlags = {
     },
     godmode = {
         enabled = true, -- Set to 'false' to disable god mode at the late game.
-        DifficultyMode = 0,
+        DifficultyMultiplier = 0.0,
         StartTime = 0,
         KillThreshold = 0,
         done = false,
@@ -117,18 +117,19 @@ local bBuffFlags = {
 }
 
 -- Game modes, selected by the console aliases (see bots/Buff/mode/ and README.md).
--- DifficultyMode is read by Experience.lua. rerollOnDeath: a hero's extra spells are re-rolled every time it dies.
+-- DifficultyMultiplier is read by Experience.lua. rerollOnDeath: a hero's extra spells are re-rolled every time it dies.
 local GameModes = {
-    normal  = { DifficultyMode = 0, moreSpells = false, label = 'Normal' },
-    omg     = { DifficultyMode = 1, moreSpells = true,  label = 'OMG 4+2 (Full Bot XP Bonus)' },
-    omg80   = { DifficultyMode = 2, moreSpells = true,  label = 'OMG 4+2 (80% Bot XP Bonus)' },
-    omgra   = { DifficultyMode = 1, moreSpells = true,  rerollOnDeath = true, label = 'OMG 4+2, Re-roll on Death (Full Bot XP Bonus)' },
-    omgra80 = { DifficultyMode = 2, moreSpells = true,  rerollOnDeath = true, label = 'OMG 4+2, Re-roll on Death (80% Bot XP Bonus)' },
-    omgra60 = { DifficultyMode = 3, moreSpells = true,  rerollOnDeath = true, label = 'OMG 4+2, Re-roll on Death (60% Bot XP Bonus)' },
+    normal  = { DifficultyMultiplier = 0.0, moreSpells = false, label = 'Normal' },
+    omg     = { DifficultyMultiplier = 1.0, moreSpells = true,  label = 'OMG 4+2 (Full Bot XP Bonus)' },
+    omg80   = { DifficultyMultiplier = 0.8, moreSpells = true,  label = 'OMG 4+2 (80% Bot XP Bonus)' },
+    omgra   = { DifficultyMultiplier = 1.0, moreSpells = true,  rerollOnDeath = true, label = 'OMG 4+2, Re-roll on Death (Full Bot XP Bonus)' },
+    omgra80 = { DifficultyMultiplier = 0.8, moreSpells = true,  rerollOnDeath = true, label = 'OMG 4+2, Re-roll on Death (80% Bot XP Bonus)' },
+    omgra60 = { DifficultyMultiplier = 0.6, moreSpells = true,  rerollOnDeath = true, label = 'OMG 4+2, Re-roll on Death (60% Bot XP Bonus)' },
     -- botUltimates: ultimates per bot (default 1). Bots get 2 basic + 2 ultimate here; players keep 2 basic + 1 ultimate.
-    omgult  = { DifficultyMode = 2, moreSpells = true,  botUltimates = 2, label = 'OMG 4+2, Bots with 2 Ultimates (80% Bot XP Bonus)' },
+    omgult  = { DifficultyMultiplier = 0.8, moreSpells = true,  botUltimates = 2, label = 'OMG 4+2, Bots with 2 Ultimates (80% Bot XP Bonus)' },
+    omg200  = { DifficultyMultiplier = 2.0, moreSpells = true,  label = 'OMG 4+2 (200% Bot XP Bonus)' },
 }
-local RandomModes = { 'normal', 'omg', 'omg80', 'omgra', 'omgra80', 'omgra60', 'omgult' }
+local RandomModes = { 'normal', 'omg', 'omg80', 'omgra', 'omgra80', 'omgra60', 'omgult', 'omg200' }
 
 -- Picks the mode for this load. Returns the mode key.
 -- Globals (BuffActiveMode, BuffGodmode) survive script_reload_code, locals do not.
@@ -179,7 +180,7 @@ function Buff:Init()
         -- GameRules:SendCustomMessage("Godmode StartTime:"..tostring(BuffGodmode.StartTime), -1, 0)
         -- GameRules:SendCustomMessage("Godmode KillThreshold:"..tostring(BuffGodmode.KillThreshold), -1, 0)
     end
-    BuffGodmode.DifficultyMode = tMode.DifficultyMode
+    BuffGodmode.DifficultyMultiplier = tMode.DifficultyMultiplier
     bBuffFlags.godmode = BuffGodmode
 
     -- How many times each player may use '-omgrefresh'. Set in the console with 'omg_refresh_limit <n>'.
