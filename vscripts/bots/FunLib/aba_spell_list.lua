@@ -15217,7 +15217,7 @@ X['SpellsMap'] = {
         name    = 'tusk_walrus_kick',
         owner   = 'npc_dota_hero_tusk',
         type    = X.SPELL_AGHANIMS_SCEPTER,
-        banned  = true,
+        banned  = false,
         weight  = 1.0,
         roles   = { melee=1, range=1, rightclicker=0, caster=1 },
         tags    = {
