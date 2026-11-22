@@ -1,6 +1,6 @@
 # About
 This is a customized version of dota2bot. This script uses dota2bot with slightly modified bot behavior. 
-This means that the GPM for enemy bots would be around 1000-1200 and bot will be lv30 in 35 mins.
+This means that the GPM for enemy bots would be around 900-1100 and bot will be lv30 in 35 mins.
 
 bots from: https://github.com/ryndrb/dota2bot  
 fretbots: https://github.com/fretmute/fretbots   
@@ -37,7 +37,9 @@ In an OMG / OMG80 game, type `OMGRefresh` at any time after pre-game starts to r
 Any player can also type `-omgrefresh` in the game **chat** (not the console) to re-roll only their own hero's extra spells. Each player can do this 5 times by default; after typing `OMG` / `OMG80`, the host can change the limit in the console, e.g. `omg_refresh_limit 5`.
 If a command says "Unknown command", step 2 didn't take effect. You can still type the full command, e.g. `sv_cheats 1; script_reload_code bots/Buff/mode/omg80`. The `-omgrefresh` is only available in the first 5 mins. After that, the player cannot re-roll the extra spells. The host can change the deadline in the console, e.g. `omg_refresh_deadline 10`. In addition, any player can type `-omgrefreshbot` in the game **chat** (not the console) to re-roll only the bots' extra spells. There is no limits and each time all 5 bots' extra spells will be refreshed. 
 
-Any player can also type `-key d f` in the game **chat** (not the console) to swap spells from hotkey 'd' to 'f'. Players can also swap unassigned spell to assigned spell, e.g., `-key f 2`. To view all extra spells, see `-keys`. 
+Any player can also type `-key d f` in the game **chat** (not the console) to swap spells from hotkey `d` to `f`. Players can also swap unassigned spell to assigned spell, e.g., `-key f 2`. To view all extra spells, see `-keys`. 
+
+Any player can also choose a new spell themself: -spell <number> <name> e.g.  `-spell 1 poison_attack`. <number> is the number from -keys (1 = first new spell). <name> can be a part of the full name, e.g., poison_attack -> viper_poison_attack. The spell must be in aba_spell_list and not banned. 
 
 6. The script is now running (`Buff mode enabled!` and `Game Mode: ...` messages in chat).
 7. The script allows manual hero selection for the enemy team. For example, typing `/all puck` in chat will pick Puck for the enemy.

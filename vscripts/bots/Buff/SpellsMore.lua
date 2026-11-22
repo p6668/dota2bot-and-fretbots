@@ -1462,6 +1462,161 @@ local function ApplyKeyPrefs(hero)
     end
 end
 
+-- =====================================================================================================
+-- Choosing a new spell yourself:   -spell <number> <name>      e.g.  -spell 1 poison_attack
+-- <number> is the number from -keys (1 = first new spell). <name> can be a part of the full name
+-- (poison_attack -> viper_poison_attack). The spell must be in aba_spell_list and not banned.
+-- =====================================================================================================
+
+-- the spells of aba_spell_list that fit the query: the best tier that has any (exact name, name ending with the
+-- query, name containing the query)
+local function FindSpellsByQuery(sQuery)
+    local q = string.lower(((sQuery or ''):gsub('^%s*(.-)%s*$', '%1')))
+    q = (q:gsub('[%s%-]+', '_'))
+    if q == '' then return {} end
+
+    local tExact, tSuffix, tContains = {}, {}, {}
+    for _, spell in pairs(SPL['SpellsMap']) do
+        if spell and spell.name then
+            local sName = spell.name
+            if sName == q then
+                tExact[#tExact + 1] = spell
+            elseif #sName > #q and string.sub(sName, -(#q + 1)) == '_' .. q then
+                tSuffix[#tSuffix + 1] = spell
+            elseif string.find(sName, q, 1, true) then
+                tContains[#tContains + 1] = spell
+            end
+        end
+    end
+
+    if #tExact > 0 then return tExact end
+    if #tSuffix > 0 then return tSuffix end
+    return tContains
+end
+
+-- returns ok, message
+local function ReplaceNewSpell(hero, nIndex, sQuery)
+    local sOld = (hero.spellAddedNames or {})[nIndex]
+    if not sOld then
+        return false, 'there is no new spell number ' .. tostring(nIndex) .. ' (see -keys)'
+    end
+
+    -- 1) find the spell in aba_spell_list
+    local tFound = FindSpellsByQuery(sQuery)
+    if #tFound == 0 then
+        return false, '"' .. sQuery .. '" was not found in the spell list'
+    end
+    if #tFound > 1 then
+        local tNames = {}
+        for i = 1, math.min(#tFound, 6) do tNames[#tNames + 1] = tFound[i].name end
+        table.sort(tNames)
+        return false, '"' .. sQuery .. '" matches several spells, be more specific: ' .. table.concat(tNames, ', ')
+            .. (#tFound > 6 and ', ...' or '')
+    end
+
+    local spell = tFound[1]
+    local sNew = spell.name
+    local sHeroStripped = string.gsub(hero:GetUnitName(), 'npc_dota_hero_', '')
+
+    -- 2) rules
+    if spell.banned and not IsUnlockedAutoCast(spell, hero) then
+        return false, sNew .. ' is banned'
+    end
+    if sNew == sOld then
+        return false, 'new spell ' .. nIndex .. ' already is ' .. sNew
+    end
+    if string.find(sNew, sHeroStripped, 1, true) then
+        return false, sNew .. " is this hero's own spell"
+    end
+    if hero:HasAbility(sNew) then
+        return false, 'the hero already has ' .. sNew
+    end
+    if hero.spellPassiveOnly and not IsPassiveSpellName(sNew, true) then
+        return false, 'this hero only gets passive new spells, ' .. sNew .. ' is not passive'
+    end
+    if HasFlag(spell.type, SPL.SPELL_TYPE_ULTIMATE) then
+        for _, hOther in ipairs(HeroList:GetAllHeroes()) do
+            if hOther ~= hero then
+                for _, sName in ipairs(hOther.spellAddedNames or {}) do
+                    if sName == sNew then return false, sNew .. ' is an ultimate that another hero already has' end
+                end
+            end
+        end
+    end
+    for i = 0, hero:GetAbilityCount() - 1 do
+        local hAbility = hero:GetAbilityByIndex(i)
+        if hAbility and not hAbility:IsNull() then
+            local sName = hAbility:GetAbilityName()
+            if sName ~= sOld and IsIncompatible(sName, sNew) then
+                return false, sNew .. ' does not work together with ' .. sName
+            end
+        end
+    end
+
+    -- 3) do it: add the new spell, let it take over the old one's key, remove the old one
+    local hOld = hero:FindAbilityByName(sOld)
+    local nOldSlot = GetAbilityIndex(hero, sOld)
+    local nOldLevel = hOld and hOld:GetLevel() or 0
+
+    local tHelpers = {}
+    AddNewSpell(hero, sNew, true, tHelpers)
+    AddHelperAbilities(hero, tHelpers)
+
+    local hNew = hero:FindAbilityByName(sNew)
+    if not hNew then
+        return false, sNew .. ' could not be added to the hero'
+    end
+
+    local tTeams = { [DOTA_TEAM_GOODGUYS] = {}, [DOTA_TEAM_BADGUYS] = {} }
+    for _, hHero in ipairs(HeroList:GetAllHeroes()) do
+        local tTeam = tTeams[hHero:GetTeam()]
+        if tTeam then tTeam[#tTeam + 1] = hHero end
+    end
+    PrecacheUnits(tTeams, { spell }, {})
+
+    local nLevel = math.min(nOldLevel, hNew:GetMaxLevel())
+    if nLevel > 0 then hNew:SetLevel(nLevel) end
+
+    local bNeedsKey = not (hNew:IsPassive() or IsPassiveLikeName(sNew))
+    local bGotKey = false
+    if hOld and nOldSlot >= 0 and nOldSlot <= 5 and bNeedsKey then
+        bGotKey = SwapSlotAbilities(hero, hOld, hNew) -- the new spell sits on the old one's key now
+    end
+
+    RemoveNewSpell(hero, sOld)
+
+    hero.spellAddedNames[nIndex] = sNew
+    for _, w in ipairs(hero.spellLevelUpList or {}) do
+        if w.ability == sOld then w.ability = sNew end
+    end
+
+    -- the pick list: the old spell goes back into the pool (unless another hero has it), the new one is taken
+    local bOtherHasOld = false
+    for _, hOther in ipairs(HeroList:GetAllHeroes()) do
+        if hOther ~= hero then
+            for _, sName in ipairs(hOther.spellAddedNames or {}) do
+                if sName == sOld then bOtherHasOld = true end
+            end
+        end
+    end
+    for spellKey, _ in pairs(AbilityPickedList) do
+        if type(spellKey) == 'table' and spellKey.name == sOld and not bOtherHasOld then AbilityPickedList[spellKey] = nil end
+    end
+    AbilityPickedList[spell] = true
+
+    -- a spell that needs a key but did not get the old one's: look for a free key
+    if bNeedsKey and not bGotKey then
+        local tTaken = {}
+        for _, sName in ipairs(hero.spellAddedNames) do
+            if sName ~= sNew then tTaken[sName] = true end
+        end
+        GiveHotkeySlot(hero, sNew, tTaken, true)
+    end
+
+    RememberKeyPrefs(hero)
+    return true, sNew
+end
+
 local function HandleHotkeyChat(tEvent)
     local sText = string.lower(((tEvent.text or ''):gsub('^%s*(.-)%s*$', '%1')))
     local sArg1, sArg2
@@ -1491,10 +1646,27 @@ local function HandleHotkeyChat(tEvent)
     end
     local bShow = (sText == '-keys')
     local bSlots = (sText == '-slots')
-    if not sArg1 and not bShow and not bSlots then return end
+    local sSpellNum, sSpellQuery = string.match(sText, '^%-spell%s+(%d+)%s+(.+)$')
+    local bSpellUsage = (sText == '-spell') or (sText:find('^%-spell%s') ~= nil and not sSpellNum)
+    if not sArg1 and not bShow and not bSlots and not sSpellNum and not bSpellUsage then return end
 
     local hero = PlayerResource:GetSelectedHeroEntity(tEvent.playerid)
     if not hero or not hero.spellInitDone or not hero.spellAddedNames then return end
+
+    if bSpellUsage or sSpellNum then
+        if bSpellUsage then
+            SayToAll('[SpellsMore] choose a new spell:  -spell <number> <name>   e.g.  -spell 1 poison_attack   (numbers: see -keys; the name can be a part of the full name)')
+            return
+        end
+
+        local ok, sMsg = ReplaceNewSpell(hero, tonumber(sSpellNum), sSpellQuery)
+        if ok then
+            SayToAll('[SpellsMore] new spell ' .. sSpellNum .. ' is now ' .. sMsg .. '.  ' .. DescribeNewSpells(hero))
+        else
+            SayToAll('[SpellsMore] could not choose that spell: ' .. tostring(sMsg))
+        end
+        return
+    end
 
     -- -slots: every slot that holds an ability, also the ones outside the bar (to spot duplicates and strays)
     if bSlots then
@@ -1879,7 +2051,7 @@ function SM.InitMoreSpells(hero, nTeams)
         DebugSay(hero, table.concat(tHotkeyResults, ', '))
 
         if IsHumanHero(hero) and not bPassiveOnly then
-            SayToAll('[SpellsMore] change a hotkey:  -key e d  (swap E and D),  -key e 2  (swap E with new spell 2),  -keys  (show the keys)')
+            SayToAll('[SpellsMore] change a hotkey:  -key e d  (swap E and D),  -key e 2  (swap E with new spell 2),  -keys  (show the keys);  choose a spell:  -spell 1 poison_attack')
         end
 
         abilities = { basic = {}, ult = {} }
