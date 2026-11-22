@@ -1494,6 +1494,26 @@ local function FindSpellsByQuery(sQuery)
     return tContains
 end
 
+-- does this slot hold that ability right now?
+local function SlotHolds(hero, nSlot, sName)
+    local hSlot = hero:GetAbilityByIndex(nSlot)
+    return hSlot ~= nil and not hSlot:IsNull() and hSlot:GetAbilityName() == sName
+end
+
+-- the new spell takes over the old spell's key. Normally a swap by name; but if the old spell was put on that key
+-- with SetAbilityByIndex it also sits on another slot, and the swap can pick that one instead, so the check is
+-- "what is on the key now", not the result of the swap. Fallback: write the new spell onto the key directly
+-- (the old one is removed afterwards, which clears every slot that still points at it).
+local function TakeOverSlot(hero, hOld, hNew, nSlot)
+    SwapSlotAbilities(hero, hOld, hNew)
+    if SlotHolds(hero, nSlot, hNew:GetAbilityName()) then return true end
+
+    local bHidden, bActivated = hNew:IsHidden(), hNew:IsActivated()
+    pcall(function() hero:SetAbilityByIndex(hNew, nSlot) end)
+    hNew:SetHidden(bHidden); hNew:SetActivated(bActivated)
+    return SlotHolds(hero, nSlot, hNew:GetAbilityName())
+end
+
 -- returns ok, message
 local function ReplaceNewSpell(hero, nIndex, sQuery)
     local sOld = (hero.spellAddedNames or {})[nIndex]
@@ -1577,10 +1597,39 @@ local function ReplaceNewSpell(hero, nIndex, sQuery)
     local nLevel = math.min(nOldLevel, hNew:GetMaxLevel())
     if nLevel > 0 then hNew:SetLevel(nLevel) end
 
+    -- a castable spell needs a hotkey: a spell outside the bar is not shown / not usable. It takes the old spell's
+    -- key, or any free key; with none, only as many click-only spells as MAX_CLICK_ONLY_SPELLS allow.
     local bNeedsKey = not (hNew:IsPassive() or IsPassiveLikeName(sNew))
     local bGotKey = false
-    if hOld and nOldSlot >= 0 and nOldSlot <= 5 and bNeedsKey then
-        bGotKey = SwapSlotAbilities(hero, hOld, hNew) -- the new spell sits on the old one's key now
+    if bNeedsKey then
+        if hOld and nOldSlot >= 0 and nOldSlot <= 5 then
+            bGotKey = TakeOverSlot(hero, hOld, hNew, nOldSlot) -- the new spell sits on the old one's key now
+        end
+
+        if not bGotKey then
+            local tTaken = {}
+            for _, sName in ipairs(hero.spellAddedNames) do
+                if sName ~= sNew then tTaken[sName] = true end
+            end
+            bGotKey = (GiveHotkeySlot(hero, sNew, tTaken, true) == 'OK')
+        end
+
+        if not bGotKey then
+            local nClickOnly = 0
+            for _, sName in ipairs(hero.spellAddedNames) do
+                if sName ~= sOld then
+                    local hOther = hero:FindAbilityByName(sName)
+                    if hOther and not hOther:IsPassive() and not IsPassiveLikeName(sName) and GetAbilityIndex(hero, sName) > 5 then
+                        nClickOnly = nClickOnly + 1
+                    end
+                end
+            end
+
+            if nClickOnly >= MAX_CLICK_ONLY_SPELLS then
+                RemoveNewSpell(hero, sNew) -- undo: the old spell stays as it was
+                return false, sNew .. ' needs a hotkey and there is no free key for it. Choose a passive spell (or an orb), or free a key first (-key) and try again'
+            end
+        end
     end
 
     RemoveNewSpell(hero, sOld)
@@ -1604,17 +1653,16 @@ local function ReplaceNewSpell(hero, nIndex, sQuery)
     end
     AbilityPickedList[spell] = true
 
-    -- a spell that needs a key but did not get the old one's: look for a free key
-    if bNeedsKey and not bGotKey then
-        local tTaken = {}
-        for _, sName in ipairs(hero.spellAddedNames) do
-            if sName ~= sNew then tTaken[sName] = true end
-        end
-        GiveHotkeySlot(hero, sNew, tTaken, true)
-    end
-
     RememberKeyPrefs(hero)
-    return true, sNew
+
+    -- some spells come hidden (sub-abilities, stance-dependent ones such as Kez's): show it, and report its state
+    local bWasHidden = hNew:IsHidden()
+    if bWasHidden then hNew:SetHidden(false) end
+
+    local nSlotNow = GetAbilityIndex(hero, sNew)
+    local sKey = (nSlotNow >= 0 and nSlotNow <= 5) and (KEY_LABELS[nSlotNow + 1] .. ' key') or ('no hotkey (slot ' .. nSlotNow .. ')')
+    return true, string.format('%s [%s, level %d, hidden before: %s, hidden now: %s, activated: %s]',
+        sNew, sKey, hNew:GetLevel(), tostring(bWasHidden), tostring(hNew:IsHidden()), tostring(hNew:IsActivated()))
 end
 
 local function HandleHotkeyChat(tEvent)
