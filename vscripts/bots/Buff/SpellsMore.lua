@@ -1218,7 +1218,7 @@ end
 -- mostly 0, so the roles to roll them with are set here. Human-only: bots can't manage auto-cast or toggles.
 -- The ones that are not banned (Quill Spray, Bloodlust, Leech Seed, ...) are rolled as usual.
 -- true: humans can roll them. false: they stay banned.
-local ENABLE_AUTOCAST_SPELLS = true
+local ENABLE_AUTOCAST_SPELLS = false
 local AUTOCAST_SPELLS = {
     ['ancient_apparition_chilling_touch'] = { melee=1, range=1, rightclicker=1, caster=1 },
     ['clinkz_searing_arrows']             = { melee=1, range=1, rightclicker=1, caster=0 },
