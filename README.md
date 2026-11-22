@@ -2,9 +2,8 @@
 This is a customized version of dota2bot mainly for personal use. 
 Enabling the buff mode of this script will boost the bots GPM to 1000 (lv30 in 35 mins).
 
-bots from: https://github.com/ryndrb/dota2bot  
-fretbots: https://github.com/fretmute/fretbots   
-beginner AI: https://steamcommunity.com/sharedfiles/filedetails/?id=1627071163
+Bots from: https://github.com/ryndrb/dota2bot  
+Buff mode code is based on fretbots: https://github.com/fretmute/fretbots   
 
 # Setup Instructions
 1. Download the script and extract the files from `vscripts` to your Dota 2 vscripts directory.
