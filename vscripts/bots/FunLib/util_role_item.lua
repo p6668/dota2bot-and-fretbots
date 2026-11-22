@@ -38,7 +38,7 @@ Item['item_pipe'] = {
 	['npc_dota_hero_zuus'] = true,
 }
 
-Item['item_halberd'] = {
+Item['item_heavens_halberd'] = {
 	['npc_dota_hero_clinkz'] = true,
 	['npc_dota_hero_drow_ranger'] = true,
 	['npc_dota_hero_furion'] = true,
@@ -117,7 +117,7 @@ function X.GetBestUtilityItem(hItemList)
 			if Item[sItemName] and Item[sItemName][sHeroName] and nItemList[sItemName] then
 				local weight = 0
 				if sItemName == 'item_crimson_guard'
-				or sItemName == 'item_halberd'
+				or sItemName == 'item_heavens_halberd'
 				or sItemName == 'item_assault'
 				then
 					weight = j <= 3 and 1 or 0.5
