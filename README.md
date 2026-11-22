@@ -29,19 +29,13 @@ This file adds the short mode commands (`OMG80`, `OMG`, `OMGRA80`, `OMGRA60`, `O
 | `Normal` | Normal game (no extra spells), full XP bonus |
 | `Random` | Any of the modes above at random |
 
-You can type a different command while still picking to change the mode; once pre-game starts the mode is locked.
-In any OMG game (`OMG`, `OMG80`, `OMGRA`, `OMGRA80`, `OMGRA60`), type `OMGRefresh` at any time after pre-game starts to re-roll the extra spells of every hero (humans and bots). The new spells are leveled straight up to each hero's current level. You can use it as often as you like.
-Any player can also type `-omgrefresh` in the game **chat** (not the console) to re-roll only their own hero's extra spells. Each player can do this 2 times by default; after typing an OMG mode command, the host can change the limit in the console, e.g. `omg_refresh_limit 5`.
-In an OMG / OMG80 game, type `OMGRefresh` at any time after pre-game starts to re-roll the extra spells of every hero (humans and bots). The new spells are leveled straight up to each hero's current level. You can use it as often as you like.
+You can type a different command while still picking to change the mode; once pre-game starts the mode is locked. In an OMG game, the new spells are leveled straight up to each hero's current level.
 
 6. The script is now running (`Buff mode enabled!` and `Game Mode: ...` messages in chat).
 7. The script allows manual hero selection for the enemy team. For example, typing `/all puck` in chat will pick Puck for the enemy.
 
-The following commands can be used in the game **chat** (not the console): 
+In an OMG game (`OMG`, `OMG80`, `OMGRA`, `OMGRA80`, `OMGRA60`), the following commands can be used in the game **chat** (not the console): 
 1. Any player can type `-omgrefresh` to re-roll only their own hero's extra spells. Each player can do this 10 times by default; only the host can change the limit in the `console`, e.g. `omg_refresh_limit 50`. The `-omgrefresh` is only available in the first 10 mins by default. After that, the player cannot re-roll the extra spells. The host can change the deadline in the `console`, e.g. `omg_refresh_deadline 50`. 
-
 2. Any player can type `-omgrefreshbot` to re-roll only the bots' extra spells. There is no limits and each time all 5 bots' extra spells will be refreshed. 
-
 3. Any player can type `-key d f` to swap spells from hotkey `d` to `f`. Players can also swap unassigned spell to assigned spell, e.g., `-key f 2`. To view all extra spells, see `-keys`. 
-
 4. Any player can choose a new spell themself: `-spell number name` e.g.  `-spell 1 poison attack`. `number` is the number from -keys (1 = first new spell). `name` can be a part of the full name, e.g., `poison attack` -> `viper_poison_attack`. The spell must be in `aba_spell_list.lua` and not banned. 
