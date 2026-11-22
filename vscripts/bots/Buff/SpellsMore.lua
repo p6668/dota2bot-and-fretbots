@@ -382,11 +382,49 @@ local PASSIVE_LIKE_SPELLS = {
     ['zuus_thundergods_wrath'] = true,
 }
 
+-- Orb effects (auto-cast attack modifiers) count as passive too: they need no hotkey, auto-cast is toggled with a
+-- right click. The known orbs are listed; any other ability whose KV behavior is AUTOCAST + ATTACK is an orb as well.
+-- Not orbs (still rolled as normal spells): Tar Bomb, Split Shot, Phantom Edge, Pulse Nova, Saltwater Shiv.
+local ORB_SPELLS = {
+    ['ancient_apparition_chilling_touch'] = true,
+    ['clinkz_searing_arrows']             = true,
+    ['drow_ranger_frost_arrows']          = true,
+    ['enchantress_impetus']               = true,
+    ['huskar_burning_spear']              = true,
+    ['jakiro_liquid_fire']                = true,
+    ['obsidian_destroyer_arcane_orb']     = true,
+    ['silencer_glaives_of_wisdom']        = true,
+    ['viper_poison_attack']               = true,
+}
+
+local tOrbKVCache = {}
+local function IsOrbSpellName(sAbilityName)
+    if ORB_SPELLS[sAbilityName] then return true end
+
+    if tOrbKVCache[sAbilityName] == nil then
+        local bOrb = false
+        if GetAbilityKeyValuesByName then
+            local ok, tKV = pcall(GetAbilityKeyValuesByName, sAbilityName)
+            if ok and type(tKV) == 'table' and type(tKV['AbilityBehavior']) == 'string' then
+                bOrb = string.find(tKV['AbilityBehavior'], 'DOTA_ABILITY_BEHAVIOR_AUTOCAST', 1, true) ~= nil
+                   and string.find(tKV['AbilityBehavior'], 'DOTA_ABILITY_BEHAVIOR_ATTACK', 1, true) ~= nil
+            end
+        end
+        tOrbKVCache[sAbilityName] = bOrb
+    end
+    return tOrbKVCache[sAbilityName]
+end
+
+-- spells that need no hotkey: PASSIVE_LIKE_SPELLS and the orbs (a real passive is checked on the ability itself)
+local function IsPassiveLikeName(sAbilityName)
+    return PASSIVE_LIKE_SPELLS[sAbilityName] == true or IsOrbSpellName(sAbilityName)
+end
+
 -- is the spell a passive? read from the ability KV data, so it works before the spell is added to the hero.
--- bStrict: real passives only (not PASSIVE_LIKE_SPELLS)
+-- bStrict: real passives only (not PASSIVE_LIKE_SPELLS or orbs)
 local bWarnedNoKV = false
 local function IsPassiveSpellName(sAbilityName, bStrict)
-    if not bStrict and PASSIVE_LIKE_SPELLS[sAbilityName] then return true end
+    if not bStrict and IsPassiveLikeName(sAbilityName) then return true end
 
     if not GetAbilityKeyValuesByName then
         if not bWarnedNoKV then
@@ -824,7 +862,7 @@ local function GiveHotkeySlot(hero, sAbilityName, tTaken, bPreferQWE)
     if not hNew then return 'MISSING' end
 
     -- a passive spell can't be cast, so don't spend a hotkey slot on it
-    if hNew:IsPassive() or PASSIVE_LIKE_SPELLS[sAbilityName] then return 'PASSIVE' end
+    if hNew:IsPassive() or IsPassiveLikeName(sAbilityName) then return 'PASSIVE' end
 
     -- AddAbility may already have put it into a freed placeholder slot
     local nIdx = GetAbilityIndex(hero, sAbilityName)
@@ -981,7 +1019,7 @@ local function RestoreUnlockedUpgrades(hero)
                         sSpell, hSpell = nil, nil
                         for _, sName in ipairs(hero.spellAddedNames or {}) do
                             local hCandidate = hero:FindAbilityByName(sName)
-                            if hCandidate and not hCandidate:IsPassive() and GetAbilityIndex(hero, sName) <= 5 then
+                            if hCandidate and not hCandidate:IsPassive() and not IsPassiveLikeName(sName) and GetAbilityIndex(hero, sName) <= 5 then
                                 sSpell, hSpell = sName, hCandidate
                             end
                         end
@@ -1013,6 +1051,7 @@ end
 local SPELL_HELPERS = {
     ['bristleback_bristleback'] = 'bristleback_quill_spray',
     ['drow_ranger_multishot']   = 'drow_ranger_frost_arrows',
+    ['zuus_lightning_hands']    = 'zuus_arc_lightning',
     ['luna_eclipse']            = 'luna_lucent_beam',
 }
 
@@ -1183,7 +1222,7 @@ local ENABLE_AUTOCAST_SPELLS = true
 local AUTOCAST_SPELLS = {
     ['ancient_apparition_chilling_touch'] = { melee=1, range=1, rightclicker=1, caster=1 },
     ['clinkz_searing_arrows']             = { melee=1, range=1, rightclicker=1, caster=0 },
-    ['clinkz_tar_bomb']                   = { melee=1, range=1, rightclicker=1, caster=1 },
+    -- ['clinkz_tar_bomb']                   = { melee=1, range=1, rightclicker=1, caster=1 },
     ['drow_ranger_frost_arrows']          = { melee=1, range=1, rightclicker=1, caster=0 },
     ['enchantress_impetus']               = { melee=0, range=1, rightclicker=1, caster=0 },
     ['huskar_burning_spear']              = { melee=1, range=1, rightclicker=1, caster=0 },
@@ -1273,7 +1312,7 @@ local function DescribeNewSpells(hero)
         local hAbility = hero:FindAbilityByName(sName)
         local sKey
         if nSlot >= 0 and nSlot <= 5 then sKey = KEY_LABELS[nSlot + 1]
-        elseif hAbility and hAbility:IsPassive() then sKey = 'passive'
+        elseif hAbility and (hAbility:IsPassive() or IsPassiveLikeName(sName)) then sKey = 'passive'
         else sKey = 'no hotkey' end
         t[#t + 1] = nIdx .. ':' .. ShortAbilityName(hero, sName) .. '(' .. sKey .. ')'
     end
@@ -1747,10 +1786,10 @@ function SM.InitMoreSpells(hero, nTeams)
         hero.spellAddedNames = tAddedNames
         for _, sPassive in ipairs(tAddedNames) do
             local hPassive = hero:FindAbilityByName(sPassive)
-            if hPassive and hPassive:IsPassive() and GetAbilityIndex(hero, sPassive) <= 5 then
+            if hPassive and (hPassive:IsPassive() or IsPassiveLikeName(sPassive)) and GetAbilityIndex(hero, sPassive) <= 5 then
                 for _, sActive in ipairs(tAddedNames) do
                     local hActive = hero:FindAbilityByName(sActive)
-                    if hActive and not hActive:IsPassive() and GetAbilityIndex(hero, sActive) > 5 then
+                    if hActive and not hActive:IsPassive() and not IsPassiveLikeName(sActive) and GetAbilityIndex(hero, sActive) > 5 then
                         hero:SwapAbilities(sPassive, sActive, false, true)
                         hPassive:SetHidden(false) -- keep it visible so it still gets leveled
                         break

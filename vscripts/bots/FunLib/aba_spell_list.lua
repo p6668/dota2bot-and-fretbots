@@ -413,19 +413,20 @@ X['SpellsMap'] = {
         name    = 'ancient_apparition_chilling_touch',
         owner   = 'npc_dota_hero_ancient_apparition',
         type    = X.SPELL_TYPE_BASIC,
-        banned  = true,
+        banned  = false,
+        botBanned = true, -- humans only
         weight  = 1.0,
-        roles   = { melee=0, range=0, rightclicker=0, caster=0 },
+        roles   = { melee=0, range=1, rightclicker=1, caster=0 },
         tags    = {
-            ['carry']     = 0,
+            ['carry']     = 1,
             ['disabler']  = 0,
-            ['durable']   = 0,
+            ['durable']   = 1,
             ['escape']    = 0,
-            ['initiator'] = 0,
+            ['initiator'] = 1,
             ['jungler']   = 0,
-            ['nuker']     = 0,
+            ['nuker']     = 1,
             ['support']   = 0,
-            ['pusher']    = 0,
+            ['pusher']    = 1,
             ['healer']    = 0,
         },
         sub     = nil
@@ -3585,6 +3586,7 @@ X['SpellsMap'] = {
         owner   = 'npc_dota_hero_drow_ranger',
         type    = X.SPELL_TYPE_BASIC,
         banned  = false,
+        botBanned = true, -- humans only
         weight  = 1.0,
         roles   = { melee=1, range=1, rightclicker=1, caster=0 },
         tags    = {
@@ -4215,6 +4217,7 @@ X['SpellsMap'] = {
         owner   = 'npc_dota_hero_enchantress',
         type    = X.SPELL_TYPE_BASIC,
         banned  = false,
+        botBanned = true, -- humans only
         weight  = 1.0,
         roles   = { melee=0, range=1, rightclicker=1, caster=0 },
         tags    = {
@@ -5204,6 +5207,7 @@ X['SpellsMap'] = {
         owner   = 'npc_dota_hero_huskar',
         type    = X.SPELL_TYPE_BASIC,
         banned  = false,
+        botBanned = true, -- humans only
         weight  = 1.0,
         roles   = { melee=1, range=1, rightclicker=1, caster=0 },
         tags    = {
@@ -5624,18 +5628,19 @@ X['SpellsMap'] = {
         owner   = 'npc_dota_hero_jakiro',
         type    = X.SPELL_TYPE_BASIC,
         banned  = false,
+        botBanned = true, -- humans only
         weight  = 1.0,
         roles   = { melee=1, range=1, rightclicker=1, caster=0 },
         tags    = {
             ['carry']     = 1,
             ['disabler']  = 0,
-            ['durable']   = 1,
+            ['durable']   = 0,
             ['escape']    = 0,
-            ['initiator'] = 1,
+            ['initiator'] = 0,
             ['jungler']   = 0,
-            ['nuker']     = 1,
+            ['nuker']     = 0,
             ['support']   = 0,
-            ['pusher']    = 0,
+            ['pusher']    = 1,
             ['healer']    = 0,
         },
         sub     = nil
@@ -5644,17 +5649,18 @@ X['SpellsMap'] = {
         name    = 'jakiro_liquid_frost',
         owner   = 'npc_dota_hero_jakiro',
         type    = X.SPELL_TYPE_BASIC,
-        banned  = true,
+        banned  = false,
+        botBanned = true, -- humans only
         weight  = 1.0,
-        roles   = { melee=1, range=1, rightclicker=1, caster=0 },
+        roles   = { melee=0, range=1, rightclicker=1, caster=0 },
         tags    = {
             ['carry']     = 1,
             ['disabler']  = 0,
-            ['durable']   = 1,
+            ['durable']   = 0,
             ['escape']    = 0,
             ['initiator'] = 0,
-            ['jungler']   = 1,
-            ['nuker']     = 1,
+            ['jungler']   = 0,
+            ['nuker']     = 0,
             ['support']   = 0,
             ['pusher']    = 1,
             ['healer']    = 0,
@@ -7955,19 +7961,20 @@ X['SpellsMap'] = {
         name    = 'medusa_split_shot',
         owner   = 'npc_dota_hero_medusa',
         type    = X.SPELL_TYPE_BASIC,
-        banned  = true,
+        banned  = false,
+        botBanned = true, -- humans only
         weight  = 1.0,
-        roles   = { melee=1, range=1, rightclicker=1, caster=0 },
+        roles   = { melee=0, range=1, rightclicker=1, caster=0 },
         tags    = {
-            ['carry']     = 2,
+            ['carry']     = 1,
             ['disabler']  = 0,
             ['durable']   = 0,
             ['escape']    = 0,
             ['initiator'] = 0,
-            ['jungler']   = 2,
-            ['nuker']     = 0,
+            ['jungler']   = 1,
+            ['nuker']     = 1,
             ['support']   = 0,
-            ['pusher']    = 0,
+            ['pusher']    = 1,
             ['healer']    = 0,
         },
         sub     = nil
@@ -9552,6 +9559,7 @@ X['SpellsMap'] = {
         owner   = 'npc_dota_hero_obsidian_destroyer',
         type    = X.SPELL_TYPE_BASIC,
         banned  = false,
+        botBanned = true, -- humans only
         weight  = 1.0,
         roles   = { melee=1, range=1, rightclicker=1, caster=0 },
         tags    = {
@@ -10225,6 +10233,7 @@ X['SpellsMap'] = {
         owner   = 'npc_dota_hero_phantom_assassin',
         type    = X.SPELL_TYPE_BASIC,
         banned  = false,
+        botBanned = true, -- humans only
         weight  = 0.9,
         roles   = { melee=1, range=1, rightclicker=1, caster=0 },
         tags    = {
@@ -12664,6 +12673,7 @@ X['SpellsMap'] = {
         owner   = 'npc_dota_hero_silencer',
         type    = X.SPELL_TYPE_BASIC,
         banned  = false,
+        botBanned = true, -- humans only
         weight  = 0.9,
         roles   = { melee=1, range=1, rightclicker=1, caster=0 },
         tags    = {
@@ -13105,8 +13115,9 @@ X['SpellsMap'] = {
         owner   = 'npc_dota_hero_slark',
         type    = X.SPELL_TYPE_BASIC,
         banned  = true,
+        botBanned = true, -- humans only
         weight  = 0.8,
-        roles   = { melee=0, range=0, rightclicker=0, caster=0 },
+        roles   = { melee=1, range=1, rightclicker=1, caster=0 },
         tags    = {
             ['carry']     = 0,
             ['disabler']  = 0,
@@ -15732,6 +15743,7 @@ X['SpellsMap'] = {
         owner   = 'npc_dota_hero_viper',
         type    = X.SPELL_TYPE_BASIC,
         banned  = false,
+        botBanned = true, -- humans only
         weight  = 0.8,
         roles   = { melee=1, range=1, rightclicker=1, caster=0 },
         tags    = {
