@@ -557,6 +557,23 @@ local function GetRoleRelevance(hero, nPos)
     return tRelevance
 end
 
+-- is this a support hero? Which of the five positions fits the hero's roles best (the same posRoleRelevance table
+-- the spell scoring uses): position 4 or 5 = support. Works for humans too, who have no fixed position.
+local function IsSupportHero(hero)
+    local tHeroRoles = Role['hero_roles'] and Role['hero_roles'][hero:GetUnitName()]
+    if not tHeroRoles then return false end
+
+    local nBestPos, nBestScore = 1, -1
+    for nPos = 1, 5 do
+        local nScore = 0
+        for r, nRelevance in pairs(posRoleRelevance[nPos]) do
+            nScore = nScore + (tHeroRoles[r] or 0) * nRelevance
+        end
+        if nScore > nBestScore then nBestPos, nBestScore = nPos, nScore end
+    end
+    return nBestPos >= 4
+end
+
 -- the hero's clicker type ({r, c}); humans: right-clicker/caster if the hero is one in any position
 local function GetClickerRole(hero, nPos)
     local tClicker = Role['hero_roles'][hero:GetUnitName()]['clicker']
@@ -741,6 +758,11 @@ local ALLOW_UPGRADE_SLOT_DISPLACEMENT = false
 -- how many castable new spells a human hero may keep without a hotkey (click only). Console binds such as
 -- 'dota_ability_execute' are blocked, so 0: a castable spell that gets no slot is replaced by a passive spell.
 local MAX_CLICK_ONLY_SPELLS = 0
+
+-- support heroes pick their ultimate FIRST and give it a hotkey first, so it has a good chance of staying an active
+-- spell (with few free keys the basics used to take them, and a key-less ultimate was turned into a passive).
+-- The basics come after: the ones that get no key become passive spells. Other heroes are unchanged.
+local ULT_FIRST_FOR_SUPPORTS = true
 
 -- names of abilities that can be swapped out of a hotkey slot, best first
 -- tTaken: spells we already moved into a hotkey slot (never displaced) + the '__ghBlocked' flag
@@ -1913,8 +1935,15 @@ function SM.InitMoreSpells(hero, nTeams)
 
         local nUltCount = IsHumanHero(hero) and COUNT_ULTIMATE or SM.botUltimateCount
 
-        local basicAbilities    = GetAbilityBuild(hero, COUNT_BASIC, abilities.basic, true)
-        local ultimateAbilities = GetAbilityBuild(hero, nUltCount, abilities.ult, false)
+        local bUltFirst = ULT_FIRST_FOR_SUPPORTS and not bPassiveOnly and IsSupportHero(hero)
+        local basicAbilities, ultimateAbilities
+        if bUltFirst then
+            ultimateAbilities = GetAbilityBuild(hero, nUltCount, abilities.ult, false)
+            basicAbilities    = GetAbilityBuild(hero, COUNT_BASIC, abilities.basic, true)
+        else
+            basicAbilities    = GetAbilityBuild(hero, COUNT_BASIC, abilities.basic, true)
+            ultimateAbilities = GetAbilityBuild(hero, nUltCount, abilities.ult, false)
+        end
 
         -- passive ultimates are rare: if there is none, the third passive comes from the basic pool
         if bPassiveOnly and #ultimateAbilities < nUltCount then
@@ -2019,13 +2048,25 @@ function SM.InitMoreSpells(hero, nTeams)
         end
         -- basics first: they are cast far more often than the ultimate, which gets any leftover slot
         local tBasicResults, tUltResults = {}, {}
-        for i = 1, #basicAbilities do
-            tBasicResults[i] = GiveHotkeySlot(hero, basicAbilities[i].name, tTaken, true)
-            tHotkeyResults[#tHotkeyResults + 1] = basicAbilities[i].name .. ' ' .. tBasicResults[i]
+        local function GiveBasicKeys()
+            for i = 1, #basicAbilities do
+                tBasicResults[i] = GiveHotkeySlot(hero, basicAbilities[i].name, tTaken, true)
+                tHotkeyResults[#tHotkeyResults + 1] = basicAbilities[i].name .. ' ' .. tBasicResults[i]
+            end
         end
-        for i = 1, #ultimateAbilities do
-            tUltResults[i] = GiveHotkeySlot(hero, ultimateAbilities[i].name, tTaken, false)
-            tHotkeyResults[#tHotkeyResults + 1] = ultimateAbilities[i].name .. ' ' .. tUltResults[i]
+        local function GiveUltimateKeys()
+            for i = 1, #ultimateAbilities do
+                tUltResults[i] = GiveHotkeySlot(hero, ultimateAbilities[i].name, tTaken, false)
+                tHotkeyResults[#tHotkeyResults + 1] = ultimateAbilities[i].name .. ' ' .. tUltResults[i]
+            end
+        end
+
+        if bUltFirst then
+            GiveUltimateKeys() -- support: the ultimate gets the first free key, the basics take what is left
+            GiveBasicKeys()
+        else
+            GiveBasicKeys()    -- basics first: they are cast far more often than the ultimate
+            GiveUltimateKeys()
         end
 
         -- at most MAX_CLICK_ONLY_SPELLS castable new spells may stay without a hotkey (humans; bots cast
