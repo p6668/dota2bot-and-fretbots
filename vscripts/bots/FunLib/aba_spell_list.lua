@@ -971,7 +971,7 @@ X['SpellsMap'] = {
             ['initiator'] = 1,
             ['jungler']   = 0,
             ['nuker']     = 3,
-            ['support']   = 1,
+            ['support']   = 3,
             ['pusher']    = 1,
             ['healer']    = 0,
         },
