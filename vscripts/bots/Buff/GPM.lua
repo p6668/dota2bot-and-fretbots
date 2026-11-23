@@ -51,6 +51,11 @@ function GPM.UpdateBotGold(bot, nTeam, godmode)
         targetGPM = targetGPM - 200
     end
 
+    -- Apply DifficultyMultiplier to GPM when it's greater than 1
+    if godmode.DifficultyMultiplier > 1 then
+        targetGPM = targetGPM * godmode.DifficultyMultiplier
+    end
+
     local currentGPM = PlayerResource:GetGoldPerMin(bot:GetPlayerID())
     local expected = targetGPM * gameTime
     local actual = currentGPM * gameTime
